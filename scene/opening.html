@@ -500,8 +500,8 @@ function giveCan(){
    if(chapter!=='water-miss')return;waterPouring=false;
    speak('I don’t think I grow.',()=>{
      enter('water-aim');$('water-can').hidden=false;objective('Help him water the plant');
-     hint(coarse?'Drag his hand until the water reaches the plant.':'Drag his hand over the plant. Arrow keys move his arm too.');
      choice('Help him aim',()=>{if(chapter==='water-aim'){waterTarget=10;$('choice').hidden=true;}});
+     hint(coarse?'Drag his hand until the water reaches the plant.':'Drag his hand over the plant. Arrow keys move his arm too.');
    });
  });
 }
