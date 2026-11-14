@@ -83,15 +83,40 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  assert.equal(body.dataset.chapter,'name-happy');await advance(.6);assert(writes.get('Robot Arm Pivot 1').rotation.z>20,'Naming should trigger a happy gesture');
  await until(()=>body.dataset.chapter==='named-play');assert.equal(savedNames.get('milo-chosen-name'),nickname?'Pip':'Milo');
  assert.equal(writes.get('Robot Leg Pivot 1').position.y,100,'Milo should stand before turning');
- $('choice').onclick();await until(()=>!$('choice').hidden&&$('choice').textContent==='Show him a circle');$('choice').onclick();
- assert.equal(body.dataset.chapter,'copy-demo');await until(()=>body.dataset.chapter==='copy-you');
- const points=[[300,150],[420,190],[300,230],[420,270],[300,310]];
- for(const fn of events.pointerdown)fn({pointerId:9,button:0,target:$('air'),clientX:300,clientY:150});
- for(let i=1;i<points.length;i++)for(let j=1;j<=8;j++)for(const fn of events.pointermove)fn({pointerId:9,clientX:points[i-1][0]+(points[i][0]-points[i-1][0])*j/8,clientY:points[i-1][1]+(points[i][1]-points[i-1][1])*j/8});
- for(const fn of events.pointerup)fn({pointerId:9});assert.equal(body.dataset.chapter,'copy-demo','A drawn zigzag should be recognised');
- await until(()=>body.dataset.chapter==='copy-you');$('choice').onclick();assert.equal(body.dataset.chapter,'copy-milo');
- for(let i=0;i<3;i++)$('copy-target').onclick();assert.equal(body.dataset.chapter,'copy-done');
- await until(()=>!$('choice').hidden&&$('choice').textContent==='Stay with him');$('choice').onclick();
+ $('choice').onclick();await until(()=>body.dataset.chapter==='water-find');
+ assert.equal(writes.get('Watering Can').visible,true);assert.equal(writes.get('Garden Flower').visible,false);
+ // First try a cancelled drag: it must not silently hand over the can.
+ $('water-can').onpointerdown({pointerId:12,button:0,currentTarget:$('water-can'),clientX:300,clientY:480});
+ for(const fn of events.pointermove)fn({pointerId:12,clientX:420,clientY:420});
+ for(const fn of events.pointercancel)fn({pointerId:12,type:'pointercancel'});
+ assert.equal(body.dataset.chapter,'water-find','Cancelled pickup should leave the can available');
+ await advance(.5);
+ if(nickname){
+   // Drag pickup and release beside the current hand.
+   $('water-can').onpointerdown({pointerId:13,button:0,currentTarget:$('water-can'),clientX:300,clientY:480});
+   const hx=parseFloat($('five').style.left),hy=parseFloat($('five').style.top);
+   for(const fn of events.pointermove)fn({pointerId:13,clientX:hx,clientY:hy});
+   for(const fn of events.pointerup)fn({pointerId:13,clientX:hx,clientY:hy,type:'pointerup'});
+ }else{
+   $('water-can').onclick();assert.equal(body.dataset.chapter,'water-carry');$('water-hand').onclick();
+ }
+ assert.equal(body.dataset.chapter,'water-miss');await advance(1);
+ assert.equal(writes.get('Water Drops').visible,true,'First pour must visibly miss');
+ assert.equal(writes.get('Garden Flower').visible,false,'Spilling must not grow the flower');
+ await until(()=>body.dataset.chapter==='water-aim');await advance(6);
+ assert.equal(body.dataset.chapter,'water-aim','An unaligned stream must not complete watering');
+ assert.equal(writes.get('Garden Flower').visible,false);
+ if(nickname){
+   const x=parseFloat($('water-can').style.left),y=parseFloat($('water-can').style.top);
+   $('water-can').onpointerdown({pointerId:14,button:0,currentTarget:$('water-can'),clientX:x,clientY:y});
+   for(const fn of events.pointermove)fn({pointerId:14,clientX:x-30/.45,clientY:y});
+   for(const fn of events.pointerup)fn({pointerId:14,clientX:x-30/.45,clientY:y,type:'pointerup'});
+ }else if(process.argv[2]==='assist')$('choice').onclick();
+ else for(let i=0;i<3;i++)$('water-can').onkeydown({key:'ArrowDown',preventDefault(){}});
+ await until(()=>body.dataset.chapter==='water-bloom',12);
+ assert.equal(writes.get('Water Drops').visible,false);assert.equal(writes.get('Garden Flower').visible,true);
+ await until(()=>body.dataset.chapter==='water-done');
+ assert(writes.get('Flower Petal 0').scale.x>.95,'Petals must visibly open after watering');
  await until(()=>body.dataset.chapter==='moth-coax');await until(()=>!$('moth-guide').hidden);
  $('moth-guide').onclick();await until(()=>body.dataset.chapter==='moth-landed');
  assert(writes.get('Robot Arm Pivot 1').rotation.z>50,'The offered hand must stay raised as the moth lands');
@@ -103,7 +128,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
    await until(()=>!$('choice').hidden&&$('choice').textContent==='Let it rest on the plant');$('choice').onclick();
  }
  await until(()=>body.dataset.chapter==='garden-end');await advance(.2);
- assert.equal(writes.get('Garden Moth').visible,true);assert.equal(writes.get('Garden Moth').position.y,64);
+ assert.equal(writes.get('Garden Moth').visible,true);assert.equal(writes.get('Garden Moth').position.y,82);
  assert.equal(writes.get('Chapter One Plant').visible,true);
- console.log('PASS: arm dragging, high five, planting, '+(nickname?'nickname':'Milo name')+', turning, drawing, copying, moth and garden ending');
+ console.log('PASS: arm dragging, high five, planting, '+(nickname?'nickname':'Milo name')+', turning, watering, flower, moth and garden ending');
 })().catch(error=>{console.error(error);process.exitCode=1});

@@ -1,13 +1,13 @@
-// Naming, physical play, copying, and the moth share the opening's clock/rig.
+// Naming, physical play, watering, and the moth share the opening's clock/rig.
 let chosenName='Milo',yaw=0,yawTarget=0,lastPose=null,twoLastFrame=0;
 let armDrag=null,turnDrag=null,suppressArmClickUntil=-1,armDialogueAt=-100,armTouches=0;
 const arms={left:{angle:0,releaseAt:-100,releaseFrom:0},right:{angle:0,releaseAt:-100,releaseFrom:0}};
-let standAt=-100,happyAt=-100,nameConfirmed=false,drawPath=null,copyGesture='',copyAt=-100,copyStep=0,copyPoints=[];
+let standAt=-100,happyAt=-100,nameConfirmed=false;
 let moth=null,mothLeft=null,mothRight=null,mothOffered=false,mothWarmth=0,mothPinned=false,mothAt={x:145,y:85,z:75},mothFlightFrom=null;
 let mothReady=false,twoReady=false,mothOfferAt=0;
 try{chosenName=localStorage.getItem('milo-chosen-name')||'Milo';}catch{}
 const freeArms=()=>['play','end','named-play','garden-end'].includes(chapter);
-const namingStates=()=>['name-intro','name-search','name-found','nickname','name-happy','named-play','copy-you','copy-demo','copy-milo','copy-done','moth-arrival','moth-coax','moth-landed','moth-stay','moth-return','garden-end'].includes(chapter);
+const namingStates=()=>['name-intro','name-search','name-found','nickname','name-happy','named-play','water-intro','water-find','water-carry','water-miss','water-aim','water-bloom','water-done','moth-arrival','moth-coax','moth-landed','moth-stay','moth-return','garden-end'].includes(chapter);
 const bounded=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 function worldPoint(p){return rotateVector(p,0,yaw,0);}
 function bodyScreen(x,y,z){const p=worldPoint({x,y,z});return screenPoint(p.x,p.y,p.z);}
@@ -79,7 +79,7 @@ for(const side of ['left','right']){
 $('five').onpointerdown=e=>startArm(e,'right');
 window.addEventListener('pointermove',moveArm);
 window.addEventListener('pointerup',releaseArm);window.addEventListener('pointercancel',releaseArm);
-window.addEventListener('blur',()=>{releaseArm({});turnDrag=null;drawPath=null;});
+window.addEventListener('blur',()=>{releaseArm({});turnDrag=null;});
 
 async function prepareChapterTwo(){
  try{
@@ -119,13 +119,6 @@ function releaseTurn(e){
  try{turnDrag.el.releasePointerCapture?.(turnDrag.id);}catch{}turnDrag=null;
 }
 window.addEventListener('pointerup',releaseTurn);window.addEventListener('pointercancel',releaseTurn);
-window.addEventListener('resize',()=>{
- if(chapter==='copy-milo'){
-   const cx=innerWidth*.5,cy=innerHeight*.32,r=Math.min(90,innerWidth*.22);
-   copyPoints=[{x:cx-r,y:cy+30},{x:cx+r,y:cy+30},{x:cx,y:cy-65}];
-   place($('copy-target'),copyPoints[Math.min(copyStep,2)]);
- }
-});
 $('back-name').onclick=()=>{
  if(chapter!=='name-search'||Math.cos((yaw-25.1)*Math.PI/180)>-.6)return;
  enter('name-found');objective('');hint('');yawTarget=Math.round(yaw/360)*360;turnDrag=null;$('turn-milo').hidden=true;$('back-name').hidden=true;
@@ -146,71 +139,166 @@ function giveName(name){
  enter('name-happy');happyAt=chapterTime;
  speak(chosenName+'.',()=>speak(chosenName==='Milo'?'Milo. I like it.':'Milo on the outside. '+chosenName+' to you.',()=>{
    enter('named-play');$('pet').hidden=false;$('five').hidden=false;
-   choice('Play together',startCopyGame);
+   choice('Help with the plant',startWatering);
  }));
 }
 
-function showTrace(points){$('trail').hidden=false;$('trail-line').setAttribute('points',points.map(p=>Math.round(p.x)+','+Math.round(p.y)).join(' '));}
-function clearTrace(){drawPath=null;$('trail').hidden=true;$('trail-line').setAttribute('points','');}
-function startCopyGame(){
- if(chapter!=='named-play')return;enter('copy-you');reaction='';$('pet').hidden=true;$('five').hidden=true;
- speak('Show me something. I’ll try.',()=>{
-   objective('Draw a circle with your light');choice('Show him a circle',()=>acceptGesture('circle'));
-   hint('Click and draw in the empty space.');
+// Help him care for the plant: pick up, spill, guide, water, bloom.
+let wateringCan=null,waterDrops=null,gardenFlower=null,waterReady=false,waterBoot;
+let dropParts=[],flowerPetals=[],canDrag=null,canCarry=false,canHeld=false;
+let waterAngle=40,waterTarget=40,waterFill=0,waterPouring=false,waterAligned=false,bloomAt=-100,canHome={x:-135,y:20,z:95},canAt={...canHome};
+const wateringStates=()=>chapter.startsWith('water-');
+async function prepareWatering(){
+ try{
+   const find=async name=>{const o=await spline.findObjectByName(name);if(!o)throw new Error('Missing '+name);return o;};
+   wateringCan=await find('Watering Can');waterDrops=await find('Water Drops');gardenFlower=await find('Garden Flower');
+   for(let i=0;i<6;i++)dropParts.push(await find('Water Drop '+i));
+   for(let i=0;i<5;i++)flowerPetals.push(await find('Flower Petal '+i));
+   await update(wateringCan.id,{visible:false});await update(waterDrops.id,{visible:false});await update(gardenFlower.id,{visible:false});waterReady=true;
+ }catch(error){console.error('Watering assets:',error);}
+}
+waterBoot=prepareWatering();
+function pointAtHeight(x,y,height){
+ const a=25.1*Math.PI/180,b=-10.4*Math.PI/180,tan=Math.tan(45*Math.PI/360);
+ const cx=(x-innerWidth/2)/(innerHeight/2)*tan,cy=-(y-innerHeight/2)/(innerHeight/2)*tan;
+ const zz=-Math.sin(a)*cx-Math.cos(a),rx=Math.cos(a)*cx-Math.sin(a);
+ const ry=Math.cos(b)*cy-Math.sin(b)*zz,rz=Math.sin(b)*cy+Math.cos(b)*zz;
+ const depth=bounded((height-360)/ry,120,1700);
+ return{x:370+depth*rx,y:360+depth*ry,z:790+depth*rz};
+}
+async function startWatering(){
+ if(chapter!=='named-play')return;await waterBoot;
+ if(!waterReady){speak('Could you help me with the plant?',()=>choice('Try again',()=>location.reload()));return;}
+ enter('water-intro');reaction='';$('pet').hidden=true;$('five').hidden=true;$('choice').hidden=true;
+ speak('You helped me.',()=>speak('Can I help it?',()=>{
+   enter('water-find');canAt={...canHome};update(wateringCan.id,{visible:true});$('water-can').hidden=false;
+   objective('Give him the watering can');hint(coarse?'Drag the can to his hand, or tap to pick it up.':'Drag the can into his hand. You can also click to pick it up.');
+ }));
+}
+function carryCan(){
+ if(!['water-find','water-carry'].includes(chapter))return;
+ canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Place the can in his hand');hint('Bring it to his hand, or select his hand.');
+}
+function giveCan(){
+ if(!['water-find','water-carry'].includes(chapter)||!lastPose)return;
+ canCarry=false;canHeld=true;canDrag=null;waterAngle=40;waterTarget=40;
+ $('water-hand').hidden=true;$('water-can').hidden=true;objective('');hint('');enter('water-miss');
+ speak('I can do this.');
+ after(2.8,()=>{
+   if(chapter!=='water-miss')return;waterPouring=false;
+   speak('I don’t think I grow.',()=>{
+     enter('water-aim');$('water-can').hidden=false;objective('Help him water the plant');
+     hint(coarse?'Drag his hand until the water reaches the plant.':'Drag his hand over the plant. Arrow keys move his arm too.');
+     choice('Help him aim',()=>{if(chapter==='water-aim'){waterTarget=10;$('choice').hidden=true;}});
+   });
  });
- $('spark').hidden=false;
 }
-window.addEventListener('pointerdown',e=>{
- if(chapter!=='copy-you'||e.target.id!=='air')return;
- drawPath=[{x:e.clientX,y:e.clientY}];showTrace(drawPath);e.target.setPointerCapture?.(e.pointerId);
-});
-window.addEventListener('pointermove',e=>{
- if(!drawPath||chapter!=='copy-you')return;const p=drawPath[drawPath.length-1];
- if(Math.hypot(e.clientX-p.x,e.clientY-p.y)>5&&drawPath.length<240){drawPath.push({x:e.clientX,y:e.clientY});showTrace(drawPath);}
-});
-window.addEventListener('pointerup',()=>{
- if(!drawPath||chapter!=='copy-you')return;
- const points=drawPath;drawPath=null;
- if(points.length<10){clearTrace();return;}
- const xs=points.map(p=>p.x),ys=points.map(p=>p.y),w=Math.max(...xs)-Math.min(...xs),h=Math.max(...ys)-Math.min(...ys);
- let length=0,turns=0,lastSign=0;
- for(let i=1;i<points.length;i++){
-   const dx=points[i].x-points[i-1].x,dy=points[i].y-points[i-1].y;length+=Math.hypot(dx,dy);
-   if(Math.abs(dx)>5){const sign=Math.sign(dx);if(lastSign&&lastSign!==sign)turns++;lastSign=sign;}
- }
- const closed=Math.hypot(points[0].x-points.at(-1).x,points[0].y-points.at(-1).y)<Math.hypot(w,h)*.4;
- if(w>45&&h>45&&length>160&&closed)acceptGesture('circle');
- else if(turns>=3&&w>50&&h>30&&length>140)acceptGesture('zigzag');
- else{ speak('Was that… a potato? Let me try again.');after(3,clearTrace); }
-});
-function acceptGesture(kind){
- if(chapter!=='copy-you')return;clearTrace();copyGesture=kind;copyAt=chapterTime;enter('copy-demo');objective('');hint('Watch him try.');$('choice').hidden=true;
- if(kind==='circle'){
-   const center={x:innerWidth*.28,y:innerHeight*.35},points=[];
-   for(let i=0;i<=36;i++){const a=i/36*Math.PI*2;points.push({x:center.x+Math.cos(a)*45,y:center.y+Math.sin(a)*45});}showTrace(points);
- }else showTrace([{x:innerWidth*.2,y:innerHeight*.25},{x:innerWidth*.35,y:innerHeight*.35},{x:innerWidth*.2,y:innerHeight*.45},{x:innerWidth*.35,y:innerHeight*.55}]);
- speak(kind==='circle'?'Round. I can do round.':'That one made my neck go funny.');
- after(3.5,()=>{
-   if(chapter!=='copy-demo')return;clearTrace();enter('copy-you');
-   objective(kind==='circle'?'Try a zigzag, or let him lead':'Let him show you a pattern');
-   choice('Your turn, '+chosenName,startMiloPattern);
- });
-}
-function startMiloPattern(){
- if(chapter!=='copy-you')return;enter('copy-milo');objective('Follow his little pattern');clearTrace();copyStep=0;
- const cx=innerWidth*.5,cy=innerHeight*.32,r=Math.min(90,innerWidth*.22);
- copyPoints=[{x:cx-r,y:cy+30},{x:cx+r,y:cy+30},{x:cx,y:cy-65}];
- speak('My turn. Follow me.');$('copy-target').hidden=false;place($('copy-target'),copyPoints[0]);
-}
-$('copy-target').onclick=()=>{
- if(chapter!=='copy-milo')return;copyStep++;
- if(copyStep<copyPoints.length){place($('copy-target'),copyPoints[copyStep]);showTrace(copyPoints.slice(0,copyStep+1));return;}
- $('copy-target').hidden=true;clearTrace();objective('');enter('copy-done');
- speak('You did it. We’re good at this.',()=>choice('Stay with him',startMoth));
+$('water-hand').onclick=giveCan;
+$('water-can').onpointerdown=e=>{
+ if(e.button>0||!['water-find','water-carry','water-aim'].includes(chapter))return;
+ canDrag={id:e.pointerId,x:e.clientX,y:e.clientY,angle:waterTarget,moved:false,el:e.currentTarget};e.currentTarget.setPointerCapture?.(e.pointerId);
 };
+$('water-can').onclick=()=>{
+ if(canDrag?.moved||chapterTime<suppressCanClickUntil)return;
+ if(chapter==='water-find')carryCan();
+};
+let suppressCanClickUntil=-1;
+$('water-can').onkeydown=e=>{
+ if(chapter!=='water-aim'||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();waterTarget=bounded(waterTarget+(['ArrowUp','ArrowRight'].includes(e.key)?10:-10),-10,65);
+};
+window.addEventListener('pointermove',e=>{
+ if(!canDrag||e.pointerId!==canDrag.id)return;
+ const d=canDrag;if(!d.moved&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<5)return;
+ d.moved=true;document.body.dataset.armDragging='true';suppressCanClickUntil=chapterTime+.35;
+ if(chapter==='water-find')carryCan();
+ if(chapter==='water-carry')canAt=pointAtHeight(e.clientX,e.clientY,120);
+ if(chapter==='water-aim'){
+   // The arm, can, nozzle and falling water all share this same pose.
+   const scale=innerHeight/720;waterTarget=bounded(d.angle+(e.clientX-d.x)/Math.max(.7,scale)*.45,-10,65);
+ }
+});
+function releaseCan(e){
+ if(!canDrag||(e.pointerId!==undefined&&e.pointerId!==canDrag.id))return;
+ const d=canDrag;try{d.el.releasePointerCapture?.(d.id);}catch{}
+ canDrag=null;document.body.dataset.armDragging='false';
+ if(d.moved){suppressCanClickUntil=chapterTime+.35;
+   if(chapter==='water-carry'){
+     const h=handScreen(lastPose,'right');
+     if(e.type!=='pointercancel'&&Math.hypot((e.clientX??-999)-h.x,(e.clientY??-999)-h.y)<85)giveCan();
+     else{canAt={...canHome};canCarry=false;enter('water-find');$('water-hand').hidden=true;objective('Give him the watering can');hint('Try bringing the can a little closer to his hand.');}
+   }
+ }
+}
+window.addEventListener('pointerup',releaseCan);window.addEventListener('pointercancel',e=>releaseCan({...e,type:'pointercancel',pointerId:e.pointerId}));
+window.addEventListener('blur',()=>releaseCan({type:'pointercancel'}));
+function finishWatering(){
+ if(chapter!=='water-aim')return;
+ enter('water-bloom');bloomAt=chapterTime;waterPouring=false;canDrag=null;document.body.dataset.armDragging='false';
+ $('water-can').hidden=true;$('choice').hidden=true;objective('');hint('');
+ update(gardenFlower.id,{visible:true});
+ after(3.8,()=>{
+   if(chapter!=='water-bloom')return;enter('water-done');canHeld=false;canAt={x:205,y:20,z:80};
+   speak('I did something.',()=>{after(2,startMoth);});
+ });
+}
+function wateringPose(p){
+ if(!wateringStates())return p;
+ p.headY=13;p.headX=12;
+ if(canHeld){
+   p.rightX=chapter==='water-aim'?-48*ease((chapterTime-chapterAt)/.8):0;p.elbowZ=0;p.elbowY=0;
+   p.rightZ=waterAngle;
+   if(chapter==='water-miss'){
+     const t=chapterTime-chapterAt;
+     // He visibly tips the spout towards his own boot before looking down.
+     p.rightZ=12*ease(t/.6);p.headX=t>.8?25:12;p.headY=-7;
+   }
+   if(chapter==='water-bloom'){
+     const g=ease((chapterTime-bloomAt)/3);p.rightZ=waterAngle*(1-g);p.bodyY-=24*g;p.headX=24*g+10;
+   }
+ }else if(chapter==='water-done'){p.headX=22;p.bodyY-=24;}
+ return p;
+}
+function wateringTick(dt){
+ if(!waterReady)return;
+ waterAngle+=(waterTarget-waterAngle)*(1-Math.exp(-dt*9));
+ if(wateringStates()&&lastPose){
+   const h=projectedHand(lastPose,'right');
+   if(canHeld)canAt={...h};
+   const tilted=chapter==='water-miss'?-40:chapter==='water-aim'?-35:0;
+   const facing=chapter==='water-miss'?180:0;
+   update(wateringCan.id,{position:canAt,rotation:{x:0,y:facing,z:tilted}});
+   place($('water-can'),screenPoint(canAt.x+10,canAt.y,canAt.z));
+   place($('water-hand'),handScreen(lastPose,'right'));
+   const local=rotateVector({x:48,y:17,z:0},0,facing,tilted);
+   const nozzle={x:canAt.x+local.x,y:canAt.y+local.y,z:canAt.z+local.z};
+   waterPouring=(chapter==='water-miss'&&chapterTime-chapterAt>.7&&chapterTime-chapterAt<2.8)||chapter==='water-aim';
+   waterAligned=chapter==='water-aim'&&Math.hypot(nozzle.x-145,nozzle.z-75)<22;
+   if(chapter==='water-aim'){
+     waterAligned=Math.hypot(nozzle.x-145,nozzle.z-75)<22;
+     if(waterAligned)waterFill=clamp(waterFill+dt/5.5);
+     $('water-can').setAttribute('aria-label',waterAligned?'Keep his hand here to water the plant':'Guide his watering hand. Use arrow keys to move it.');
+     if(waterFill>=1)finishWatering();
+   }
+   update(waterDrops.id,{visible:waterPouring});
+   if(waterPouring)for(let i=0;i<dropParts.length;i++){
+     const f=(chapterTime*1.15+i/6)%1,fall=f*f;
+     update(dropParts[i].id,{position:{x:nozzle.x+Math.sin(i*2.1)*2*f,y:nozzle.y+(2-nozzle.y)*fall,z:nozzle.z+Math.cos(i)*1.5*f},scale:{x:1,y:1+f*.7,z:1}});
+   }
+   if(chapter==='water-bloom')update(waterDrops.id,{visible:false});
+ }
+ if(bloomAt>0){
+   const t=chapterTime-bloomAt;
+   for(let i=0;i<flowerPetals.length;i++){
+     const g=ease((t-i*.16)/2.5);
+     update(flowerPetals[i].id,{rotation:{x:75*(1-g),y:0,z:i*72},scale:{x:.2+.8*g,y:.4+.6*g,z:1}});
+   }
+   update(gardenFlower.id,{rotation:{y:25.1,z:Math.sin(chapterTime*1.3)*1.2},scale:{x:1,y:1,z:1}});
+ }
+}
 
 async function startMoth(){
- if(chapter!=='copy-done')return;await twoBoot;
+ if(chapter!=='water-done')return;await twoBoot;
  if(!mothReady){speak('Let’s sit here a little longer.');return;}
  enter('moth-arrival');mothOffered=false;mothWarmth=0;mothPinned=false;
  $('spark').hidden=false;await update(moth.id,{visible:true});
@@ -238,6 +326,7 @@ function returnMoth(){
 function chapterTwoTick(now){
  const dt=twoLastFrame?Math.min(.05,(now-twoLastFrame)/1000):0;twoLastFrame=now;
  if(document.hidden)return;
+ wateringTick(dt);
  yaw+=(yawTarget-yaw)*(1-Math.exp(-dt*9));
  if(Math.abs(yaw)<.001)yaw=0;
  update(parts.Robot.id,{rotation:{y:yaw}});
@@ -262,8 +351,8 @@ function chapterTwoTick(now){
    }else if(['moth-landed','moth-stay'].includes(chapter)){
      const h=projectedHand(lastPose,'right');goal={x:h.x,y:h.y+14*size,z:h.z};flap=3;
    }else if(chapter==='moth-return'){
-     const g=ease(t/3.5),a=mothFlightFrom;goal={x:a.x+(145-a.x)*g,y:a.y+(64-a.y)*g+Math.sin(g*Math.PI)*25,z:a.z+(75-a.z)*g};
-   }else{goal={x:145,y:64,z:75};flap=2;}
+     const g=ease(t/3.5),a=mothFlightFrom;goal={x:a.x+(145-a.x)*g,y:a.y+(82-a.y)*g+Math.sin(g*Math.PI)*25,z:a.z+(75-a.z)*g};
+   }else{goal={x:145,y:82,z:75};flap=2;}
    mothAt=goal;update(moth.id,{position:goal,scale:{x:size,y:size,z:size},rotation:{y:25,z:Math.sin(chapterTime*1.4)*(flap>5?5:1)}});
    const flutter=Math.sin(chapterTime*(flap>5?24:2))*flap;
    update(mothLeft.id,{rotation:{y:-(25+flutter)}});update(mothRight.id,{rotation:{y:25+flutter}});
@@ -280,14 +369,6 @@ function chapterTwoPose(p){
    const envelope=pulse(happy,0,.35,2.4,3.4);p.bodyY+=Math.abs(Math.sin(happy*5))*6*envelope;
    p.headZ+=Math.sin(happy*4)*5*envelope;p.leftZ-=envelope*45;p.rightZ+=envelope*(55+Math.sin(happy*9)*12);
  }
- if(chapter==='copy-demo'){
-   const t=chapterTime-copyAt,g=pulse(t,0,.3,2.7,3.4);
-   p.headX=(copyGesture==='circle'?Math.sin(t*3)*9:Math.sin(t*7)*5)*g;
-   p.headY=(copyGesture==='circle'?Math.cos(t*3)*13:Math.sin(t*4)*18)*g;
- }
- if(chapter==='copy-milo'){
-   const point=copyPoints[Math.min(copyStep,2)];p.headY=(point.x/innerWidth-.5)*40;p.headX=(point.y/innerHeight-.5)*20;
- }
  if(chapter==='moth-arrival'){
    const t=chapterTime-chapterAt,g=pulse(t,0,.2,.6,1.2);p.headZ-=g*8;p.rightZ+=g*18;p.leftZ-=g*18;
  }
@@ -303,5 +384,6 @@ function chapterTwoPose(p){
      if(side==='right'){p.elbowZ*=1-weight;p.elbowY*=1-weight;}
    }
  }
+ p=wateringPose(p);
  lastPose={...p};refreshArmTargets(p);return p;
 }

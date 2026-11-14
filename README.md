@@ -6,7 +6,7 @@ Live website: https://kwtdfbiwf.github.io/bot/
 
 The opening leads into cursor play, finding a seed, planting it beside Milo,
 growing a plant with your light, and a quiet seated ending. Continue by finding the name stamped on Milo’s
-back, choosing his name, copying gestures, and meeting a moth. His arms can
+back, choosing his name, helping him water the plant, and meeting a moth drawn to its new flower. His arms can
 be lifted by dragging. Pointer, touch, and keyboard interactions are supported.
 
 ## Source
@@ -19,6 +19,7 @@ be lifted by dragging. Pointer, touch, and keyboard interactions are supported.
 - `scene/botanical-models.js`: authored Spline seed and folded-leaf plant meshes.
   The story references these named assets and animates their growth.
 - `scene/name-and-moth-models.js`: stamped back label and moth meshes.
+- `scene/watering-models.js`: enamel watering can, falling drops, and folded flower petals.
 
 A chosen robot name is stored locally in the scene’s browser storage. No
 server receives names or progress.
@@ -46,6 +47,7 @@ GitHub Pages serves the root of `gh-pages`.
 ```sh
 node tests/chapter.test.cjs
 node tests/chapter.test.cjs nickname
+node tests/chapter.test.cjs assist
 ```
 
 This exercises the story and controls with a mock Spline bridge. Verify model

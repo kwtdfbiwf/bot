@@ -10,15 +10,16 @@
 #answers button:hover{background:#d8cba118}
 #nickname-form{position:fixed;z-index:9;left:50%;bottom:max(12vh,90px);transform:translateX(-50%);width:min(360px,calc(100% - 44px))}
 #nickname-form button{background:transparent;border:0;color:#d6c6af;padding:10px;font-size:12px;min-height:44px;white-space:nowrap}
-#trail{position:fixed;inset:0;z-index:5;width:100%;height:100%;pointer-events:none}
-#trail-line{fill:none;stroke:#e0d4b4;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round;opacity:.45}
-#copy-target{position:fixed;z-index:8;transform:translate(-50%,-50%);width:50px;height:50px;border:1px solid #d9cba16b;border-radius:50%;background:radial-gradient(circle,#eadcb044,transparent 65%);box-shadow:0 0 22px #e6d3971a;touch-action:none}
-#copy-target:after{content:'';position:absolute;inset:22px;background:#f7ebcb;border-radius:50%;box-shadow:0 0 8px #e6d397}
 #moth-guide{width:76px;height:76px;border-radius:50%;z-index:7;cursor:pointer}
 #moth-guide:focus-visible{outline:1px dashed #e2d2a6}
 body[data-chapter=name-search] #hint{bottom:80px}
-body[data-chapter=name-search] #dialogue,body[data-chapter=copy-you] #dialogue,body[data-chapter=copy-milo] #dialogue{top:11vh;bottom:auto}
+body[data-chapter=name-search] #dialogue{top:11vh;bottom:auto}
 body[data-arm-dragging=true]{cursor:grabbing;user-select:none;-webkit-user-select:none}
 @media(max-width:600px){#turn-milo{width:240px;height:470px}#back-name{width:110px;height:58px}#answers{gap:8px}#answers button{padding:11px 13px;font-size:10px}#nickname-form label{font-size:17px}}
 
-body[data-chapter=copy-you] #hint{top:calc(11vh + 74px);bottom:auto}
+#water-can,#water-hand{position:fixed;z-index:8;transform:translate(-50%,-50%);width:76px;height:68px;padding:0;background:transparent;border:0;border-radius:18px;touch-action:none;cursor:grab}
+#water-can:active{cursor:grabbing}
+#water-can:hover,#water-can:focus-visible{outline:1px dashed #a8c2b880;background:#b6d7cd08}
+#water-hand{width:62px;height:62px;border:1px dashed #dac8a460;border-radius:50%;box-shadow:0 0 22px #f1dfb315;cursor:pointer}
+body[data-chapter^=water-] #dialogue{top:max(10vh,65px);bottom:auto}
+body[data-chapter^=water-] #hint{bottom:82px}
