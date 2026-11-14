@@ -1,0 +1,20 @@
+#seed,#soil,#pet,#five{position:fixed;z-index:6;padding:0;touch-action:none;background:none;border:0;transform:translate(-50%,-50%)}
+#seed{left:19%;top:64%;width:56px;height:56px;opacity:.12;transition:opacity .3s}
+#seed:before{content:'';position:absolute;left:22px;top:18px;width:12px;height:19px;border-radius:65% 35% 60% 40%;transform:rotate(30deg);background:linear-gradient(120deg,#ddc18b,#8b613b 65%,#4d3526);box-shadow:0 0 14px #d8bb7540}
+#seed:after{content:'';position:absolute;left:28px;top:15px;width:2px;height:2px;background:#f7e8bb;border-radius:50%;box-shadow:0 0 8px #e7d4a2}
+#seed:focus-visible{opacity:1!important}
+body[data-carrying=true] #seed{opacity:1!important;pointer-events:none}
+#soil{width:74px;height:54px;border-radius:50%;border:1px dashed #d8cba168;box-shadow:0 0 28px #e2c88a15;color:#d8cba1;transition:border-color .5s,box-shadow .5s}
+#soil:before{content:'';position:absolute;inset:15px 23px;background:#56483a;border-radius:50%;box-shadow:inset 0 2px 5px #000}
+#soil.warming{border-style:solid;border-color:#e6d7a3;box-shadow:0 0 36px #e8cb7940}
+#soil.grown{border-color:transparent;box-shadow:none;pointer-events:none}
+#pet{width:110px;height:100px;border-radius:20px}
+#five{width:56px;height:64px;border-radius:50%}
+#pet:focus-visible,#five:focus-visible{outline:1px dashed #d8cba1;background:#fff3cc08}
+#choice{position:fixed;z-index:8;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translateX(-50%);background:#0008;border:1px solid #d8cba16b;border-radius:2px;color:var(--ink);font:11px var(--font);letter-spacing:.3px;padding:13px 23px;min-height:44px;animation:arrive 1s both}
+#choice:hover{background:#e8d8ac15}
+#growth{position:fixed;z-index:7;width:140px;transform:translate(-50%,-50%);height:2px;background:#d8cba126;pointer-events:none}
+#growth i{display:block;background:#d8d99a;height:100%;width:0;box-shadow:0 0 8px #e1d79c50}
+@media(max-width:600px){#seed{left:16%;top:56%}#objective{left:20px;top:22px;font-size:11px}#pet{width:86px;height:86px}}
+
+body[data-chapter=planting] #dialogue,body[data-chapter=growing] #dialogue{top:12vh;bottom:auto}

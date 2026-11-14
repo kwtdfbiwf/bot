@@ -1,0 +1,163 @@
+// Chapter one runs inside the opening's async function, using its cached rig.
+let chapter='waiting',chapterTime=0,chapterAt=0,lastFrame=0,playCount=0;
+let pointerX=innerWidth/2,pointerY=innerHeight/2,lastPointerAt=0,reactionAt=-100,reaction='';
+let growth=0,lightPinned=false,plant=null,leafLeft=null,leafRight=null,stem=null;
+let pointerNearPlant=false,petCount=0,plantReady=false,chapterFailed=false,seatedAt=0;
+const tasks=[];
+const after=(seconds,fn)=>tasks.push({at:chapterTime+seconds,fn});
+const enter=next=>{chapter=next;chapterAt=chapterTime;document.body.dataset.chapter=next;};
+function objective(text){$('objective').hidden=!text;$('objective').replaceChildren();if(text){const s=document.createElement('span');s.textContent='OBJECTIVE';$('objective').append(s,document.createTextNode(text));}}
+function hint(text){$('hint').hidden=!text;$('hint').textContent=text||'';}
+function choice(text,fn){hint('');const b=$('choice');b.textContent=text;b.hidden=false;b.onclick=()=>{b.hidden=true;fn();};}
+// Project world positions through the existing portrait camera. UI follows the
+// same fixed framing at every aspect ratio, including narrow touch screens.
+function screenPoint(x,y,z){
+ const a=25.1*Math.PI/180,b=-10.4*Math.PI/180,dx=x-370,dy=y-360,dz=z-790;
+ const yy=Math.cos(b)*dy+Math.sin(b)*dz,zz=-Math.sin(b)*dy+Math.cos(b)*dz;
+ const xx=Math.cos(a)*dx-Math.sin(a)*zz,depth=-(Math.sin(a)*dx+Math.cos(a)*zz);
+ const f=innerHeight/(2*Math.tan(45*Math.PI/360));
+ return {x:innerWidth/2+xx*f/depth,y:innerHeight/2-yy*f/depth};
+}
+function place(el,p){el.style.left=p.x+'px';el.style.top=p.y+'px';}
+function layoutChapter(){
+ const down=['resting','end'].includes(chapter)?82:0;
+ place($('pet'),screenPoint(0,310-down,80));place($('five'),screenPoint(88,110-down,45));
+ const p=screenPoint(145,4,75);place($('soil'),p);place($('growth'),{x:p.x,y:p.y+45});
+}
+window.addEventListener('resize',layoutChapter);
+async function preparePlant(){
+ try{
+ plant=await spline.createObject('Group',{name:'Chapter One Plant',position:{x:145,y:0,z:75},visible:false});
+ const parent=plant.id;
+ await spline.createObject('Sphere',{name:'Plant Soil',parent,position:{x:0,y:2,z:0},width:44,height:5,depth:34,color:'#514337'});
+ stem=await spline.createObject('Cylinder',{name:'Plant Stem',parent,position:{x:0,y:29,z:0},width:3,height:54,depth:3,cornerRadius:0,color:'#728b55'});
+ leafLeft=await spline.createObject('Sphere',{name:'Plant Leaf Left',parent,position:{x:-12,y:35,z:0},rotation:{z:-36},width:28,height:12,depth:5,color:'#91ad6e'});
+ leafRight=await spline.createObject('Sphere',{name:'Plant Leaf Right',parent,position:{x:11,y:47,z:0},rotation:{z:35},width:26,height:12,depth:5,color:'#b3c880'});
+ plantReady=true;
+ }catch(error){chapterFailed=true;console.error('Plant creation:',error);}
+}
+const plantBoot=preparePlant();
+function startChapter(){
+ enter('intro');
+ after(14,()=>speak('Oh. You’re still here.',()=>speak('Is that little light yours?',()=>{
+   enter('play');$('spark').hidden=false;$('pet').hidden=false;$('five').hidden=false;
+   hint(coarse?'Move your light around him.':'Move your light. He’s curious.');
+   choice('Look around together',lookAround);
+   after(24,()=>{if(chapter==='play')lookAround();});
+ })));
+}
+function react(kind){
+ if(chapter!=='play'&&chapter!=='end')return;
+ if(chapterTime-reactionAt<2.2)return;
+ reaction=kind;reactionAt=chapterTime;playCount++;
+ if(kind==='pet'){petCount++;speak(petCount>2?'My head is not a button.':'Oh. That’s… nice.');}
+ if(kind==='five')speak('Did I do that right?');
+ if(kind==='startle')speak('Whoa. Where are you going?');
+}
+$('pet').onclick=()=>react('pet');$('five').onclick=()=>react('five');
+function lookAround(){
+ if(chapter!=='play')return;enter('looking');$('choice').hidden=true;hint('');
+ $('pet').hidden=true;$('five').hidden=true;
+ speak('Oh. There really isn’t much here, is there?',()=>speak('Can you help me find something?',()=>{
+   enter('finding');objective('Find the little glimmer');hint(coarse?'Sweep your light through the dark.':'Move your light beyond the glow.');
+   $('seed').hidden=false;$('seed').style.opacity='.12';
+   after(25,()=>{if(chapter==='finding'){speak('I think I saw something over there.');$('seed').style.opacity='.65';}});
+ }));
+}
+function pickSeed(){
+ if(chapter!=='finding')return;
+ enter('carrying');document.body.dataset.carrying='true';$('seed').setAttribute('aria-label','Seed collected');$('seed').tabIndex=-1;
+ place($('seed'),{x:pointerX+14,y:pointerY-12});
+ objective('Plant it beside Milo');hint('Choose the little patch of ground.');$('soil').hidden=false;layoutChapter();
+ speak('A seed? What does it do?');
+}
+$('seed').onclick=pickSeed;
+$('seed').onfocus=()=>{if(chapter==='finding')$('seed').style.opacity='1';};
+async function plantSeed(){
+ if(chapter!=='carrying')return;
+ enter('planting');$('seed').hidden=true;document.body.dataset.carrying='false';$('soil').disabled=true;objective('');hint('');
+ await plantBoot;
+ if(!plantReady){$('soil').disabled=false;enter('carrying');speak('Something went wrong. Let’s try again.');choice('Try again',()=>location.reload());return;}
+ await spline.updateObject(plant.id,{visible:true,scale:{x:.18,y:.015,z:.18}});
+ speak('Maybe it needs your light.',()=>{
+   enter('growing');objective('Help it grow');hint(coarse?'Tap the seed to keep your light on it.':'Keep your light over the seed.');
+   $('soil').disabled=false;$('soil').setAttribute('aria-label','Shine light on the planted seed');$('soil').setAttribute('aria-pressed','false');
+   $('growth').hidden=false;$('soil').blur();
+ });
+}
+$('soil').onclick=()=>{
+ if(chapter==='carrying'){plantSeed();return;}
+ if(chapter==='growing'){
+   lightPinned=!lightPinned;$('soil').setAttribute('aria-pressed',String(lightPinned));
+   if(lightPinned){const p=screenPoint(145,4,75);pointerX=p.x;pointerY=p.y;pointer(p.x,p.y);}
+ }
+};
+function finishGrowing(){
+ enter('grown');objective('');hint('');$('growth').hidden=true;$('soil').classList.add('grown');$('soil').disabled=true;$('soil').hidden=true;lightPinned=false;
+ after(1.5,()=>speak('It’s… alive.',()=>speak('We did that. Together.',()=>{
+   choice('Sit with Milo',restTogether);
+ })));
+}
+function restTogether(){
+ if(chapter!=='grown')return;enter('resting');seatedAt=chapterTime;$('spark').hidden=true;$('soil').hidden=true;hint('');
+ after(4,()=>speak('I don’t remember what I was made for.',()=>speak('But I think I like this.',()=>{
+   after(3,()=>speak('Could we leave the light on?',()=>choice('Leave the light on',()=>{
+     enter('end');speak('Okay. We can stay a little longer.',()=>{after(6,()=>{$('dialogue').hidden=true;});});
+     $('pet').hidden=false;layoutChapter();
+   })));
+ })));
+}
+function chapterPointer(x,y){
+ const now=performance.now(),distance=Math.hypot(x-pointerX,y-pointerY),speed=distance/Math.max(16,now-lastPointerAt);
+ pointerX=x;pointerY=y;lastPointerAt=now;
+ if(chapter==='play'&&speed>2.2&&distance>100&&chapterTime-chapterAt>3)react('startle');
+ if(chapter==='finding'){
+   const r=$('seed').getBoundingClientRect(),d=Math.hypot(x-r.left-r.width/2,y-r.top-r.height/2);
+   $('seed').style.opacity=String(Math.max(chapterTime-chapterAt>25?.4:.12,1-d/160));
+ }
+ if(chapter==='carrying')place($('seed'),{x:x+14,y:y-12});
+ if(lightPinned&&chapter==='growing'&&!coarse){const p=screenPoint(145,4,75);if(Math.hypot(x-p.x,y-p.y)>90){lightPinned=false;$('soil').setAttribute('aria-pressed','false');}}
+}
+window.addEventListener('pointermove',e=>chapterPointer(e.clientX,e.clientY));
+window.addEventListener('pointerdown',e=>chapterPointer(e.clientX,e.clientY));
+function chapterTick(now){
+ const dt=lastFrame?Math.min(.05,(now-lastFrame)/1000):0;lastFrame=now;
+ if(document.hidden)return;chapterTime+=dt;
+ for(let i=tasks.length-1;i>=0;i--)if(tasks[i].at<=chapterTime){const task=tasks.splice(i,1)[0];task.fn();}
+ if(chapter==='growing'){
+   const p=screenPoint(145,4,75);pointerNearPlant=lightPinned||Math.hypot(pointerX-p.x,pointerY-p.y)<64;
+   if(pointerNearPlant)growth=Math.min(1,growth+dt/14);
+   $('soil').classList.toggle('warming',pointerNearPlant);
+   if(lightPinned){document.documentElement.style.setProperty('--mx',p.x+'px');document.documentElement.style.setProperty('--my',p.y+'px');}
+   $('growth').firstElementChild.style.width=(growth*100)+'%';
+   $('growth').setAttribute('aria-valuenow',String(Math.round(growth*100)));
+   spline.updateObject(plant.id,{scale:{x:.18+.82*ease(growth),y:.015+.985*ease(growth),z:.18+.82*ease(growth)}});
+   if(growth===1)finishGrowing();
+ }
+ if(plantReady&&growth>0){
+   const sway=reduced?0:Math.sin(chapterTime*1.3)*2.3*growth;
+   spline.updateObject(plant.id,{rotation:{z:sway}});
+   spline.updateObject(leafLeft.id,{rotation:{z:-36+sway*2}});
+   spline.updateObject(leafRight.id,{rotation:{z:35-sway*1.6}});
+ }
+}
+function chapterPose(p){
+ const elapsed=chapterTime-reactionAt,r=pulse(elapsed,0,.3,1.2,2);
+ if(chapter==='play'){
+   const h=screenPoint(0,310,80),near=clamp(1-Math.hypot(pointerX-h.x,pointerY-h.y)/130);
+   p.headZ+=near*7;p.rightZ+=near*28;
+ }
+ if(reaction==='pet'){p.headX+=r*8;p.headZ+=r*9;}
+ if(reaction==='five'){p.rightZ+=r*(120+Math.sin(elapsed*8)*4);p.elbowZ+=r*20;}
+ if(reaction==='startle'){p.headZ-=r*9;p.leftZ-=r*24;p.rightZ+=r*24;}
+ if(['finding','looking'].includes(chapter))p.headY-=Math.sin((chapterTime-chapterAt)*.7)*12;
+ if(['planting','growing','grown'].includes(chapter)){p.headX+=14;p.headY+=13;}
+ if(['resting','end'].includes(chapter)){
+   const s=ease((chapterTime-seatedAt)/3);p.bodyY-=82*s;p.headX+=12*s;p.headY+=13*s;p.rightX-=40*s;p.leftX-=40*s;
+   write('Robot Leg Pivot -1',{position:{y:100-80*s},rotation:{x:-78*s,y:0,z:0}});
+   write('Robot Leg Pivot 1',{position:{y:100-80*s},rotation:{x:-78*s,y:0,z:0}});
+   if(chapter==='resting'&&chapterTime-chapterAt<3)layoutChapter();
+ }
+ return p;
+}
+layoutChapter();

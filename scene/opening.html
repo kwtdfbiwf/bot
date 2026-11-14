@@ -2,8 +2,35 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,interactive-widget=resizes-content"><style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400&display=swap');
 :root{--mx:50vw;--my:50vh;--ink:#e9e4d9;--font:'Space Mono',ui-monospace,monospace}*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;font-family:var(--font);color:var(--ink)}[hidden]{display:none!important}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid #d1bca0;outline-offset:5px}#air{position:fixed;inset:0;z-index:1;touch-action:none}#darkness{position:fixed;inset:0;z-index:4;background:#000000;pointer-events:none;transition:background 1.4s,opacity 1.5s}body[data-phase=appear] #darkness,body[data-phase=waking] #darkness,body[data-phase=name] #darkness,body[data-phase=greeting] #darkness{background:#000000}body[data-phase=search] #darkness{background:#000000;transition:none}body[data-phase=lit] #darkness{opacity:0}#wake{position:fixed;z-index:8;left:50%;top:51%;transform:translate(-50%,-50%);padding:15px 34px;min-height:48px;background:transparent;border:1px solid #c9c5b57a;border-radius:2px;color:#e9e4d9;font:13px var(--font);letter-spacing:.4px;opacity:0;transition:opacity 1s,background .3s;pointer-events:none}#wake.ready{opacity:1;pointer-events:auto}#wake:hover{background:#ddd4b710}body[data-phase=appear] #wake{top:auto;bottom:max(9vh,76px);transform:translateX(-50%)}#name-form{position:fixed;z-index:8;left:50%;bottom:max(8vh,76px);transform:translateX(-50%);width:min(360px,calc(100% - 44px));animation:arrive .8s both}label{display:block;text-align:center;font:20px/1.5 var(--font);margin-bottom:20px}.name-row{display:flex;border-bottom:1px solid #e9e4d970;gap:12px;padding-bottom:8px}input{min-width:0;flex:1;background:transparent;border:0;color:#e9e4d9;padding:12px 4px;font-size:16px;border-radius:0}input::placeholder{color:#a7a4a0}#name-form button{background:transparent;border:0;color:#d6c6af;padding:10px;min-height:44px;font-size:12px;white-space:nowrap}#dialogue{position:fixed;z-index:7;left:50%;bottom:max(8vh,80px);transform:translateX(-50%);width:min(440px,calc(100% - 48px));margin:0;text-align:center;color:#e9e4d9;font:clamp(16px,1.7vw,18px)/1.65 var(--font);white-space:pre-line;text-wrap:balance;pointer-events:none;text-shadow:0 2px 16px #0008}body[data-phase=lit] #dialogue{color:#e9e4d9;text-shadow:0 2px 16px #000;transition:color 1s}#switch{position:fixed;z-index:5;opacity:0;left:82%;top:39%;width:44px;height:68px;padding:8px;background:#dad3bd;border:1px solid #756e60;border-radius:4px;box-shadow:inset 0 0 0 3px #c6c0ae,0 2px 7px #0005;transform:translate(-50%,-50%)}#switch:before,#switch:after{content:'';position:absolute;left:20px;width:3px;height:3px;border-radius:50%;background:#756f60}#switch:before{top:5px}#switch:after{bottom:5px}#switch span{display:block;width:100%;height:38px;background:linear-gradient(#a8a18e 0,#ddd6c4 50%,#eee8d7 50%);border:1px solid #756f60;border-radius:2px;box-shadow:0 2px 3px #0005;transition:transform .15s}#switch[aria-pressed=true] span{transform:rotate(180deg)}#switch:disabled{cursor:default}#spark{position:fixed;z-index:5;left:var(--mx);top:var(--my);width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,239,201,.23),rgba(255,239,201,.10) 32%,rgba(255,239,201,.025) 54%,transparent 72%);transform:translate(-50%,-50%);pointer-events:none}#spark:after{content:"";position:absolute;left:128px;top:128px;width:4px;height:4px;border-radius:50%;background:#fff6d4;box-shadow:0 0 18px 5px #fce6ad80}#objective{position:fixed;z-index:7;left:24px;top:max(24px,env(safe-area-inset-top));margin:0;color:#e9e4d9;font-size:13px;line-height:1.7;letter-spacing:.2px;pointer-events:none;animation:arrive 1s both}#objective span{display:block;margin-bottom:3px;color:#999892;font-size:9px;letter-spacing:1.5px}#hint{position:fixed;z-index:6;left:50%;bottom:25px;transform:translateX(-50%);width:calc(100% - 50px);text-align:center;font-size:10px;letter-spacing:1px;color:#999892;pointer-events:none;animation:arrive 1.5s both}#error{position:fixed;z-index:9;inset:0;background:#000000;display:grid;place-content:center;text-align:center;color:#c9c2b6;font:16px/1.6 var(--font);padding:35px}#error button{background:transparent;border:1px solid #777;color:inherit;padding:12px;margin-top:15px}body[data-phase=search]{cursor:none}body[data-phase=search] button{cursor:none}@keyframes arrive{from{opacity:0}to{opacity:1}}@media(max-width:600px){#switch{left:85%;top:30%;width:42px;height:64px}#name-form{bottom:80px}#dialogue{bottom:82px;font-size:16px}#hint{bottom:21px;font-size:9px}body[data-phase=appear] #wake{bottom:82px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+
+#seed,#soil,#pet,#five{position:fixed;z-index:6;padding:0;touch-action:none;background:none;border:0;transform:translate(-50%,-50%)}
+#seed{left:19%;top:64%;width:56px;height:56px;opacity:.12;transition:opacity .3s}
+#seed:before{content:'';position:absolute;left:22px;top:18px;width:12px;height:19px;border-radius:65% 35% 60% 40%;transform:rotate(30deg);background:linear-gradient(120deg,#ddc18b,#8b613b 65%,#4d3526);box-shadow:0 0 14px #d8bb7540}
+#seed:after{content:'';position:absolute;left:28px;top:15px;width:2px;height:2px;background:#f7e8bb;border-radius:50%;box-shadow:0 0 8px #e7d4a2}
+#seed:focus-visible{opacity:1!important}
+body[data-carrying=true] #seed{opacity:1!important;pointer-events:none}
+#soil{width:74px;height:54px;border-radius:50%;border:1px dashed #d8cba168;box-shadow:0 0 28px #e2c88a15;color:#d8cba1;transition:border-color .5s,box-shadow .5s}
+#soil:before{content:'';position:absolute;inset:15px 23px;background:#56483a;border-radius:50%;box-shadow:inset 0 2px 5px #000}
+#soil.warming{border-style:solid;border-color:#e6d7a3;box-shadow:0 0 36px #e8cb7940}
+#soil.grown{border-color:transparent;box-shadow:none;pointer-events:none}
+#pet{width:110px;height:100px;border-radius:20px}
+#five{width:56px;height:64px;border-radius:50%}
+#pet:focus-visible,#five:focus-visible{outline:1px dashed #d8cba1;background:#fff3cc08}
+#choice{position:fixed;z-index:8;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translateX(-50%);background:#0008;border:1px solid #d8cba16b;border-radius:2px;color:var(--ink);font:11px var(--font);letter-spacing:.3px;padding:13px 23px;min-height:44px;animation:arrive 1s both}
+#choice:hover{background:#e8d8ac15}
+#growth{position:fixed;z-index:7;width:140px;transform:translate(-50%,-50%);height:2px;background:#d8cba126;pointer-events:none}
+#growth i{display:block;background:#d8d99a;height:100%;width:0;box-shadow:0 0 8px #e1d79c50}
+@media(max-width:600px){#seed{left:16%;top:56%}#objective{left:20px;top:22px;font-size:11px}#pet{width:86px;height:86px}}
+
+body[data-chapter=planting] #dialogue,body[data-chapter=growing] #dialogue{top:12vh;bottom:auto}
 </style></head><body data-phase="boot">
 <div id="air" aria-hidden="true"></div><button id="switch" type="button" aria-label="Turn on the light" aria-pressed="false" disabled hidden><span aria-hidden="true"></span></button><div id="darkness"></div><div id="spark" hidden></div><button id="wake" type="button" disabled>Wake up</button>
+<button id="seed" type="button" aria-label="Pick up the glimmering seed" hidden></button>
+<button id="soil" type="button" aria-label="Plant the seed beside Milo" hidden></button>
+<button id="pet" type="button" aria-label="Pat Milo’s head" hidden></button>
+<button id="five" type="button" aria-label="Give Milo a high five" hidden></button>
+<button id="choice" type="button" hidden></button>
+<div id="growth" role="progressbar" aria-label="Plant growth" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><i></i></div>
 <form id="name-form" hidden><label for="visitor-name">Oh… who are you?</label><div class="name-row"><input id="visitor-name" name="name" placeholder="Your name" autocomplete="given-name" maxlength="32" required aria-label="Your name"><button type="submit">Say hello ↗</button></div></form>
 <p id="objective" role="status" hidden><span>OBJECTIVE</span>Turn on the light</p><p id="dialogue" role="status" aria-live="polite" hidden></p><p id="hint" hidden></p><div id="error" role="alert" hidden><p>I’m having a little trouble waking up.</p><button type="button" id="retry">Try again</button></div>
 <script>
@@ -11,7 +38,7 @@
 const $=id=>document.getElementById(id),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,coarse=matchMedia('(pointer: coarse)').matches;
 $('retry').onclick=()=>location.reload();
 await spline.ready;
-const names=['Robot','Robot Body Pivot','Robot Head Pivot','Robot Arm Pivot -1','Robot Arm Pivot 1','Robot Elbow Pivot 1','Head Eye Left','Head Eye Right'];
+const names=['Robot','Robot Body Pivot','Robot Head Pivot','Robot Arm Pivot -1','Robot Arm Pivot 1','Robot Elbow Pivot 1','Head Eye Left','Head Eye Right','Robot Leg Pivot -1','Robot Leg Pivot 1'];
 const parts={};for(const name of names){const o=await spline.findObjectByName(name);if(!o)throw new Error('Missing '+name);parts[name]=o;}
 await spline.updateObject(parts['Robot'].id,{visible:false});
 let phase='boot',began=performance.now(),clock=began,px=0,py=0,hx=0,hy=0,visitor='',typing=0,active=true;
@@ -28,9 +55,173 @@ $('name-form').onsubmit=e=>{e.preventDefault();visitor=$('visitor-name').value.t
 function pointer(x,y){document.documentElement.style.setProperty('--mx',x+'px');document.documentElement.style.setProperty('--my',y+'px');px=(x/innerWidth-.5)*2;py=(y/innerHeight-.5)*2;if(phase==='search'){const r=$('switch').getBoundingClientRect(),d=Math.hypot(x-r.left-r.width/2,y-r.top-r.height/2);$('switch').style.opacity=String(Math.max(0,1-d/150));}}
 window.addEventListener('pointermove',e=>pointer(e.clientX,e.clientY));window.addEventListener('pointerdown',e=>pointer(e.clientX,e.clientY));
 $('switch').onfocus=()=>{if(phase==='search'){const r=$('switch').getBoundingClientRect();pointer(r.left+r.width/2,r.top+r.height/2);}};
-$('switch').onclick=()=>{if(phase!=='search')return;setPhase('lit');$('switch').setAttribute('aria-pressed','true');$('switch').setAttribute('aria-label','Light is on');$('switch').disabled=true;$('switch').hidden=true;$('spark').hidden=true;$('hint').hidden=true;$('objective').hidden=true;speak('That’s better.');};
+$('switch').onclick=()=>{if(phase!=='search')return;setPhase('lit');$('switch').setAttribute('aria-pressed','true');$('switch').setAttribute('aria-label','Light is on');$('switch').disabled=true;$('switch').hidden=true;$('spark').hidden=true;$('hint').hidden=true;$('objective').hidden=true;speak('That’s better.');startChapter();};
+// Chapter one runs inside the opening's async function, using its cached rig.
+let chapter='waiting',chapterTime=0,chapterAt=0,lastFrame=0,playCount=0;
+let pointerX=innerWidth/2,pointerY=innerHeight/2,lastPointerAt=0,reactionAt=-100,reaction='';
+let growth=0,lightPinned=false,plant=null,leafLeft=null,leafRight=null,stem=null;
+let pointerNearPlant=false,petCount=0,plantReady=false,chapterFailed=false,seatedAt=0;
+const tasks=[];
+const after=(seconds,fn)=>tasks.push({at:chapterTime+seconds,fn});
+const enter=next=>{chapter=next;chapterAt=chapterTime;document.body.dataset.chapter=next;};
+function objective(text){$('objective').hidden=!text;$('objective').replaceChildren();if(text){const s=document.createElement('span');s.textContent='OBJECTIVE';$('objective').append(s,document.createTextNode(text));}}
+function hint(text){$('hint').hidden=!text;$('hint').textContent=text||'';}
+function choice(text,fn){hint('');const b=$('choice');b.textContent=text;b.hidden=false;b.onclick=()=>{b.hidden=true;fn();};}
+// Project world positions through the existing portrait camera. UI follows the
+// same fixed framing at every aspect ratio, including narrow touch screens.
+function screenPoint(x,y,z){
+ const a=25.1*Math.PI/180,b=-10.4*Math.PI/180,dx=x-370,dy=y-360,dz=z-790;
+ const yy=Math.cos(b)*dy+Math.sin(b)*dz,zz=-Math.sin(b)*dy+Math.cos(b)*dz;
+ const xx=Math.cos(a)*dx-Math.sin(a)*zz,depth=-(Math.sin(a)*dx+Math.cos(a)*zz);
+ const f=innerHeight/(2*Math.tan(45*Math.PI/360));
+ return {x:innerWidth/2+xx*f/depth,y:innerHeight/2-yy*f/depth};
+}
+function place(el,p){el.style.left=p.x+'px';el.style.top=p.y+'px';}
+function layoutChapter(){
+ const down=['resting','end'].includes(chapter)?82:0;
+ place($('pet'),screenPoint(0,310-down,80));place($('five'),screenPoint(88,110-down,45));
+ const p=screenPoint(145,4,75);place($('soil'),p);place($('growth'),{x:p.x,y:p.y+45});
+}
+window.addEventListener('resize',layoutChapter);
+async function preparePlant(){
+ try{
+ plant=await spline.createObject('Group',{name:'Chapter One Plant',position:{x:145,y:0,z:75},visible:false});
+ const parent=plant.id;
+ await spline.createObject('Sphere',{name:'Plant Soil',parent,position:{x:0,y:2,z:0},width:44,height:5,depth:34,color:'#514337'});
+ stem=await spline.createObject('Cylinder',{name:'Plant Stem',parent,position:{x:0,y:29,z:0},width:3,height:54,depth:3,cornerRadius:0,color:'#728b55'});
+ leafLeft=await spline.createObject('Sphere',{name:'Plant Leaf Left',parent,position:{x:-12,y:35,z:0},rotation:{z:-36},width:28,height:12,depth:5,color:'#91ad6e'});
+ leafRight=await spline.createObject('Sphere',{name:'Plant Leaf Right',parent,position:{x:11,y:47,z:0},rotation:{z:35},width:26,height:12,depth:5,color:'#b3c880'});
+ plantReady=true;
+ }catch(error){chapterFailed=true;console.error('Plant creation:',error);}
+}
+const plantBoot=preparePlant();
+function startChapter(){
+ enter('intro');
+ after(14,()=>speak('Oh. You’re still here.',()=>speak('Is that little light yours?',()=>{
+   enter('play');$('spark').hidden=false;$('pet').hidden=false;$('five').hidden=false;
+   hint(coarse?'Move your light around him.':'Move your light. He’s curious.');
+   choice('Look around together',lookAround);
+   after(24,()=>{if(chapter==='play')lookAround();});
+ })));
+}
+function react(kind){
+ if(chapter!=='play'&&chapter!=='end')return;
+ if(chapterTime-reactionAt<2.2)return;
+ reaction=kind;reactionAt=chapterTime;playCount++;
+ if(kind==='pet'){petCount++;speak(petCount>2?'My head is not a button.':'Oh. That’s… nice.');}
+ if(kind==='five')speak('Did I do that right?');
+ if(kind==='startle')speak('Whoa. Where are you going?');
+}
+$('pet').onclick=()=>react('pet');$('five').onclick=()=>react('five');
+function lookAround(){
+ if(chapter!=='play')return;enter('looking');$('choice').hidden=true;hint('');
+ $('pet').hidden=true;$('five').hidden=true;
+ speak('Oh. There really isn’t much here, is there?',()=>speak('Can you help me find something?',()=>{
+   enter('finding');objective('Find the little glimmer');hint(coarse?'Sweep your light through the dark.':'Move your light beyond the glow.');
+   $('seed').hidden=false;$('seed').style.opacity='.12';
+   after(25,()=>{if(chapter==='finding'){speak('I think I saw something over there.');$('seed').style.opacity='.65';}});
+ }));
+}
+function pickSeed(){
+ if(chapter!=='finding')return;
+ enter('carrying');document.body.dataset.carrying='true';$('seed').setAttribute('aria-label','Seed collected');$('seed').tabIndex=-1;
+ place($('seed'),{x:pointerX+14,y:pointerY-12});
+ objective('Plant it beside Milo');hint('Choose the little patch of ground.');$('soil').hidden=false;layoutChapter();
+ speak('A seed? What does it do?');
+}
+$('seed').onclick=pickSeed;
+$('seed').onfocus=()=>{if(chapter==='finding')$('seed').style.opacity='1';};
+async function plantSeed(){
+ if(chapter!=='carrying')return;
+ enter('planting');$('seed').hidden=true;document.body.dataset.carrying='false';$('soil').disabled=true;objective('');hint('');
+ await plantBoot;
+ if(!plantReady){$('soil').disabled=false;enter('carrying');speak('Something went wrong. Let’s try again.');choice('Try again',()=>location.reload());return;}
+ await spline.updateObject(plant.id,{visible:true,scale:{x:.18,y:.015,z:.18}});
+ speak('Maybe it needs your light.',()=>{
+   enter('growing');objective('Help it grow');hint(coarse?'Tap the seed to keep your light on it.':'Keep your light over the seed.');
+   $('soil').disabled=false;$('soil').setAttribute('aria-label','Shine light on the planted seed');$('soil').setAttribute('aria-pressed','false');
+   $('growth').hidden=false;$('soil').blur();
+ });
+}
+$('soil').onclick=()=>{
+ if(chapter==='carrying'){plantSeed();return;}
+ if(chapter==='growing'){
+   lightPinned=!lightPinned;$('soil').setAttribute('aria-pressed',String(lightPinned));
+   if(lightPinned){const p=screenPoint(145,4,75);pointerX=p.x;pointerY=p.y;pointer(p.x,p.y);}
+ }
+};
+function finishGrowing(){
+ enter('grown');objective('');hint('');$('growth').hidden=true;$('soil').classList.add('grown');$('soil').disabled=true;$('soil').hidden=true;lightPinned=false;
+ after(1.5,()=>speak('It’s… alive.',()=>speak('We did that. Together.',()=>{
+   choice('Sit with Milo',restTogether);
+ })));
+}
+function restTogether(){
+ if(chapter!=='grown')return;enter('resting');seatedAt=chapterTime;$('spark').hidden=true;$('soil').hidden=true;hint('');
+ after(4,()=>speak('I don’t remember what I was made for.',()=>speak('But I think I like this.',()=>{
+   after(3,()=>speak('Could we leave the light on?',()=>choice('Leave the light on',()=>{
+     enter('end');speak('Okay. We can stay a little longer.',()=>{after(6,()=>{$('dialogue').hidden=true;});});
+     $('pet').hidden=false;layoutChapter();
+   })));
+ })));
+}
+function chapterPointer(x,y){
+ const now=performance.now(),distance=Math.hypot(x-pointerX,y-pointerY),speed=distance/Math.max(16,now-lastPointerAt);
+ pointerX=x;pointerY=y;lastPointerAt=now;
+ if(chapter==='play'&&speed>2.2&&distance>100&&chapterTime-chapterAt>3)react('startle');
+ if(chapter==='finding'){
+   const r=$('seed').getBoundingClientRect(),d=Math.hypot(x-r.left-r.width/2,y-r.top-r.height/2);
+   $('seed').style.opacity=String(Math.max(chapterTime-chapterAt>25?.4:.12,1-d/160));
+ }
+ if(chapter==='carrying')place($('seed'),{x:x+14,y:y-12});
+ if(lightPinned&&chapter==='growing'&&!coarse){const p=screenPoint(145,4,75);if(Math.hypot(x-p.x,y-p.y)>90){lightPinned=false;$('soil').setAttribute('aria-pressed','false');}}
+}
+window.addEventListener('pointermove',e=>chapterPointer(e.clientX,e.clientY));
+window.addEventListener('pointerdown',e=>chapterPointer(e.clientX,e.clientY));
+function chapterTick(now){
+ const dt=lastFrame?Math.min(.05,(now-lastFrame)/1000):0;lastFrame=now;
+ if(document.hidden)return;chapterTime+=dt;
+ for(let i=tasks.length-1;i>=0;i--)if(tasks[i].at<=chapterTime){const task=tasks.splice(i,1)[0];task.fn();}
+ if(chapter==='growing'){
+   const p=screenPoint(145,4,75);pointerNearPlant=lightPinned||Math.hypot(pointerX-p.x,pointerY-p.y)<64;
+   if(pointerNearPlant)growth=Math.min(1,growth+dt/14);
+   $('soil').classList.toggle('warming',pointerNearPlant);
+   if(lightPinned){document.documentElement.style.setProperty('--mx',p.x+'px');document.documentElement.style.setProperty('--my',p.y+'px');}
+   $('growth').firstElementChild.style.width=(growth*100)+'%';
+   $('growth').setAttribute('aria-valuenow',String(Math.round(growth*100)));
+   spline.updateObject(plant.id,{scale:{x:.18+.82*ease(growth),y:.015+.985*ease(growth),z:.18+.82*ease(growth)}});
+   if(growth===1)finishGrowing();
+ }
+ if(plantReady&&growth>0){
+   const sway=reduced?0:Math.sin(chapterTime*1.3)*2.3*growth;
+   spline.updateObject(plant.id,{rotation:{z:sway}});
+   spline.updateObject(leafLeft.id,{rotation:{z:-36+sway*2}});
+   spline.updateObject(leafRight.id,{rotation:{z:35-sway*1.6}});
+ }
+}
+function chapterPose(p){
+ const elapsed=chapterTime-reactionAt,r=pulse(elapsed,0,.3,1.2,2);
+ if(chapter==='play'){
+   const h=screenPoint(0,310,80),near=clamp(1-Math.hypot(pointerX-h.x,pointerY-h.y)/130);
+   p.headZ+=near*7;p.rightZ+=near*28;
+ }
+ if(reaction==='pet'){p.headX+=r*8;p.headZ+=r*9;}
+ if(reaction==='five'){p.rightZ+=r*(120+Math.sin(elapsed*8)*4);p.elbowZ+=r*20;}
+ if(reaction==='startle'){p.headZ-=r*9;p.leftZ-=r*24;p.rightZ+=r*24;}
+ if(['finding','looking'].includes(chapter))p.headY-=Math.sin((chapterTime-chapterAt)*.7)*12;
+ if(['planting','growing','grown'].includes(chapter)){p.headX+=14;p.headY+=13;}
+ if(['resting','end'].includes(chapter)){
+   const s=ease((chapterTime-seatedAt)/3);p.bodyY-=82*s;p.headX+=12*s;p.headY+=13*s;p.rightX-=40*s;p.leftX-=40*s;
+   write('Robot Leg Pivot -1',{position:{y:100-80*s},rotation:{x:-78*s,y:0,z:0}});
+   write('Robot Leg Pivot 1',{position:{y:100-80*s},rotation:{x:-78*s,y:0,z:0}});
+   if(chapter==='resting'&&chapterTime-chapterAt<3)layoutChapter();
+ }
+ return p;
+}
+layoutChapter();
+
 function tick(now){
-if(!active)return;clock=now;const u=(now-began)/1000,t=(now)/1000,awake=['name','greeting','search','lit'].includes(phase);let bodyY=0,bodyZ=0,headX=16,headY=-9,headZ=-8,rightZ=0,leftZ=0,rightX=0,leftX=0,elbowZ=0,elbowY=0,eyes=.1;
+if(!active)return;chapterTick(now);clock=now;const u=(now-began)/1000,t=(now)/1000,awake=['name','greeting','search','lit'].includes(phase);let bodyY=0,bodyZ=0,headX=16,headY=-9,headZ=-8,rightZ=0,leftZ=0,rightX=0,leftX=0,elbowZ=0,elbowY=0,eyes=.1;
 if(phase==='waking'&&u>=.9)askName();
 if(phase==='lit'&&u<(reduced?3.1:9.1)){
 const speed=reduced?3:1,v=u*speed;eyes=.1+.9*ease(v/1.5);headX=16*(1-ease(v/1.8));headY=-9*(1-ease(v/1.8));headZ=-8*(1-ease(v/1.8));
@@ -42,6 +233,7 @@ headX=0;headY=0;headZ=0;eyes=1;
 if(!reduced){const damp=phase==='search'?.25:1;const k=1-Math.exp(-Math.min(.1,Math.max(.001,(now-(tick.previous||now))/1000))*7);hx+=(px*12-hx)*k;hy+=(py*6-hy)*k;headX=hy*damp+Math.sin(t*.8)*.8;headY=hx*damp+Math.sin(t*.6)*1.8;headZ=Math.sin(t*.9)*.7;bodyY=Math.sin(t*1.6)*.6;leftZ=-2+Math.sin(t)*1.2;const b=t%5.3;if(b<.18)eyes=Math.max(.08,Math.abs(b-.09)/.09);}
 if(phase==='lit'){const w=u-(reduced?3.1:9.1),waving=pulse(w,0,.5,2.8,3.4);rightZ=waving*(reduced?125:130+Math.sin(w*12)*15);}
 }
+({bodyY,bodyZ,headX,headY,headZ,rightZ,leftZ,rightX,leftX,elbowZ,elbowY,eyes}=chapterPose({bodyY,bodyZ,headX,headY,headZ,rightZ,leftZ,rightX,leftX,elbowZ,elbowY,eyes}));
 tick.previous=now;
 write('Robot Body Pivot',{position:{y:parts['Robot Body Pivot'].position.y+bodyY},rotation:{x:0,y:0,z:bodyZ}});
 write('Robot Head Pivot',{rotation:{x:headX,y:headY,z:headZ}});write('Robot Arm Pivot 1',{rotation:{x:rightX,y:0,z:rightZ}});write('Robot Arm Pivot -1',{rotation:{x:leftX,y:0,z:leftZ}});write('Robot Elbow Pivot 1',{rotation:{x:0,y:elbowY,z:elbowZ}});
