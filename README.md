@@ -5,18 +5,23 @@ A small interactive robot story in an endless dark space.
 Live website: https://kwtdfbiwf.github.io/bot/
 
 The opening leads into cursor play, finding a seed, planting it beside Milo,
-growing a plant with your light, and a quiet seated ending. Pointer, touch,
-and keyboard interactions are supported.
+growing a plant with your light, and a quiet seated ending. Continue by finding the name stamped on Milo’s
+back, choosing his name, copying gestures, and meeting a moth. His arms can
+be lifted by dragging. Pointer, touch, and keyboard interactions are supported.
 
 ## Source
 
 - `dist/`: fullscreen website shell deployed on GitHub Pages.
 - `scene/opening.html`: complete Spline HTML overlay, story, and animation loop.
-- `scene/chapter-one.js` and `scene/chapter-one.css`: chapter authoring sources,
+- `scene/chapter-one.js`, `scene/chapter-two.js`, and their `.css` files: chapter authoring sources,
   inlined into `opening.html` so the Spline export is self contained.
 - `scene/circular-blue-eyes.js`: eye changes applied in the Spline editor.
 - `scene/botanical-models.js`: authored Spline seed and folded-leaf plant meshes.
   The story references these named assets and animates their growth.
+- `scene/name-and-moth-models.js`: stamped back label and moth meshes.
+
+A chosen robot name is stored locally in the scene’s browser storage. No
+server receives names or progress.
 
 The robot model, camera, and lighting are hosted in Spline. The website embeds
 the published scene; the model itself is not stored in this repository.
@@ -40,6 +45,7 @@ GitHub Pages serves the root of `gh-pages`.
 
 ```sh
 node tests/chapter.test.cjs
+node tests/chapter.test.cjs nickname
 ```
 
 This exercises the story and controls with a mock Spline bridge. Verify model

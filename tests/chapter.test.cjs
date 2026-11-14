@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
 const html=fs.readFileSync('scene/opening.html','utf8');
 let now=0,rafs=[],queue=[],timerId=0,focused=null;
-const elements=new Map(),objects=new Map(),writes=new Map(),events={};
+const elements=new Map(),objects=new Map(),writes=new Map(),events={},savedNames=new Map();
 class Element{
  constructor(id){this.id=id;this.hidden=true;this.disabled=false;this.value='';this.textContent='';this.style={setProperty(k,v){this[k]=v}};this.dataset={};this.attributes={};this.children=[];this.classList={add(){},remove(){},toggle(){}};this.firstElementChild={style:{}};}
  setAttribute(k,v){this.attributes[k]=v} append(...v){this.children.push(...v)} replaceChildren(){this.children=[]}
@@ -11,7 +11,7 @@ class Element{
 for(const m of html.matchAll(/id="([^"]+)"/g))elements.set(m[1],new Element(m[1]));
 const body=new Element('body'),root=new Element('root');
 const spline={ready:Promise.resolve(),async findObjectByName(name){if(!objects.has(name))objects.set(name,{id:name,name,position:{x:0,y:name.startsWith('Robot Leg')?100:102,z:0}});return objects.get(name)},async updateObject(id,props){writes.set(id,{...(writes.get(id)||{}),...props});return true},async createObject(type,props){const o={id:props.name,...props};objects.set(o.id,o);writes.set(o.id,props);return o}};
-const context={console,spline,Math,Promise,Error,document:{body,documentElement:root,hidden:false,getElementById:id=>elements.get(id),createElement:()=>new Element('span'),createTextNode:text=>text},innerWidth:1280,innerHeight:720,performance:{now:()=>now},matchMedia:()=>({matches:false}),location:{reload(){}},requestAnimationFrame:fn=>{rafs.push(fn)},setTimeout:(fn,delay=0)=>{const id=++timerId;queue.push({id,at:now+delay,fn});return id},clearTimeout:id=>{queue=queue.filter(t=>t.id!==id)},window:{addEventListener:(name,fn)=>{(events[name]??=[]).push(fn)}}};
+const context={console,spline,Math,Promise,Error,localStorage:{getItem:k=>savedNames.get(k),setItem:(k,v)=>savedNames.set(k,v)},document:{body,documentElement:root,hidden:false,getElementById:id=>elements.get(id),createElement:()=>new Element('span'),createTextNode:text=>text},innerWidth:1280,innerHeight:720,performance:{now:()=>now},matchMedia:()=>({matches:false}),location:{reload(){}},requestAnimationFrame:fn=>{rafs.push(fn)},setTimeout:(fn,delay=0)=>{const id=++timerId;queue.push({id,at:now+delay,fn});return id},clearTimeout:id=>{queue=queue.filter(t=>t.id!==id)},window:{addEventListener:(name,fn)=>{(events[name]??=[]).push(fn)}}};
 vm.createContext(context);vm.runInContext(html.split('<script>')[1].split('</script>')[0],context);
 const $=id=>elements.get(id);
 async function advance(seconds){for(let i=0;i<Math.ceil(seconds*60);i++){now+=1000/60;for(let j=0;j<8;j++)await Promise.resolve();const due=queue.filter(t=>t.at<=now);queue=queue.filter(t=>t.at>now);due.forEach(t=>t.fn());const frames=rafs;rafs=[];frames.forEach(fn=>fn(now));}for(let j=0;j<12;j++)await Promise.resolve();}
@@ -37,6 +37,17 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  await advance(2);assert.equal(writes.get('Arm 1 Finger 1').scale.y,1,'Fingers should return to rest');
  $('five').onclick();await advance(1);assert(writes.get('Robot Arm Pivot 1').rotation.z>115,'High five should be repeatable');
  await advance(30);assert.equal(body.dataset.chapter,'play','The story must not cut off free interaction');
+ const down={pointerId:7,button:0,currentTarget:$('arm-right'),clientX:720,clientY:478};
+ $('arm-right').onpointerdown(down);for(const fn of events.pointermove)fn({pointerId:7,clientX:790,clientY:260});await advance(.2);
+ assert(writes.get('Robot Arm Pivot 1').rotation.z>60,'Dragging must lift the right arm');
+ for(const fn of events.pointerup)fn({pointerId:7});$('five').onclick();await advance(.2);
+ assert(writes.get('Arm 1 Finger 1').scale.y===1,'Releasing a drag must not trigger a high five');
+ await advance(1.5);assert(Math.abs(writes.get('Robot Arm Pivot 1').rotation.z)<5,'Released arm should settle gently');
+ $('arm-left').onpointerdown({pointerId:8,button:0,currentTarget:$('arm-left'),clientX:560,clientY:478});
+ for(const fn of events.pointermove)fn({pointerId:8,clientX:450,clientY:260});await advance(.2);
+ assert(writes.get('Robot Arm Pivot -1').rotation.z< -50,'Dragging must lift the left arm');
+ for(const fn of events.pointercancel)fn({pointerId:8});await advance(1.5);
+ assert(Math.abs(writes.get('Robot Arm Pivot -1').rotation.z)<5,'Cancelled dragging should release the arm');
  $('choice').onclick();await until(()=>body.dataset.chapter==='finding');
  assert.equal(writes.get('Chapter One Seed').visible,true);$('seed').onclick();assert.equal(body.dataset.chapter,'carrying');assert(Number.isFinite(writes.get('Chapter One Seed').scale.x));await $('soil').onclick();assert.equal(writes.get('Chapter One Seed').visible,false);
  await until(()=>body.dataset.chapter==='growing');await advance(2);
@@ -51,5 +62,45 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  $('choice').onclick();await advance(9);assert.equal(body.dataset.chapter,'end');
  assert.equal(writes.get('Robot Leg Pivot 1').position.y,seated,'Ending must retain seated pose');
  assert.equal(writes.get('Chapter One Plant').visible,true);assert.equal(writes.get('Chapter One Plant').scale.y,1);
- console.log('PASS: opening → light → play → seed → planting → light-driven growth → seated ending');
+ await until(()=>!$('choice').hidden&&$('choice').textContent==='Keep him company');$('choice').onclick();
+ await until(()=>body.dataset.chapter==='name-search');assert.equal($('back-name').hidden,true,'Name cannot be read from the front');
+ if(process.argv[2]==='nickname'){
+   $('turn-milo').onpointerdown({pointerId:10,button:0,currentTarget:$('turn-milo'),clientX:640,clientY:400});
+   for(const fn of events.pointermove)fn({pointerId:10,clientX:865,clientY:400});
+   for(const fn of events.pointerup)fn({pointerId:10});
+ }else for(let i=0;i<4;i++)$('turn-milo').onkeydown({key:'ArrowRight',preventDefault(){}});
+ await advance(1.5);assert.equal($('back-name').hidden,false,'Rotating Milo should reveal the back stamp');
+ $('back-name').onclick();await until(()=>!$('answers').hidden);
+ const nickname=process.argv[2]==='nickname';
+ if(nickname){
+   $('answers').children.find(b=>b.textContent==='Choose a name').onclick();assert.equal(body.dataset.chapter,'nickname');
+   $('robot-name').value='   ';$('nickname-form').onsubmit({preventDefault(){}});assert.equal(body.dataset.chapter,'nickname','Empty name should not advance');
+   $('robot-name').value='  Pip  ';$('nickname-form').onsubmit({preventDefault(){}});
+ }else $('answers').children.find(b=>b.textContent==='Yes. You’re Milo.').onclick();
+ assert.equal(body.dataset.chapter,'name-happy');await advance(.6);assert(writes.get('Robot Arm Pivot 1').rotation.z>20,'Naming should trigger a happy gesture');
+ await until(()=>body.dataset.chapter==='named-play');assert.equal(savedNames.get('milo-chosen-name'),nickname?'Pip':'Milo');
+ assert.equal(writes.get('Robot Leg Pivot 1').position.y,100,'Milo should stand before turning');
+ $('choice').onclick();await until(()=>!$('choice').hidden&&$('choice').textContent==='Show him a circle');$('choice').onclick();
+ assert.equal(body.dataset.chapter,'copy-demo');await until(()=>body.dataset.chapter==='copy-you');
+ const points=[[300,150],[420,190],[300,230],[420,270],[300,310]];
+ for(const fn of events.pointerdown)fn({pointerId:9,button:0,target:$('air'),clientX:300,clientY:150});
+ for(let i=1;i<points.length;i++)for(let j=1;j<=8;j++)for(const fn of events.pointermove)fn({pointerId:9,clientX:points[i-1][0]+(points[i][0]-points[i-1][0])*j/8,clientY:points[i-1][1]+(points[i][1]-points[i-1][1])*j/8});
+ for(const fn of events.pointerup)fn({pointerId:9});assert.equal(body.dataset.chapter,'copy-demo','A drawn zigzag should be recognised');
+ await until(()=>body.dataset.chapter==='copy-you');$('choice').onclick();assert.equal(body.dataset.chapter,'copy-milo');
+ for(let i=0;i<3;i++)$('copy-target').onclick();assert.equal(body.dataset.chapter,'copy-done');
+ await until(()=>!$('choice').hidden&&$('choice').textContent==='Stay with him');$('choice').onclick();
+ await until(()=>body.dataset.chapter==='moth-coax');await until(()=>!$('moth-guide').hidden);
+ $('moth-guide').onclick();await until(()=>body.dataset.chapter==='moth-landed');
+ assert(writes.get('Robot Arm Pivot 1').rotation.z>50,'The offered hand must stay raised as the moth lands');
+ await until(()=>!$('answers').hidden);
+ if(nickname)$('answers').children.find(b=>b.textContent==='Guide it to the plant').onclick();
+ else{
+   $('answers').children.find(b=>b.textContent==='Stay very still').onclick();await advance(2);
+   assert.equal(body.dataset.chapter,'moth-stay');assert(writes.get('Robot Arm Pivot 1').rotation.z>50);
+   await until(()=>!$('choice').hidden&&$('choice').textContent==='Let it rest on the plant');$('choice').onclick();
+ }
+ await until(()=>body.dataset.chapter==='garden-end');await advance(.2);
+ assert.equal(writes.get('Garden Moth').visible,true);assert.equal(writes.get('Garden Moth').position.y,64);
+ assert.equal(writes.get('Chapter One Plant').visible,true);
+ console.log('PASS: arm dragging, high five, planting, '+(nickname?'nickname':'Milo name')+', turning, drawing, copying, moth and garden ending');
 })().catch(error=>{console.error(error);process.exitCode=1});

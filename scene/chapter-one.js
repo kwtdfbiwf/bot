@@ -62,16 +62,16 @@ function startChapter(){
  })));
 }
 function react(kind){
- if(chapter!=='play'&&chapter!=='end')return;
+ if(!freeArms()||armDrag?.moved)return;
  const elapsed=chapterTime-reactionAt;
  if(reaction==='five'&&elapsed<2.8)return;
  if(kind!=='five'&&elapsed<2.2)return;
  reaction=kind;reactionAt=chapterTime;playCount++;
  if(kind==='pet'){petCount++;speak(petCount>2?'My head is not a button.':'Oh. That’s… nice.');}
- if(kind==='five')after(.8,()=>{if(reaction==='five'&&chapter==='play')speak('Did I do that right?');});
+ if(kind==='five')after(.8,()=>{if(reaction==='five'&&freeArms())speak('Did I do that right?');});
  if(kind==='startle')speak('Whoa. Where are you going?');
 }
-$('pet').onclick=()=>react('pet');$('five').onclick=()=>react('five');
+$('pet').onclick=()=>react('pet');$('five').onclick=()=>{if(!ignoreArmClick())react('five');};
 function lookAround(){
  if(chapter!=='play')return;enter('looking');$('choice').hidden=true;hint('');
  $('pet').hidden=true;$('five').hidden=true;
@@ -117,9 +117,9 @@ function finishGrowing(){
 }
 function restTogether(){
  if(chapter!=='grown')return;enter('resting');seatedAt=chapterTime;$('spark').hidden=true;$('soil').hidden=true;hint('');
- after(4,()=>speak('I don’t remember what I was made for.',()=>speak('But I think I like this.',()=>{
+ after(4,()=>speak('It’s a good little spot.',()=>speak('But I think I like this.',()=>{
    after(3,()=>speak('Could we leave the light on?',()=>choice('Leave the light on',()=>{
-     enter('end');speak('Okay. We can stay a little longer.',()=>{after(6,()=>{$('dialogue').hidden=true;});});
+     enter('end');speak('Okay. We can stay a little longer.',()=>{after(6,()=>{$('dialogue').hidden=true;choice('Keep him company',beginNaming);});});
      $('pet').hidden=false;layoutChapter();
    })));
  })));
@@ -128,7 +128,7 @@ function chapterPointer(x,y){
  const now=performance.now(),distance=Math.hypot(x-pointerX,y-pointerY),speed=distance/Math.max(16,now-lastPointerAt);
  pointerX=x;pointerY=y;lastPointerAt=now;
  const hand=$('five').getBoundingClientRect(),atHand=Math.hypot(x-hand.left-hand.width/2,y-hand.top-hand.height/2)<65;
- if(chapter==='play'&&!atHand&&speed>2.2&&distance>100&&chapterTime-chapterAt>3)react('startle');
+ if(chapter==='play'&&!armDrag&&!turnDrag&&!atHand&&speed>2.2&&distance>100&&chapterTime-chapterAt>3)react('startle');
  if(chapter==='finding'){
    const r=$('seed').getBoundingClientRect(),d=Math.hypot(x-r.left-r.width/2,y-r.top-r.height/2);
    const brightness=Math.max(chapterTime-chapterAt>25?.4:.12,1-d/160);$('seed').style.opacity=String(brightness);seedBrightness(brightness);
@@ -140,7 +140,7 @@ window.addEventListener('pointermove',e=>chapterPointer(e.clientX,e.clientY));
 window.addEventListener('pointerdown',e=>chapterPointer(e.clientX,e.clientY));
 function chapterTick(now){
  const dt=lastFrame?Math.min(.05,(now-lastFrame)/1000):0;lastFrame=now;
- if(document.hidden)return;chapterTime+=dt;
+ if(document.hidden)return;chapterTime+=dt;chapterTwoTick(now);
  for(let i=tasks.length-1;i>=0;i--)if(tasks[i].at<=chapterTime){const task=tasks.splice(i,1)[0];task.fn();}
  if(chapter==='growing'){
    const p=screenPoint(145,4,75);pointerNearPlant=lightPinned||Math.hypot(pointerX-p.x,pointerY-p.y)<64;
@@ -169,11 +169,7 @@ function rotateVector(v,x,y,z){
  const xxx=xx*Math.cos(b)+v.z*Math.sin(b),zz=-xx*Math.sin(b)+v.z*Math.cos(b);
  return{x:xxx,y:yy*Math.cos(c)-zz*Math.sin(c),z:yy*Math.sin(c)+zz*Math.cos(c)};
 }
-function placeHighFive(p){
- const lower=rotateVector({x:5,y:-57,z:7},0,p.elbowY,p.elbowZ);
- const arm=rotateVector({x:8+lower.x,y:-43+lower.y,z:lower.z},p.rightX,0,p.rightZ);
- place($('five'),screenPoint(66+arm.x,204+p.bodyY+arm.y,arm.z));
-}
+function placeHighFive(p){place($('five'),handScreen(p,'right'));}
 function chapterPose(p){
  const elapsed=chapterTime-reactionAt,r=pulse(elapsed,0,.3,1.2,2);
  if(chapter==='play'&&!(reaction==='five'&&elapsed<2.8)){
@@ -200,6 +196,7 @@ function chapterPose(p){
    write('Robot Leg Pivot 1',{position:{y:100-80*s},rotation:{x:-78*s,y:0,z:0}});
    if(chapter==='resting'&&chapterTime-chapterAt<3)layoutChapter();
  }
+ p=chapterTwoPose(p);
  placeHighFive(p);
  return p;
 }

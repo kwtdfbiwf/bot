@@ -1,0 +1,24 @@
+.arm-handle,#turn-milo,#back-name,#moth-guide{position:fixed;z-index:6;background:transparent;border:0;padding:0;transform:translate(-50%,-50%);touch-action:none}
+.arm-handle{min-width:44px;min-height:64px;cursor:grab;border-radius:24px}
+.arm-handle:active,#five:active,#turn-milo:active{cursor:grabbing}
+#five{z-index:7;cursor:grab}
+#turn-milo{width:260px;height:420px;cursor:grab;border-radius:35%}
+#back-name{z-index:8;width:100px;height:56px;cursor:pointer;border-radius:3px}
+#back-name:hover,#back-name:focus-visible{box-shadow:0 0 22px #f4e6ba2b;outline:1px solid #e8ddbb80}
+#answers{position:fixed;z-index:9;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;gap:12px;width:max-content;max-width:calc(100% - 32px)}
+#answers button{min-height:44px;padding:12px 18px;background:#000b;border:1px solid #d8cba16b;border-radius:2px;color:var(--ink);font:11px var(--font)}
+#answers button:hover{background:#d8cba118}
+#nickname-form{position:fixed;z-index:9;left:50%;bottom:max(12vh,90px);transform:translateX(-50%);width:min(360px,calc(100% - 44px))}
+#nickname-form button{background:transparent;border:0;color:#d6c6af;padding:10px;font-size:12px;min-height:44px;white-space:nowrap}
+#trail{position:fixed;inset:0;z-index:5;width:100%;height:100%;pointer-events:none}
+#trail-line{fill:none;stroke:#e0d4b4;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round;opacity:.45}
+#copy-target{position:fixed;z-index:8;transform:translate(-50%,-50%);width:50px;height:50px;border:1px solid #d9cba16b;border-radius:50%;background:radial-gradient(circle,#eadcb044,transparent 65%);box-shadow:0 0 22px #e6d3971a;touch-action:none}
+#copy-target:after{content:'';position:absolute;inset:22px;background:#f7ebcb;border-radius:50%;box-shadow:0 0 8px #e6d397}
+#moth-guide{width:76px;height:76px;border-radius:50%;z-index:7;cursor:pointer}
+#moth-guide:focus-visible{outline:1px dashed #e2d2a6}
+body[data-chapter=name-search] #hint{bottom:80px}
+body[data-chapter=name-search] #dialogue,body[data-chapter=copy-you] #dialogue,body[data-chapter=copy-milo] #dialogue{top:11vh;bottom:auto}
+body[data-arm-dragging=true]{cursor:grabbing;user-select:none;-webkit-user-select:none}
+@media(max-width:600px){#turn-milo{width:240px;height:470px}#back-name{width:110px;height:58px}#answers{gap:8px}#answers button{padding:11px 13px;font-size:10px}#nickname-form label{font-size:17px}}
+
+body[data-chapter=copy-you] #hint{top:calc(11vh + 74px);bottom:auto}
