@@ -17,7 +17,7 @@ const $=id=>elements.get(id);
 async function advance(seconds){for(let i=0;i<Math.ceil(seconds*60);i++){now+=1000/60;for(let j=0;j<8;j++)await Promise.resolve();const due=queue.filter(t=>t.at<=now);queue=queue.filter(t=>t.at>now);due.forEach(t=>t.fn());const frames=rafs;rafs=[];frames.forEach(fn=>fn(now));}for(let j=0;j<12;j++)await Promise.resolve();}
 async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(predicate())return;await advance(.1)}throw Error('Timed out at phase '+body.dataset.phase+' / '+body.dataset.chapter)}
 (async()=>{
- await advance(2);assert.equal(writes.get('Robot').visible,false);
+ await advance(2);assert.equal(writes.get('Robot').visible,false);assert.equal(writes.get('Chapter One Plant').visible,false);assert.equal(writes.get('Chapter One Seed').visible,false);
  $('wake').onclick();await advance(2);$('wake').onclick();await advance(2);
  assert.equal(body.dataset.phase,'name');$('visitor-name').value='Alex';$('name-form').onsubmit({preventDefault(){}});
  await until(()=>body.dataset.phase==='search');assert.equal($('objective').hidden,false);
@@ -25,7 +25,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  await until(()=>body.dataset.chapter==='play');assert.equal($('pet').hidden,false);
  $('five').onclick();assert.match($('dialogue').textContent,/D/);await advance(3);
  $('choice').onclick();await until(()=>body.dataset.chapter==='finding');
- $('seed').onclick();assert.equal(body.dataset.chapter,'carrying');await $('soil').onclick();
+ assert.equal(writes.get('Chapter One Seed').visible,true);$('seed').onclick();assert.equal(body.dataset.chapter,'carrying');assert(Number.isFinite(writes.get('Chapter One Seed').scale.x));await $('soil').onclick();assert.equal(writes.get('Chapter One Seed').visible,false);
  await until(()=>body.dataset.chapter==='growing');await advance(2);
  assert.equal($('growth').attributes['aria-valuenow'],'0','Growth must wait for light');
  $('soil').onclick();await advance(2);const litProgress=$('growth').attributes['aria-valuenow'];assert(Number(litProgress)>0);

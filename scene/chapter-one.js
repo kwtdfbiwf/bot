@@ -1,7 +1,7 @@
 // Chapter one runs inside the opening's async function, using its cached rig.
 let chapter='waiting',chapterTime=0,chapterAt=0,lastFrame=0,playCount=0;
 let pointerX=innerWidth/2,pointerY=innerHeight/2,lastPointerAt=0,reactionAt=-100,reaction='';
-let growth=0,lightPinned=false,plant=null,leafLeft=null,leafRight=null,stem=null;
+let growth=0,lightPinned=false,plant=null,leafLeft=null,leafRight=null,newLeaf=null,stem=null,seedModel=null,seedShell=null;
 let pointerNearPlant=false,petCount=0,plantReady=false,chapterFailed=false,seatedAt=0;
 const tasks=[];
 const after=(seconds,fn)=>tasks.push({at:chapterTime+seconds,fn});
@@ -22,19 +22,34 @@ function place(el,p){el.style.left=p.x+'px';el.style.top=p.y+'px';}
 function layoutChapter(){
  const down=['resting','end'].includes(chapter)?82:0;
  place($('pet'),screenPoint(0,310-down,80));place($('five'),screenPoint(88,110-down,45));
- const p=screenPoint(145,4,75);place($('soil'),p);place($('growth'),{x:p.x,y:p.y+45});
+ const p=screenPoint(145,4,75);place($('soil'),p);place($('growth'),{x:p.x,y:p.y+45});placeSeed();
 }
 window.addEventListener('resize',layoutChapter);
+// The assets are authored meshes in the Spline file, not runtime primitives.
+function positionSeed(x,y,carrying=false){
+ if(!seedModel)return;
+ const a=25.1*Math.PI/180,b=-10.4*Math.PI/180,tan=Math.tan(45*Math.PI/360);
+ const cx=(x/innerWidth*2-1)*tan*innerWidth/innerHeight,cy=(1-y/innerHeight*2)*tan;
+ const zz=-Math.sin(a)*cx-Math.cos(a),rx=Math.cos(a)*cx-Math.sin(a);
+ const ry=Math.cos(b)*cy-Math.sin(b)*zz,rz=Math.sin(b)*cy+Math.cos(b)*zz;
+ const depth=carrying?420:(7-360)/ry,f=innerHeight/(2*tan),size=18*depth/(f*26);
+ spline.updateObject(seedModel.id,{position:{x:370+depth*rx,y:360+depth*ry,z:790+depth*rz},scale:{x:size,y:size,z:size}});
+}
+function seedBrightness(amount){if(seedShell)spline.updateObject(seedShell.id,{material:{alpha:Math.max(8,amount*100)}});}
+function placeSeed(){
+ if(chapter==='finding'){
+   const r=$('seed').getBoundingClientRect();positionSeed(r.left+r.width/2,r.top+r.height/2);
+ }else if(chapter==='carrying')positionSeed(pointerX+14,pointerY-12,true);
+}
 async function preparePlant(){
  try{
- plant=await spline.createObject('Group',{name:'Chapter One Plant',position:{x:145,y:0,z:75},visible:false});
- const parent=plant.id;
- await spline.createObject('Sphere',{name:'Plant Soil',parent,position:{x:0,y:2,z:0},width:44,height:5,depth:34,color:'#514337'});
- stem=await spline.createObject('Cylinder',{name:'Plant Stem',parent,position:{x:0,y:29,z:0},width:3,height:54,depth:3,cornerRadius:0,color:'#728b55'});
- leafLeft=await spline.createObject('Sphere',{name:'Plant Leaf Left',parent,position:{x:-12,y:35,z:0},rotation:{z:-36},width:28,height:12,depth:5,color:'#91ad6e'});
- leafRight=await spline.createObject('Sphere',{name:'Plant Leaf Right',parent,position:{x:11,y:47,z:0},rotation:{z:35},width:26,height:12,depth:5,color:'#b3c880'});
+ const find=async name=>{const o=await spline.findObjectByName(name);if(!o)throw new Error('Missing '+name);return o;};
+ plant=await find('Chapter One Plant');await spline.updateObject(plant.id,{visible:false});
+ seedModel=await find('Chapter One Seed');await spline.updateObject(seedModel.id,{visible:false});
+ seedShell=await find('Seed Shell');stem=await find('Plant Stem');
+ leafLeft=await find('Plant Leaf Left');leafRight=await find('Plant Leaf Right');newLeaf=await find('Plant New Leaf');
  plantReady=true;
- }catch(error){chapterFailed=true;console.error('Plant creation:',error);}
+ }catch(error){chapterFailed=true;console.error('Plant assets:',error);}
 }
 const plantBoot=preparePlant();
 function startChapter(){
@@ -60,22 +75,22 @@ function lookAround(){
  $('pet').hidden=true;$('five').hidden=true;
  speak('Oh. There really isn’t much here, is there?',()=>speak('Can you help me find something?',()=>{
    enter('finding');objective('Find the little glimmer');hint(coarse?'Sweep your light through the dark.':'Move your light beyond the glow.');
-   $('seed').hidden=false;$('seed').style.opacity='.12';
-   after(25,()=>{if(chapter==='finding'){speak('I think I saw something over there.');$('seed').style.opacity='.65';}});
+   $('seed').hidden=false;$('seed').style.opacity='.12';if(seedModel)spline.updateObject(seedModel.id,{visible:true});seedBrightness(.12);placeSeed();
+   after(25,()=>{if(chapter==='finding'){speak('I think I saw something over there.');$('seed').style.opacity='.65';seedBrightness(.65);}});
  }));
 }
 function pickSeed(){
  if(chapter!=='finding')return;
  enter('carrying');document.body.dataset.carrying='true';$('seed').setAttribute('aria-label','Seed collected');$('seed').tabIndex=-1;
- place($('seed'),{x:pointerX+14,y:pointerY-12});
+ place($('seed'),{x:pointerX+14,y:pointerY-12});seedBrightness(1);placeSeed();
  objective('Plant it beside Milo');hint('Choose the little patch of ground.');$('soil').hidden=false;layoutChapter();
  speak('A seed? What does it do?');
 }
 $('seed').onclick=pickSeed;
-$('seed').onfocus=()=>{if(chapter==='finding')$('seed').style.opacity='1';};
+$('seed').onfocus=()=>{if(chapter==='finding'){$('seed').style.opacity='1';seedBrightness(1);}};
 async function plantSeed(){
  if(chapter!=='carrying')return;
- enter('planting');$('seed').hidden=true;document.body.dataset.carrying='false';$('soil').disabled=true;objective('');hint('');
+ enter('planting');if(seedModel)spline.updateObject(seedModel.id,{visible:false});$('seed').hidden=true;document.body.dataset.carrying='false';$('soil').disabled=true;objective('');hint('');
  await plantBoot;
  if(!plantReady){$('soil').disabled=false;enter('carrying');speak('Something went wrong. Let’s try again.');choice('Try again',()=>location.reload());return;}
  await spline.updateObject(plant.id,{visible:true,scale:{x:.18,y:.015,z:.18}});
@@ -113,9 +128,9 @@ function chapterPointer(x,y){
  if(chapter==='play'&&speed>2.2&&distance>100&&chapterTime-chapterAt>3)react('startle');
  if(chapter==='finding'){
    const r=$('seed').getBoundingClientRect(),d=Math.hypot(x-r.left-r.width/2,y-r.top-r.height/2);
-   $('seed').style.opacity=String(Math.max(chapterTime-chapterAt>25?.4:.12,1-d/160));
+   const brightness=Math.max(chapterTime-chapterAt>25?.4:.12,1-d/160);$('seed').style.opacity=String(brightness);seedBrightness(brightness);
  }
- if(chapter==='carrying')place($('seed'),{x:x+14,y:y-12});
+ if(chapter==='carrying'){place($('seed'),{x:x+14,y:y-12});placeSeed();}
  if(lightPinned&&chapter==='growing'&&!coarse){const p=screenPoint(145,4,75);if(Math.hypot(x-p.x,y-p.y)>90){lightPinned=false;$('soil').setAttribute('aria-pressed','false');}}
 }
 window.addEventListener('pointermove',e=>chapterPointer(e.clientX,e.clientY));
@@ -137,8 +152,10 @@ function chapterTick(now){
  if(plantReady&&growth>0){
    const sway=reduced?0:Math.sin(chapterTime*1.3)*2.3*growth;
    spline.updateObject(plant.id,{rotation:{z:sway}});
-   spline.updateObject(leafLeft.id,{rotation:{z:-36+sway*2}});
-   spline.updateObject(leafRight.id,{rotation:{z:35-sway*1.6}});
+   const l=ease((growth-.15)/.55),r=ease((growth-.4)/.5),n=ease((growth-.72)/.28);
+   spline.updateObject(leafLeft.id,{rotation:{z:sway*1.3},scale:{x:l,y:l,z:l}});
+   spline.updateObject(leafRight.id,{rotation:{z:-sway*.9},scale:{x:r,y:r,z:r}});
+   spline.updateObject(newLeaf.id,{rotation:{z:sway*.8},scale:{x:n,y:n,z:n}});
  }
 }
 function chapterPose(p){

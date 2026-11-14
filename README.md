@@ -15,6 +15,8 @@ and keyboard interactions are supported.
 - `scene/chapter-one.js` and `scene/chapter-one.css`: chapter authoring sources,
   inlined into `opening.html` so the Spline export is self contained.
 - `scene/circular-blue-eyes.js`: eye changes applied in the Spline editor.
+- `scene/botanical-models.js`: authored Spline seed and folded-leaf plant meshes.
+  The story references these named assets and animates their growth.
 
 The robot model, camera, and lighting are hosted in Spline. The website embeds
 the published scene; the model itself is not stored in this repository.
