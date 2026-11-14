@@ -85,7 +85,7 @@ async function prepareChapterTwo(){
  try{
    moth=await spline.findObjectByName('Garden Moth');mothLeft=await spline.findObjectByName('Moth Wing Left');mothRight=await spline.findObjectByName('Moth Wing Right');
    if(!moth||!mothLeft||!mothRight)throw new Error('Missing moth model');
-   await spline.updateObject(moth.id,{visible:false});mothReady=true;twoReady=true;
+   await update(moth.id,{visible:false});mothReady=true;twoReady=true;
  }catch(error){console.error('Chapter two assets:',error);}
 }
 const twoBoot=prepareChapterTwo();
@@ -213,7 +213,7 @@ async function startMoth(){
  if(chapter!=='copy-done')return;await twoBoot;
  if(!mothReady){speak('Let’s sit here a little longer.');return;}
  enter('moth-arrival');mothOffered=false;mothWarmth=0;mothPinned=false;
- $('spark').hidden=false;await spline.updateObject(moth.id,{visible:true});
+ $('spark').hidden=false;await update(moth.id,{visible:true});
  speak('Oh! What’s that?',()=>speak('It’s so small.',()=>{
    enter('moth-coax');objective('Bring the moth closer');hint('Move your light slowly toward his hand.');
    after(3,()=>{if(chapter==='moth-coax'){mothOffered=true;mothOfferAt=chapterTime;$('moth-guide').hidden=false;speak('Okay. Slowly.');objective('Keep your light near his hand');}});
@@ -240,7 +240,7 @@ function chapterTwoTick(now){
  if(document.hidden)return;
  yaw+=(yawTarget-yaw)*(1-Math.exp(-dt*9));
  if(Math.abs(yaw)<.001)yaw=0;
- spline.updateObject(parts.Robot.id,{rotation:{y:yaw}});
+ update(parts.Robot.id,{rotation:{y:yaw}});
  if(chapter==='name-search'){
    const rear=Math.cos((yaw-25.1)*Math.PI/180)<-.6;
    $('back-name').hidden=!rear;place($('back-name'),bodyScreen(0,318,-81));
@@ -264,9 +264,9 @@ function chapterTwoTick(now){
    }else if(chapter==='moth-return'){
      const g=ease(t/3.5),a=mothFlightFrom;goal={x:a.x+(145-a.x)*g,y:a.y+(64-a.y)*g+Math.sin(g*Math.PI)*25,z:a.z+(75-a.z)*g};
    }else{goal={x:145,y:64,z:75};flap=2;}
-   mothAt=goal;spline.updateObject(moth.id,{position:goal,scale:{x:size,y:size,z:size},rotation:{y:25,z:Math.sin(chapterTime*1.4)*(flap>5?5:1)}});
+   mothAt=goal;update(moth.id,{position:goal,scale:{x:size,y:size,z:size},rotation:{y:25,z:Math.sin(chapterTime*1.4)*(flap>5?5:1)}});
    const flutter=Math.sin(chapterTime*(flap>5?24:2))*flap;
-   spline.updateObject(mothLeft.id,{rotation:{y:-(25+flutter)}});spline.updateObject(mothRight.id,{rotation:{y:25+flutter}});
+   update(mothLeft.id,{rotation:{y:-(25+flutter)}});update(mothRight.id,{rotation:{y:25+flutter}});
  }
 }
 function chapterTwoPose(p){

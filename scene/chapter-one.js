@@ -33,9 +33,9 @@ function positionSeed(x,y,carrying=false){
  const zz=-Math.sin(a)*cx-Math.cos(a),rx=Math.cos(a)*cx-Math.sin(a);
  const ry=Math.cos(b)*cy-Math.sin(b)*zz,rz=Math.sin(b)*cy+Math.cos(b)*zz;
  const depth=carrying?420:(7-360)/ry,f=innerHeight/(2*tan),size=18*depth/(f*26);
- spline.updateObject(seedModel.id,{position:{x:370+depth*rx,y:360+depth*ry,z:790+depth*rz},scale:{x:size,y:size,z:size}});
+ update(seedModel.id,{position:{x:370+depth*rx,y:360+depth*ry,z:790+depth*rz},scale:{x:size,y:size,z:size}});
 }
-function seedBrightness(amount){if(seedShell)spline.updateObject(seedShell.id,{material:{alpha:Math.max(8,amount*100)}});}
+function seedBrightness(amount){if(seedShell)update(seedShell.id,{material:{alpha:Math.max(8,amount*100)}});}
 function placeSeed(){
  if(chapter==='finding'){
    const r=$('seed').getBoundingClientRect();positionSeed(r.left+r.width/2,r.top+r.height/2);
@@ -44,8 +44,8 @@ function placeSeed(){
 async function preparePlant(){
  try{
  const find=async name=>{const o=await spline.findObjectByName(name);if(!o)throw new Error('Missing '+name);return o;};
- plant=await find('Chapter One Plant');await spline.updateObject(plant.id,{visible:false});
- seedModel=await find('Chapter One Seed');await spline.updateObject(seedModel.id,{visible:false});
+ plant=await find('Chapter One Plant');await update(plant.id,{visible:false});
+ seedModel=await find('Chapter One Seed');await update(seedModel.id,{visible:false});
  seedShell=await find('Seed Shell');stem=await find('Plant Stem');
  leafLeft=await find('Plant Leaf Left');leafRight=await find('Plant Leaf Right');newLeaf=await find('Plant New Leaf');
  plantReady=true;
@@ -77,7 +77,7 @@ function lookAround(){
  $('pet').hidden=true;$('five').hidden=true;
  speak('Oh. There really isn’t much here, is there?',()=>speak('Can you help me find something?',()=>{
    enter('finding');objective('Find the little glimmer');hint(coarse?'Sweep your light through the dark.':'Move your light beyond the glow.');
-   $('seed').hidden=false;$('seed').style.opacity='.12';if(seedModel)spline.updateObject(seedModel.id,{visible:true});seedBrightness(.12);placeSeed();
+   $('seed').hidden=false;$('seed').style.opacity='.12';if(seedModel)update(seedModel.id,{visible:true});seedBrightness(.12);placeSeed();
    after(25,()=>{if(chapter==='finding'){speak('I think I saw something over there.');$('seed').style.opacity='.65';seedBrightness(.65);}});
  }));
 }
@@ -92,10 +92,10 @@ $('seed').onclick=pickSeed;
 $('seed').onfocus=()=>{if(chapter==='finding'){$('seed').style.opacity='1';seedBrightness(1);}};
 async function plantSeed(){
  if(chapter!=='carrying')return;
- enter('planting');if(seedModel)spline.updateObject(seedModel.id,{visible:false});$('seed').hidden=true;document.body.dataset.carrying='false';$('soil').disabled=true;objective('');hint('');
+ enter('planting');if(seedModel)update(seedModel.id,{visible:false});$('seed').hidden=true;document.body.dataset.carrying='false';$('soil').disabled=true;objective('');hint('');
  await plantBoot;
  if(!plantReady){$('soil').disabled=false;enter('carrying');speak('Something went wrong. Let’s try again.');choice('Try again',()=>location.reload());return;}
- await spline.updateObject(plant.id,{visible:true,scale:{x:.18,y:.015,z:.18}});
+ await update(plant.id,{visible:true,scale:{x:.18,y:.015,z:.18}});
  speak('Maybe it needs your light.',()=>{
    enter('growing');objective('Help it grow');hint(coarse?'Tap the seed to keep your light on it.':'Keep your light over the seed.');
    $('soil').disabled=false;$('soil').setAttribute('aria-label','Shine light on the planted seed');$('soil').setAttribute('aria-pressed','false');
@@ -149,16 +149,16 @@ function chapterTick(now){
    if(lightPinned){document.documentElement.style.setProperty('--mx',p.x+'px');document.documentElement.style.setProperty('--my',p.y+'px');}
    $('growth').firstElementChild.style.width=(growth*100)+'%';
    $('growth').setAttribute('aria-valuenow',String(Math.round(growth*100)));
-   spline.updateObject(plant.id,{scale:{x:.18+.82*ease(growth),y:.015+.985*ease(growth),z:.18+.82*ease(growth)}});
+   update(plant.id,{scale:{x:.18+.82*ease(growth),y:.015+.985*ease(growth),z:.18+.82*ease(growth)}});
    if(growth===1)finishGrowing();
  }
  if(plantReady&&growth>0){
    const sway=reduced?0:Math.sin(chapterTime*1.3)*2.3*growth;
-   spline.updateObject(plant.id,{rotation:{z:sway}});
+   update(plant.id,{rotation:{z:sway}});
    const l=ease((growth-.15)/.55),r=ease((growth-.4)/.5),n=ease((growth-.72)/.28);
-   spline.updateObject(leafLeft.id,{rotation:{z:sway*1.3},scale:{x:l,y:l,z:l}});
-   spline.updateObject(leafRight.id,{rotation:{z:-sway*.9},scale:{x:r,y:r,z:r}});
-   spline.updateObject(newLeaf.id,{rotation:{z:sway*.8},scale:{x:n,y:n,z:n}});
+   update(leafLeft.id,{rotation:{z:sway*1.3},scale:{x:l,y:l,z:l}});
+   update(leafRight.id,{rotation:{z:-sway*.9},scale:{x:r,y:r,z:r}});
+   update(newLeaf.id,{rotation:{z:sway*.8},scale:{x:n,y:n,z:n}});
  }
 }
 // Follow the actual hand through the shoulder and elbow transforms, so its
