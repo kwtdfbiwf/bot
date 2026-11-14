@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,interactive-widget=resizes-content"><style>
+:root{--mx:50vw;--my:50vh;--ink:#e9e4d9}*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;font-family:Arial,sans-serif;color:var(--ink)}[hidden]{display:none!important}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid #d1bca0;outline-offset:5px}#air{position:fixed;inset:0;z-index:1;touch-action:none}#darkness{position:fixed;inset:0;z-index:4;background:#050608;pointer-events:none;transition:background 1.4s,opacity 1.5s}body[data-phase=appear] #darkness,body[data-phase=waking] #darkness,body[data-phase=name] #darkness,body[data-phase=greeting] #darkness{background:rgba(3,5,9,.84)}body[data-phase=search] #darkness{background:radial-gradient(circle 62px at var(--mx) var(--my),rgba(5,6,8,.05) 0,rgba(5,6,8,.18) 16px,rgba(5,6,8,.96) 65px);transition:none}body[data-phase=lit] #darkness{opacity:0}#wake{position:fixed;z-index:8;left:50%;top:51%;transform:translate(-50%,-50%);padding:15px 34px;min-height:48px;background:transparent;border:1px solid #c9c5b57a;border-radius:2px;color:#e9e4d9;font:12px Georgia,serif;letter-spacing:2px;opacity:0;transition:opacity 1s,background .3s;pointer-events:none}#wake.ready{opacity:1;pointer-events:auto}#wake:hover{background:#ddd4b710}body[data-phase=appear] #wake{top:auto;bottom:max(9vh,76px);transform:translateX(-50%)}#name-form{position:fixed;z-index:8;left:50%;bottom:max(8vh,76px);transform:translateX(-50%);width:min(360px,calc(100% - 44px));animation:arrive .8s both}label{display:block;text-align:center;font:24px/1.4 Georgia,serif;margin-bottom:20px}.name-row{display:flex;border-bottom:1px solid #e9e4d970;gap:12px;padding-bottom:8px}input{min-width:0;flex:1;background:transparent;border:0;color:#e9e4d9;padding:12px 4px;font-size:16px;border-radius:0}input::placeholder{color:#a7a4a0}#name-form button{background:transparent;border:0;color:#d6c6af;padding:10px;min-height:44px;font-size:12px;white-space:nowrap}#dialogue{position:fixed;z-index:7;left:50%;bottom:max(8vh,80px);transform:translateX(-50%);width:min(440px,calc(100% - 48px));margin:0;text-align:center;color:#e9e4d9;font:clamp(18px,2.2vw,24px)/1.55 Georgia,serif;white-space:pre-line;text-wrap:balance;pointer-events:none;text-shadow:0 2px 16px #0008}body[data-phase=lit] #dialogue{color:#303b4a;text-shadow:none;transition:color 1s}#switch{position:fixed;z-index:3;left:82%;top:39%;width:44px;height:68px;padding:8px;background:#dad3bd;border:1px solid #756e60;border-radius:4px;box-shadow:inset 0 0 0 3px #c6c0ae,0 2px 7px #0005;transform:translate(-50%,-50%)}#switch:before,#switch:after{content:'';position:absolute;left:20px;width:3px;height:3px;border-radius:50%;background:#756f60}#switch:before{top:5px}#switch:after{bottom:5px}#switch span{display:block;width:100%;height:38px;background:linear-gradient(#a8a18e 0,#ddd6c4 50%,#eee8d7 50%);border:1px solid #756f60;border-radius:2px;box-shadow:0 2px 3px #0005;transition:transform .15s}#switch[aria-pressed=true] span{transform:rotate(180deg)}#switch:disabled{cursor:default}#spark{position:fixed;z-index:5;left:var(--mx);top:var(--my);width:3px;height:3px;border-radius:50%;background:#fff6d4;box-shadow:0 0 10px 3px #fce6ad4d;transform:translate(-50%,-50%);pointer-events:none}#hint{position:fixed;z-index:6;left:50%;bottom:25px;transform:translateX(-50%);width:calc(100% - 50px);text-align:center;font-size:10px;letter-spacing:1px;color:#999892;pointer-events:none;animation:arrive 1.5s both}#error{position:fixed;z-index:9;inset:0;background:#050608;display:grid;place-content:center;text-align:center;color:#c9c2b6;font:16px/1.6 Georgia,serif;padding:35px}#error button{background:transparent;border:1px solid #777;color:inherit;padding:12px;margin-top:15px}body[data-phase=search]{cursor:none}body[data-phase=search] button{cursor:none}@keyframes arrive{from{opacity:0}to{opacity:1}}@media(max-width:600px){#switch{left:85%;top:30%;width:42px;height:64px}#name-form{bottom:80px}#dialogue{bottom:82px;font-size:19px}#hint{bottom:21px;font-size:9px}body[data-phase=appear] #wake{bottom:82px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style></head><body data-phase="boot">
+<div id="air" aria-hidden="true"></div><button id="switch" type="button" aria-label="Turn on the light" aria-pressed="false" disabled hidden><span aria-hidden="true"></span></button><div id="darkness"></div><div id="spark" hidden></div><button id="wake" type="button" disabled>Wake up</button>
+<form id="name-form" hidden><label for="visitor-name">Oh… who are you?</label><div class="name-row"><input id="visitor-name" name="name" placeholder="Your name" autocomplete="given-name" maxlength="32" required aria-label="Your name"><button type="submit">Say hello ↗</button></div></form>
+<p id="dialogue" role="status" aria-live="polite" hidden></p><p id="hint" hidden></p><div id="error" role="alert" hidden><p>I’m having a little trouble waking up.</p><button type="button" id="retry">Try again</button></div>
+<script>
+(async()=>{
+const $=id=>document.getElementById(id),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,coarse=matchMedia('(pointer: coarse)').matches;
+$('retry').onclick=()=>location.reload();
+await spline.ready;
+const names=['Robot','Robot Body Pivot','Robot Head Pivot','Robot Arm Pivot -1','Robot Arm Pivot 1','Robot Elbow Pivot 1','Head Eye Left','Head Eye Right'];
+const parts={};for(const name of names){const o=await spline.findObjectByName(name);if(!o)throw new Error('Missing '+name);parts[name]=o;}
+let phase='boot',began=performance.now(),clock=began,px=0,py=0,hx=0,hy=0,visitor='',typing=0,active=true;
+const write=(name,props)=>spline.updateObject(parts[name].id,props);
+const clamp=x=>Math.max(0,Math.min(1,x)),ease=x=>.5-Math.cos(Math.PI*clamp(x))/2,pulse=(u,a,b,c,d)=>ease((u-a)/(b-a))*(1-ease((u-c)/(d-c)));
+function setPhase(next){phase=next;document.body.dataset.phase=next;began=performance.now();}
+function wakeButton(){const b=$('wake');b.hidden=false;b.disabled=false;requestAnimationFrame(()=>b.classList.add('ready'));}
+function hideWake(){$('wake').classList.remove('ready');$('wake').disabled=true;$('wake').hidden=true;}
+function speak(text,done){clearTimeout(typing);$('dialogue').hidden=false;$('dialogue').textContent='';let n=0;function next(){n+=1;$('dialogue').textContent=text.slice(0,n);if(n<text.length)typing=setTimeout(next,reduced?0:34);else if(done)typing=setTimeout(done,1100);}next();}
+function askName(){setPhase('name');$('name-form').hidden=false;$('visitor-name').focus({preventScroll:true});}
+function search(){setPhase('search');$('switch').hidden=false;$('hint').hidden=false;$('hint').textContent=coarse?'Move your finger through the dark.':'Move your mouse through the dark.';$('spark').hidden=false;}
+$('wake').onclick=()=>{if(phase==='boot'){hideWake();setPhase('appear');setTimeout(wakeButton,1500);}else if(phase==='appear'){hideWake();setPhase('waking');}};
+$('name-form').onsubmit=e=>{e.preventDefault();visitor=$('visitor-name').value.trim();if(!visitor){$('visitor-name').value='';$('visitor-name').focus();return;}visitor=visitor.slice(0,32);$('name-form').hidden=true;setPhase('greeting');speak('Hello, '+visitor+'.',()=>{speak('Finally, I’ve been alone here for a while.\nIt’s kind of dark.',search);});};
+function pointer(x,y){document.documentElement.style.setProperty('--mx',x+'px');document.documentElement.style.setProperty('--my',y+'px');px=(x/innerWidth-.5)*2;py=(y/innerHeight-.5)*2;}
+window.addEventListener('pointermove',e=>pointer(e.clientX,e.clientY));window.addEventListener('pointerdown',e=>pointer(e.clientX,e.clientY));
+$('switch').onfocus=()=>{if(phase==='search'){const r=$('switch').getBoundingClientRect();pointer(r.left+r.width/2,r.top+r.height/2);}};
+$('switch').onclick=()=>{if(phase!=='search')return;setPhase('lit');$('switch').setAttribute('aria-pressed','true');$('switch').setAttribute('aria-label','Light is on');$('switch').disabled=true;$('spark').hidden=true;$('hint').hidden=true;speak('That’s better.');};
+function tick(now){
+if(!active)return;clock=now;const u=(now-began)/1000,t=(now)/1000,awake=['name','greeting','search','lit'].includes(phase);let bodyY=0,bodyZ=0,headX=16,headY=-9,headZ=-8,rightZ=0,leftZ=0,rightX=0,leftX=0,elbowZ=0,elbowY=0,eyes=.1;
+if(phase==='waking'){
+const speed=reduced?3:1,v=u*speed;eyes=.1+.9*ease(v/1.5);headX=16*(1-ease(v/1.8));headY=-9*(1-ease(v/1.8));headZ=-8*(1-ease(v/1.8));
+const stretch=pulse(v,1.3,2.5,3.9,5);rightZ=stretch*150;leftZ=-stretch*150;rightX=-stretch*20;leftX=-stretch*20;bodyY=stretch*7;headX-=stretch*12;
+const scratch=pulse(v,5.1,6,8,8.8);rightZ+=scratch*(150+Math.sin(v*9)*2);elbowZ=scratch*(40+Math.sin(v*10)*5);elbowY=scratch*12;headZ-=scratch*6;headY-=scratch*7;
+if(v>=9.1)askName();
+}else if(awake){
+headX=0;headY=0;headZ=0;eyes=1;
+if(!reduced){const damp=phase==='search'?.25:1;const k=1-Math.exp(-Math.min(.1,Math.max(.001,(now-(tick.previous||now))/1000))*7);hx+=(px*12-hx)*k;hy+=(py*6-hy)*k;headX=hy*damp+Math.sin(t*.8)*.8;headY=hx*damp+Math.sin(t*.6)*1.8;headZ=Math.sin(t*.9)*.7;bodyY=Math.sin(t*1.6)*.6;leftZ=-2+Math.sin(t)*1.2;const b=t%5.3;if(b<.18)eyes=Math.max(.08,Math.abs(b-.09)/.09);}
+if(phase==='greeting'){const waving=pulse(u,0,.5,2.8,3.4);rightZ=waving*(reduced?125:130+Math.sin(u*12)*15);}
+}
+tick.previous=now;
+write('Robot Body Pivot',{position:{y:parts['Robot Body Pivot'].position.y+bodyY},rotation:{x:0,y:0,z:bodyZ}});
+write('Robot Head Pivot',{rotation:{x:headX,y:headY,z:headZ}});write('Robot Arm Pivot 1',{rotation:{x:rightX,y:0,z:rightZ}});write('Robot Arm Pivot -1',{rotation:{x:leftX,y:0,z:leftZ}});write('Robot Elbow Pivot 1',{rotation:{x:0,y:elbowY,z:elbowZ}});
+write('Head Eye Left',{scale:{y:eyes}});write('Head Eye Right',{scale:{y:eyes}});
+if(phase==='search'){$('switch').disabled=false;}
+requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);setTimeout(wakeButton,1100);window.addEventListener('pagehide',()=>{active=false;clearTimeout(typing);});
+})().catch(e=>{console.error('Robot opening:',e);document.getElementById('error').hidden=false;});
+</script></body></html>
