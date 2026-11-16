@@ -6,14 +6,14 @@ Live website: https://kwtdfbiwf.github.io/bot/
 
 The opening leads into cursor play, finding a seed, planting it beside Milo,
 growing a plant with your light, and a quiet seated ending. Continue by finding the name stamped on Milo’s
-back, choosing his name, helping him water the plant, and meeting a moth drawn to its new flower. After the moth settles, find a blue bottle cap and help Milo keep it in his first box. Hidden finds are revealed by the cursor light. Give the can to Milo’s right hand, then drag that hand toward the plant. His body turns with the guided reach; he pours only over the soil. Cursor gaze is active during object searches, with eye contact during dialogue. His arms can
+back, choosing his name, helping him water the plant, and meeting a moth drawn to its new flower. After the moth settles, find a blue bottle cap and help Milo keep it in his first box. Hidden finds are revealed by the cursor light. Give the can to Milo’s right hand, then drag that hand toward the plant. His body turns with the guided reach; he pours only over the soil. Cursor gaze is active during object searches, with eye contact during dialogue. Find four parts of a desk fan next, rotate and fit the keyed pieces, and repair its bent grille. The working fan stays beside Milo and moves the plant in its breeze. His arms can
 be lifted by dragging. Pointer, touch, and keyboard interactions are supported.
 
 ## Source
 
 - `dist/`: fullscreen website shell deployed on GitHub Pages.
 - `scene/opening.html`: complete Spline HTML overlay, story, and animation loop.
-- `scene/chapter-one.js`, `scene/chapter-two.js`, `scene/chapter-three.js`, and their `.css` files: chapter authoring sources,
+- `scene/chapter-one.js`, `scene/chapter-two.js`, `scene/chapter-three.js`, `scene/chapter-four.js`, and their `.css` files: chapter authoring sources,
   inlined into `opening.html` so the Spline export is self contained.
 - `scene/level-camera.js`: camera roll correction for level ground; the overlay uses matching projections.
 - `scene/circular-blue-eyes.js`: eye changes applied in the Spline editor.
@@ -22,6 +22,7 @@ be lifted by dragging. Pointer, touch, and keyboard interactions are supported.
 - `scene/name-and-moth-models.js`: stamped back label and moth meshes.
 - `scene/watering-models.js`: enamel watering can, falling drops, and folded flower petals.
 - `scene/collection-models.js`: blue crimped cap, keepsake box, and hinged collection hatch.
+- `scene/fan-models.js`: four separable fan parts, keyed joints, physical switch, and repairable grille.
 - `scene/story-outline.json`: accepted story direction and implemented/planned chapter beats.
 
 A chosen robot name is stored locally in the scene’s browser storage. No

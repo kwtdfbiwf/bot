@@ -85,7 +85,7 @@ function startChapter(){
  })));
 }
 function react(kind){
- if(!freeArms()||armDrag?.moved)return;
+ if((!freeArms()&&!(kind==='pet'&&chapter==='fan-rest'))||armDrag?.moved)return;
  const elapsed=chapterTime-reactionAt;
  if(reaction==='five'&&elapsed<2.8)return;
  if(kind!=='five'&&elapsed<2.2)return;
@@ -174,12 +174,19 @@ function chapterTick(now){
    if(growth===1)finishGrowing();
  }
  if(plantReady&&growth>0){
-   const sway=reduced?0:Math.sin(chapterTime*1.3)*2.3*growth;
+   const breeze=fanOn&&fanStates()?Math.sin(chapterTime*6)*5:0;
+   const sway=reduced?0:(Math.sin(chapterTime*1.3)*2.3+breeze)*growth;
    update(plant.id,{rotation:{z:sway}});
    const l=ease((growth-.15)/.55),r=ease((growth-.4)/.5),n=ease((growth-.72)/.28);
    update(leafLeft.id,{rotation:{z:sway*1.3},scale:{x:l,y:l,z:l}});
    update(leafRight.id,{rotation:{z:-sway*.9},scale:{x:r,y:r,z:r}});
    update(newLeaf.id,{rotation:{z:sway*.8},scale:{x:n,y:n,z:n}});
+   if(fanStates()){
+     // The flower and resting moth travel with the stem in the fan's breeze.
+     const a=sway*Math.PI/180;
+     update(gardenFlower.id,{position:{x:145-64*Math.sin(a),y:64*Math.cos(a),z:75},rotation:{z:sway}});
+     update(moth.id,{position:{x:145-82*Math.sin(a),y:82*Math.cos(a),z:75},rotation:{z:sway}});
+   }
  }
 }
 // Follow the actual hand through the shoulder and elbow transforms, so its
