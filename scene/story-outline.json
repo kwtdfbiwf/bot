@@ -1,0 +1,22 @@
+{
+  "premise": "Milo was built to collect rubbish. He now chooses what to keep and learns to care for it. His collection slowly becomes a home.",
+  "principles": [
+    "Reveal his former work through habits before explaining it.",
+    "Every chapter leaves a tangible object or visible change in the space.",
+    "Keep the plant and visiting moth central; living visitors are never possessions.",
+    "Make reactions visibly match player actions. Use simple objectives, no inventory dashboard.",
+    "Shelter emerges from found materials and his care for the collection. Milo also stays dry.",
+    "The player supports Milo's choices; he gradually acts without asking permission."
+  ],
+  "chapters": [
+    {"id":"opening","status":"implemented","beats":["Wake him","Find light","Grow plant","Discover his name","Help him water","Meet the moth"]},
+    {"id":"first-keepsake","status":"implemented","find":"blue bottle cap","actions":["Find it with light","Give it to his hand","Notice his disposal reflex stop","Encourage him to keep it","Find and place a box","Watch him put the cap safely inside"],"lastingChange":"An open keepsake box and his first blue cap beside the garden.","dialogue":["Item collected.","It’s blue.","Can I keep it?","I’d like to keep this one.","One thing.","I’d like to find another."]},
+    {"id":"a-use-for-it","status":"planned","find":"chipped cup","action":"Turn it together, discover the intact side, plant a second seed inside.","lastingChange":"A cup planter, with the chip still visible."},
+    {"id":"little-sounds","status":"planned","find":"bent spoon","action":"Guide his arm to tap the can, cup and box. Each contact makes a distinct sound and visible reaction. No drawing or imitation puzzle.","lastingChange":"A spoon kept next to the watering can."},
+    {"id":"putting-things-in-order","status":"planned","find":"loose button","action":"Let Milo arrange the button and cap; the player helps move a box into place.","lastingChange":"His first arrangement of things he likes."},
+    {"id":"room-for-more","status":"planned","find":"old shelf pieces","action":"Hold and fit pieces while he assembles a small shelf. Items move onto it one at a time.","lastingChange":"Shelves and boxes forming a lived-in corner."},
+    {"id":"still-worth-keeping","status":"planned","find":"a damaged favourite","action":"Help repair it; keep the repair visible.","lastingChange":"An object with an obvious, affectionate repair."},
+    {"id":"somewhere-to-stay","status":"planned","find":"a large panel","action":"Make a roof above Milo and his shelves. Leave the plant where it can enjoy the rain, with a dry spot for the moth.","lastingChange":"Shelter for Milo and the objects he cares for."},
+    {"id":"his-choice","status":"planned","find":"old disposal instructions","action":"Connect the instructions to the collection reflex seen earlier. Milo decides to care for his finds instead.","dialogue":"But I’m looking after these.","ending":"A quiet home to return to: tend plants, inspect finds, tap objects, move his arms or sit together."}
+  ]
+}

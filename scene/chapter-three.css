@@ -1,0 +1,9 @@
+#collect-cap,#collect-hand,#collect-box,#collect-place{position:fixed;z-index:8;transform:translate(-50%,-50%);padding:0;touch-action:none;background:transparent;border:0;border-radius:8px;min-width:48px;min-height:48px}
+#collect-cap{cursor:grab;width:54px;height:54px}
+#collect-box{cursor:grab;width:80px;height:68px}
+#collect-cap:active,#collect-box:active{cursor:grabbing}
+#collect-hand,#collect-place{width:70px;height:60px;border:1px dashed #d8cba170;box-shadow:0 0 24px #d8cba118;cursor:pointer;border-radius:50%}
+#collect-cap:focus-visible,#collect-box:focus-visible{outline:1px dashed #b6c9df}
+body[data-chapter^=collection-] #dialogue{top:max(11vh,70px);bottom:auto}
+body[data-chapter^=collection-] #hint{bottom:82px}
+@media(max-width:600px){body[data-chapter^=collection-] #dialogue{top:12vh}}

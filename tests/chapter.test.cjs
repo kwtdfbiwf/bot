@@ -130,5 +130,43 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  await until(()=>body.dataset.chapter==='garden-end');await advance(.2);
  assert.equal(writes.get('Garden Moth').visible,true);assert.equal(writes.get('Garden Moth').position.y,82);
  assert.equal(writes.get('Chapter One Plant').visible,true);
- console.log('PASS: arm dragging, high five, planting, '+(nickname?'nickname':'Milo name')+', turning, watering, flower, moth and garden ending');
+ await until(()=>!$('choice').hidden&&$('choice').textContent==='Look a little further');
+ $('choice').onclick();await until(()=>body.dataset.chapter==='collection-find');
+ assert.equal(writes.get('Blue Bottle Cap').visible,true);assert.equal(writes.get('Keepsake Box').visible,false);
+ $('collect-cap').onpointerdown({pointerId:20,button:0,currentTarget:$('collect-cap'),clientX:300,clientY:480});
+ for(const fn of events.pointermove)fn({pointerId:20,clientX:420,clientY:400});
+ for(const fn of events.pointercancel)fn({pointerId:20});
+ assert.equal(body.dataset.chapter,'collection-find','Cancelled cap drag must leave it available');
+ await advance(.5);
+ if(nickname){
+   $('collect-cap').onpointerdown({pointerId:21,button:0,currentTarget:$('collect-cap'),clientX:300,clientY:480});
+   const x=parseFloat($('five').style.left),y=parseFloat($('five').style.top);
+   for(const fn of events.pointermove)fn({pointerId:21,clientX:x,clientY:y});
+   for(const fn of events.pointerup)fn({pointerId:21,clientX:x,clientY:y});
+ }else{$('collect-cap').onclick();assert.equal(body.dataset.chapter,'collection-carry');$('collect-hand').onclick();}
+ assert.equal(body.dataset.chapter,'collection-reflex');await advance(.8);
+ assert(writes.get('Collection Hatch Lid Pivot').rotation.x< -70,'The old collection reflex must visibly open his hatch');
+ await until(()=>!$('answers').hidden&&body.dataset.chapter==='collection-notice');
+ assert.equal(writes.get('Blue Bottle Cap').visible,true,'His first find must never be discarded');
+ $('answers').children.find(b=>b.textContent===(nickname?'You can choose.':'Of course.')).onclick();
+ assert.equal(body.dataset.chapter,'collection-box-find');assert.equal(writes.get('Keepsake Box').visible,true);
+ $('collect-box').onpointerdown({pointerId:22,button:0,currentTarget:$('collect-box'),clientX:300,clientY:480});
+ for(const fn of events.pointermove)fn({pointerId:22,clientX:420,clientY:400});
+ for(const fn of events.pointercancel)fn({pointerId:22});
+ assert.equal(body.dataset.chapter,'collection-box-find','Cancelled box drag should reset safely');await advance(.5);
+ $('collect-box').onclick();assert.equal(body.dataset.chapter,'collection-box-carry');
+ if(nickname){
+   const x=parseFloat($('collect-place').style.left),y=parseFloat($('collect-place').style.top);
+   $('collect-box').onpointerdown({pointerId:23,button:0,currentTarget:$('collect-box'),clientX:300,clientY:480});
+   for(const fn of events.pointermove)fn({pointerId:23,clientX:x,clientY:y});
+   for(const fn of events.pointerup)fn({pointerId:23,clientX:x,clientY:y});
+ }else $('collect-place').onclick();
+ await until(()=>body.dataset.chapter==='collection-end');await advance(.1);
+ assert.equal(writes.get('Keepsake Box').position.x,-135);assert.equal(writes.get('Blue Bottle Cap').position.x,-135);
+ assert.equal(writes.get('Collection Hatch Lid Pivot').rotation.x,0);assert.equal(writes.get('Garden Flower').visible,true);assert.equal(writes.get('Garden Moth').visible,true);
+ await until(()=>!$('choice').hidden&&$('choice').textContent==='Sit with him');$('choice').onclick();await advance(3.2);
+ assert.equal(body.dataset.chapter,'collection-rest');assert.equal(writes.get('Robot Leg Pivot 1').position.y,20);
+ $('collect-cap').onclick();await advance(2);assert.match($('dialogue').textContent,/My first one/);
+ assert.equal(writes.get('Blue Bottle Cap').visible,true,'Inspecting the keepsake must preserve it');
+ console.log('PASS: arm dragging, high five, planting, '+(nickname?'nickname':'Milo name')+', turning, watering, flower, moth, blue cap, keepsake box and collection ending');
 })().catch(error=>{console.error(error);process.exitCode=1});

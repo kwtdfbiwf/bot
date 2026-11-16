@@ -6,8 +6,8 @@ let standAt=-100,happyAt=-100,nameConfirmed=false;
 let moth=null,mothLeft=null,mothRight=null,mothOffered=false,mothWarmth=0,mothPinned=false,mothAt={x:145,y:85,z:75},mothFlightFrom=null;
 let mothReady=false,twoReady=false,mothOfferAt=0;
 try{chosenName=localStorage.getItem('milo-chosen-name')||'Milo';}catch{}
-const freeArms=()=>['play','end','named-play','garden-end'].includes(chapter);
-const namingStates=()=>['name-intro','name-search','name-found','nickname','name-happy','named-play','water-intro','water-find','water-carry','water-miss','water-aim','water-bloom','water-done','moth-arrival','moth-coax','moth-landed','moth-stay','moth-return','garden-end'].includes(chapter);
+const freeArms=()=>['play','end','named-play','garden-end','collection-rest'].includes(chapter)||(chapter==='collection-end'&&collectionSettled);
+const namingStates=()=>['name-intro','name-search','name-found','nickname','name-happy','named-play','water-intro','water-find','water-carry','water-miss','water-aim','water-bloom','water-done','moth-arrival','moth-coax','moth-landed','moth-stay','moth-return','garden-end'].includes(chapter)||chapter.startsWith('collection-');
 const bounded=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 function worldPoint(p){return rotateVector(p,0,yaw,0);}
 function bodyScreen(x,y,z){const p=worldPoint({x,y,z});return screenPoint(p.x,p.y,p.z);}
@@ -30,7 +30,7 @@ function refreshArmTargets(p){
    el.style.height=Math.max(64,Math.abs(h.y-s.y)*.65+25)+'px';
  }
  if(freeArms()){
-   const down=['end','garden-end'].includes(chapter)?82:0;
+   const down=['end','collection-rest'].includes(chapter)?82:0;
    place($('pet'),bodyScreen(0,310-down,80));
  }
 }
@@ -321,12 +321,12 @@ function mothLands(){
 function returnMoth(){
  if(!['moth-landed','moth-stay'].includes(chapter))return;
  enter('moth-return');mothFlightFrom={...mothAt};
- after(4,()=>{if(chapter==='moth-return'){enter('garden-end');speak('It knows where home is.',()=>{after(5,()=>{$('dialogue').hidden=true;});});$('pet').hidden=false;}});
+ after(4,()=>{if(chapter==='moth-return'){enter('garden-end');speak('It knows where home is.',()=>{after(5,()=>{$('dialogue').hidden=true;offerCollection();});});$('pet').hidden=false;}});
 }
 function chapterTwoTick(now){
  const dt=twoLastFrame?Math.min(.05,(now-twoLastFrame)/1000):0;twoLastFrame=now;
  if(document.hidden)return;
- wateringTick(dt);
+ wateringTick(dt);collectionTick();
  yaw+=(yawTarget-yaw)*(1-Math.exp(-dt*9));
  if(Math.abs(yaw)<.001)yaw=0;
  update(parts.Robot.id,{rotation:{y:yaw}});
@@ -384,6 +384,6 @@ function chapterTwoPose(p){
      if(side==='right'){p.elbowZ*=1-weight;p.elbowY*=1-weight;}
    }
  }
- p=wateringPose(p);
+ p=wateringPose(p);p=collectionPose(p);
  lastPose={...p};refreshArmTargets(p);return p;
 }
