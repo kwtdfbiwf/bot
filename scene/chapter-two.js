@@ -7,7 +7,7 @@ let moth=null,mothLeft=null,mothRight=null,mothOffered=false,mothWarmth=0,mothPi
 let mothReady=false,twoReady=false,mothOfferAt=0;
 try{chosenName=localStorage.getItem('milo-chosen-name')||'Milo';}catch{}
 const freeArms=()=>['play','end','named-play','garden-end','collection-rest'].includes(chapter)||(chapter==='collection-end'&&collectionSettled);
-const namingStates=()=>['name-intro','name-search','name-found','nickname','name-happy','named-play','water-intro','water-find','water-carry','water-miss','water-aim','water-bloom','water-done','moth-arrival','moth-coax','moth-landed','moth-stay','moth-return','garden-end'].includes(chapter)||chapter.startsWith('collection-');
+const namingStates=()=>['name-intro','name-search','name-found','nickname','name-happy','named-play','water-intro','water-find','water-carry','water-aim','water-bloom','water-done','moth-arrival','moth-coax','moth-landed','moth-stay','moth-return','garden-end'].includes(chapter)||chapter.startsWith('collection-');
 const bounded=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 function worldPoint(p){return rotateVector(p,0,yaw,0);}
 function bodyScreen(x,y,z){const p=worldPoint({x,y,z});return screenPoint(p.x,p.y,p.z);}
@@ -143,15 +143,16 @@ function giveName(name){
  }));
 }
 
-// Help him care for the plant: pick up, spill, guide, water, bloom.
+// Help him care for the plant: find, pick up, guide, water, bloom.
 let wateringCan=null,waterDrops=null,gardenFlower=null,waterReady=false,waterBoot;
-let dropParts=[],flowerPetals=[],canDrag=null,canCarry=false,canHeld=false;
-let waterAngle=40,waterTarget=40,waterFill=0,waterPouring=false,waterAligned=false,bloomAt=-100,canHome={x:-135,y:20,z:95},canAt={...canHome};
+let canMeshes=[],dropParts=[],flowerPetals=[],canDrag=null,canCarry=false,canHeld=false;
+let waterAngle=40,waterTarget=40,waterFill=0,waterPouring=false,waterAligned=false,waterGuided=false,bloomAt=-100,canHome={x:-135,y:20,z:95},canAt={...canHome};
 const wateringStates=()=>chapter.startsWith('water-');
 async function prepareWatering(){
  try{
    const find=async name=>{const o=await spline.findObjectByName(name);if(!o)throw new Error('Missing '+name);return o;};
    wateringCan=await find('Watering Can');waterDrops=await find('Water Drops');gardenFlower=await find('Garden Flower');
+   for(const name of ['Can Enamel Body','Can Dark Opening','Can Loop Handle','Can Curved Spout','Can Spout Opening'])canMeshes.push(await find(name));
    for(let i=0;i<6;i++)dropParts.push(await find('Water Drop '+i));
    for(let i=0;i<5;i++)flowerPetals.push(await find('Flower Petal '+i));
    await update(wateringCan.id,{visible:false});await update(waterDrops.id,{visible:false});await update(gardenFlower.id,{visible:false});waterReady=true;
@@ -171,27 +172,23 @@ async function startWatering(){
  if(!waterReady){speak('Could you help me with the plant?',()=>choice('Try again',()=>location.reload()));return;}
  enter('water-intro');reaction='';$('pet').hidden=true;$('five').hidden=true;$('choice').hidden=true;
  speak('You helped me.',()=>speak('Can I help it?',()=>{
-   enter('water-find');canAt={...canHome};update(wateringCan.id,{visible:true});$('water-can').hidden=false;
+   enter('water-find');canAt={...canHome};revealWateringCan();$('water-can').hidden=false;$('spark').hidden=false;
    objective('Give him the watering can');
  }));
 }
 function carryCan(){
  if(!['water-find','water-carry'].includes(chapter))return;
- canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Place the can in his hand');
+ restoreFoundObject(wateringCan,canMeshes);canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Place the can in his hand');
 }
+function revealWateringCan(){revealFoundObject('can',wateringCan,canMeshes,screenPoint(canAt.x+10,canAt.y,canAt.z));}
+$('water-can').onfocus=()=>{if(chapter==='water-find'){revealFocus='can';revealWateringCan();}};
 function giveCan(){
  if(!['water-find','water-carry'].includes(chapter)||!lastPose)return;
- canCarry=false;canHeld=true;canDrag=null;waterAngle=40;waterTarget=40;
- $('water-hand').hidden=true;$('water-can').hidden=true;objective('');enter('water-miss');
- speak('I can do this.');
- after(2.8,()=>{
-   if(chapter!=='water-miss')return;waterPouring=false;
-   speak('I don’t think I grow.',()=>{
-     enter('water-aim');$('water-can').hidden=false;objective('Help him water the plant');
-     choice('Help him aim',()=>{if(chapter==='water-aim'){waterTarget=10;$('choice').hidden=true;}});
-
-   });
- });
+ restoreFoundObject(wateringCan,canMeshes);
+ canCarry=false;canHeld=true;canDrag=null;waterAngle=40;waterTarget=40;waterGuided=false;waterPouring=false;
+ $('water-hand').hidden=true;$('water-can').hidden=false;$('spark').hidden=true;enter('water-aim');
+ objective('Help him water the plant');speak('Can you help me?');
+ choice('Help him aim',()=>{if(chapter==='water-aim'){waterGuided=true;waterTarget=10;$('choice').hidden=true;}});
 }
 $('water-hand').onclick=giveCan;
 $('water-can').onpointerdown=e=>{
@@ -205,7 +202,7 @@ $('water-can').onclick=()=>{
 let suppressCanClickUntil=-1;
 $('water-can').onkeydown=e=>{
  if(chapter!=='water-aim'||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;
- e.preventDefault();waterTarget=bounded(waterTarget+(['ArrowUp','ArrowRight'].includes(e.key)?10:-10),-10,65);
+ e.preventDefault();waterGuided=true;waterTarget=bounded(waterTarget+(['ArrowUp','ArrowRight'].includes(e.key)?10:-10),-10,65);
 };
 window.addEventListener('pointermove',e=>{
  if(!canDrag||e.pointerId!==canDrag.id)return;
@@ -215,7 +212,7 @@ window.addEventListener('pointermove',e=>{
  if(chapter==='water-carry')canAt=pointAtHeight(e.clientX,e.clientY,120);
  if(chapter==='water-aim'){
    // The arm, can, nozzle and falling water all share this same pose.
-   const scale=innerHeight/720;waterTarget=bounded(d.angle+(e.clientX-d.x)/Math.max(.7,scale)*.45,-10,65);
+   waterGuided=true;const scale=innerHeight/720;waterTarget=bounded(d.angle+(e.clientX-d.x)/Math.max(.7,scale)*.45,-10,65);
  }
 });
 function releaseCan(e){
@@ -248,11 +245,6 @@ function wateringPose(p){
  if(canHeld){
    p.rightX=chapter==='water-aim'?-48*ease((chapterTime-chapterAt)/.8):0;p.elbowZ=0;p.elbowY=0;
    p.rightZ=waterAngle;
-   if(chapter==='water-miss'){
-     const t=chapterTime-chapterAt;
-     // He visibly tips the spout towards his own boot before looking down.
-     p.rightZ=12*ease(t/.6);p.headX=t>.8?25:12;p.headY=-7;
-   }
    if(chapter==='water-bloom'){
      const g=ease((chapterTime-bloomAt)/3);p.rightZ=waterAngle*(1-g);p.bodyY-=24*g;p.headX=24*g+10;
    }
@@ -262,21 +254,22 @@ function wateringPose(p){
 function wateringTick(dt){
  if(!waterReady)return;
  waterAngle+=(waterTarget-waterAngle)*(1-Math.exp(-dt*9));
+ if(chapter==='water-find')revealWateringCan();
  if(wateringStates()&&lastPose){
    const h=projectedHand(lastPose,'right');
    if(canHeld)canAt={...h};
-   const tilted=chapter==='water-miss'?-40:chapter==='water-aim'?-35:0;
-   const facing=chapter==='water-miss'?180:0;
+   const ready=chapter==='water-aim'&&waterGuided&&Math.abs(waterAngle-10)<13;
+   const tilted=ready?-35:0;
+   const facing=0;
    update(wateringCan.id,{position:canAt,rotation:{x:0,y:facing,z:tilted}});
    place($('water-can'),screenPoint(canAt.x+10,canAt.y,canAt.z));
    place($('water-hand'),handScreen(lastPose,'right'));
    const local=rotateVector({x:48,y:17,z:0},0,facing,tilted);
    const nozzle={x:canAt.x+local.x,y:canAt.y+local.y,z:canAt.z+local.z};
-   waterPouring=(chapter==='water-miss'&&chapterTime-chapterAt>.7&&chapterTime-chapterAt<2.8)||chapter==='water-aim';
-   waterAligned=chapter==='water-aim'&&Math.hypot(nozzle.x-145,nozzle.z-75)<22;
+   waterAligned=chapter==='water-aim'&&Math.hypot((nozzle.x-145)/18,(nozzle.z-75)/13)<1;
+   waterPouring=ready&&waterAligned;
    if(chapter==='water-aim'){
-     waterAligned=Math.hypot(nozzle.x-145,nozzle.z-75)<22;
-     if(waterAligned)waterFill=clamp(waterFill+dt/5.5);
+     if(waterPouring)waterFill=clamp(waterFill+dt/5.5);
      $('water-can').setAttribute('aria-label',waterAligned?'Keep his hand here to water the plant':'Guide his watering hand. Use arrow keys to move it.');
      if(waterFill>=1)finishWatering();
    }

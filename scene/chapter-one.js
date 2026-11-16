@@ -34,7 +34,25 @@ function positionSeed(x,y,carrying=false){
  const depth=carrying?420:(7-360)/ry,f=innerHeight/(2*tan),size=18*depth/(f*26);
  update(seedModel.id,{position:{x:370+depth*rx,y:360+depth*ry,z:790+depth*rz},scale:{x:size,y:size,z:size}});
 }
-function seedBrightness(amount){if(seedShell)update(seedShell.id,{material:{alpha:Math.max(8,amount*100)}});}
+function seedBrightness(amount){if(seedShell)update(seedShell.id,{material:{alpha:amount*100}});}
+let revealFocus='';
+window.addEventListener('pointermove',()=>{revealFocus='';});
+function revealFoundObject(key,root,meshes,point){
+ if(!root)return 0;
+ const distance=Math.hypot(pointerX-point.x,pointerY-point.y);
+ const amount=revealFocus===key?.85:.75*Math.pow(clamp(1-distance/115),1.6);
+ update(root.id,{visible:amount>.005});
+ for(const mesh of meshes)if(mesh)update(mesh.id,{material:{alpha:amount*100}});
+ return amount;
+}
+function restoreFoundObject(root,meshes){
+ if(root)update(root.id,{visible:true});
+ for(const mesh of meshes)if(mesh)update(mesh.id,{material:{alpha:100}});
+}
+function revealSeed(){
+ const r=$('seed').getBoundingClientRect();
+ $('seed').style.opacity=String(revealFoundObject('seed',seedModel,[seedShell],{x:r.left+r.width/2,y:r.top+r.height/2}));
+}
 function placeSeed(){
  if(chapter==='finding'){
    const r=$('seed').getBoundingClientRect();positionSeed(r.left+r.width/2,r.top+r.height/2);
@@ -76,19 +94,18 @@ function lookAround(){
  $('pet').hidden=true;$('five').hidden=true;
  speak('Oh. There really isn’t much here, is there?',()=>speak('Can you help me find something?',()=>{
    enter('finding');objective('Find the little glimmer');
-   $('seed').hidden=false;$('seed').style.opacity='.12';if(seedModel)update(seedModel.id,{visible:true});seedBrightness(.12);placeSeed();
-   after(25,()=>{if(chapter==='finding'){speak('I think I saw something over there.');$('seed').style.opacity='.65';seedBrightness(.65);}});
+   $('seed').hidden=false;$('seed').style.opacity='0';placeSeed();revealSeed();
  }));
 }
 function pickSeed(){
  if(chapter!=='finding')return;
  enter('carrying');document.body.dataset.carrying='true';$('seed').setAttribute('aria-label','Seed collected');$('seed').tabIndex=-1;
- place($('seed'),{x:pointerX+14,y:pointerY-12});seedBrightness(1);placeSeed();
+ place($('seed'),{x:pointerX+14,y:pointerY-12});restoreFoundObject(seedModel,[seedShell]);placeSeed();
  objective('Plant it beside Milo');$('soil').hidden=false;layoutChapter();
  speak('A seed? What does it do?');
 }
 $('seed').onclick=pickSeed;
-$('seed').onfocus=()=>{if(chapter==='finding'){$('seed').style.opacity='1';seedBrightness(1);}};
+$('seed').onfocus=()=>{if(chapter==='finding'){revealFocus='seed';revealSeed();}};
 async function plantSeed(){
  if(chapter!=='carrying')return;
  enter('planting');if(seedModel)update(seedModel.id,{visible:false});$('seed').hidden=true;document.body.dataset.carrying='false';$('soil').disabled=true;objective('');
@@ -129,8 +146,7 @@ function chapterPointer(x,y){
  const hand=$('five').getBoundingClientRect(),atHand=Math.hypot(x-hand.left-hand.width/2,y-hand.top-hand.height/2)<65;
  if(chapter==='play'&&!armDrag&&!turnDrag&&!atHand&&speed>2.2&&distance>100&&chapterTime-chapterAt>3)react('startle');
  if(chapter==='finding'){
-   const r=$('seed').getBoundingClientRect(),d=Math.hypot(x-r.left-r.width/2,y-r.top-r.height/2);
-   const brightness=Math.max(chapterTime-chapterAt>25?.4:.12,1-d/160);$('seed').style.opacity=String(brightness);seedBrightness(brightness);
+   revealSeed();
  }
  if(chapter==='carrying'){place($('seed'),{x:x+14,y:y-12});placeSeed();}
  if(lightPinned&&chapter==='growing'&&!coarse){const p=screenPoint(145,4,75);if(Math.hypot(x-p.x,y-p.y)>90){lightPinned=false;$('soil').setAttribute('aria-pressed','false');}}

@@ -68,7 +68,7 @@ body[data-chapter^=collection-] #dialogue{top:max(11vh,70px);bottom:auto}
 <button id="turn-milo" type="button" aria-label="Turn Milo to find his name. Use the left and right arrow keys." hidden></button>
 <button id="back-name" type="button" aria-label="Read the name on his back" hidden></button>
 <div id="answers" role="group" aria-label="Your answer" hidden></div>
-<form id="nickname-form" hidden><label for="robot-name">What should I be called?</label><div class="name-row"><input id="robot-name" aria-label="Robot’s new name" placeholder="A name for him" maxlength="20" autocomplete="off" required><button type="submit">That’s you ↗</button></div></form>
+<form id="nickname-form" hidden><label for="robot-name">What should I be called?</label><div class="name-row"><input id="robot-name" aria-label="Robot’s new name" placeholder="A name for him" maxlength="20" autocomplete="off" required><button type="submit">That’s you</button></div></form>
 <button id="water-can" type="button" aria-label="Pick up the watering can" hidden></button>
 <button id="water-hand" type="button" aria-label="Place the watering can in his hand" hidden></button>
 <button id="collect-cap" type="button" aria-label="Pick up the blue bottle cap" hidden></button>
@@ -162,7 +162,25 @@ function positionSeed(x,y,carrying=false){
  const depth=carrying?420:(7-360)/ry,f=innerHeight/(2*tan),size=18*depth/(f*26);
  update(seedModel.id,{position:{x:370+depth*rx,y:360+depth*ry,z:790+depth*rz},scale:{x:size,y:size,z:size}});
 }
-function seedBrightness(amount){if(seedShell)update(seedShell.id,{material:{alpha:Math.max(8,amount*100)}});}
+function seedBrightness(amount){if(seedShell)update(seedShell.id,{material:{alpha:amount*100}});}
+let revealFocus='';
+window.addEventListener('pointermove',()=>{revealFocus='';});
+function revealFoundObject(key,root,meshes,point){
+ if(!root)return 0;
+ const distance=Math.hypot(pointerX-point.x,pointerY-point.y);
+ const amount=revealFocus===key?.85:.75*Math.pow(clamp(1-distance/115),1.6);
+ update(root.id,{visible:amount>.005});
+ for(const mesh of meshes)if(mesh)update(mesh.id,{material:{alpha:amount*100}});
+ return amount;
+}
+function restoreFoundObject(root,meshes){
+ if(root)update(root.id,{visible:true});
+ for(const mesh of meshes)if(mesh)update(mesh.id,{material:{alpha:100}});
+}
+function revealSeed(){
+ const r=$('seed').getBoundingClientRect();
+ $('seed').style.opacity=String(revealFoundObject('seed',seedModel,[seedShell],{x:r.left+r.width/2,y:r.top+r.height/2}));
+}
 function placeSeed(){
  if(chapter==='finding'){
    const r=$('seed').getBoundingClientRect();positionSeed(r.left+r.width/2,r.top+r.height/2);
@@ -204,19 +222,18 @@ function lookAround(){
  $('pet').hidden=true;$('five').hidden=true;
  speak('Oh. There really isn’t much here, is there?',()=>speak('Can you help me find something?',()=>{
    enter('finding');objective('Find the little glimmer');
-   $('seed').hidden=false;$('seed').style.opacity='.12';if(seedModel)update(seedModel.id,{visible:true});seedBrightness(.12);placeSeed();
-   after(25,()=>{if(chapter==='finding'){speak('I think I saw something over there.');$('seed').style.opacity='.65';seedBrightness(.65);}});
+   $('seed').hidden=false;$('seed').style.opacity='0';placeSeed();revealSeed();
  }));
 }
 function pickSeed(){
  if(chapter!=='finding')return;
  enter('carrying');document.body.dataset.carrying='true';$('seed').setAttribute('aria-label','Seed collected');$('seed').tabIndex=-1;
- place($('seed'),{x:pointerX+14,y:pointerY-12});seedBrightness(1);placeSeed();
+ place($('seed'),{x:pointerX+14,y:pointerY-12});restoreFoundObject(seedModel,[seedShell]);placeSeed();
  objective('Plant it beside Milo');$('soil').hidden=false;layoutChapter();
  speak('A seed? What does it do?');
 }
 $('seed').onclick=pickSeed;
-$('seed').onfocus=()=>{if(chapter==='finding'){$('seed').style.opacity='1';seedBrightness(1);}};
+$('seed').onfocus=()=>{if(chapter==='finding'){revealFocus='seed';revealSeed();}};
 async function plantSeed(){
  if(chapter!=='carrying')return;
  enter('planting');if(seedModel)update(seedModel.id,{visible:false});$('seed').hidden=true;document.body.dataset.carrying='false';$('soil').disabled=true;objective('');
@@ -257,8 +274,7 @@ function chapterPointer(x,y){
  const hand=$('five').getBoundingClientRect(),atHand=Math.hypot(x-hand.left-hand.width/2,y-hand.top-hand.height/2)<65;
  if(chapter==='play'&&!armDrag&&!turnDrag&&!atHand&&speed>2.2&&distance>100&&chapterTime-chapterAt>3)react('startle');
  if(chapter==='finding'){
-   const r=$('seed').getBoundingClientRect(),d=Math.hypot(x-r.left-r.width/2,y-r.top-r.height/2);
-   const brightness=Math.max(chapterTime-chapterAt>25?.4:.12,1-d/160);$('seed').style.opacity=String(brightness);seedBrightness(brightness);
+   revealSeed();
  }
  if(chapter==='carrying'){place($('seed'),{x:x+14,y:y-12});placeSeed();}
  if(lightPinned&&chapter==='growing'&&!coarse){const p=screenPoint(145,4,75);if(Math.hypot(x-p.x,y-p.y)>90){lightPinned=false;$('soil').setAttribute('aria-pressed','false');}}
@@ -338,7 +354,7 @@ let moth=null,mothLeft=null,mothRight=null,mothOffered=false,mothWarmth=0,mothPi
 let mothReady=false,twoReady=false,mothOfferAt=0;
 try{chosenName=localStorage.getItem('milo-chosen-name')||'Milo';}catch{}
 const freeArms=()=>['play','end','named-play','garden-end','collection-rest'].includes(chapter)||(chapter==='collection-end'&&collectionSettled);
-const namingStates=()=>['name-intro','name-search','name-found','nickname','name-happy','named-play','water-intro','water-find','water-carry','water-miss','water-aim','water-bloom','water-done','moth-arrival','moth-coax','moth-landed','moth-stay','moth-return','garden-end'].includes(chapter)||chapter.startsWith('collection-');
+const namingStates=()=>['name-intro','name-search','name-found','nickname','name-happy','named-play','water-intro','water-find','water-carry','water-aim','water-bloom','water-done','moth-arrival','moth-coax','moth-landed','moth-stay','moth-return','garden-end'].includes(chapter)||chapter.startsWith('collection-');
 const bounded=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 function worldPoint(p){return rotateVector(p,0,yaw,0);}
 function bodyScreen(x,y,z){const p=worldPoint({x,y,z});return screenPoint(p.x,p.y,p.z);}
@@ -474,15 +490,16 @@ function giveName(name){
  }));
 }
 
-// Help him care for the plant: pick up, spill, guide, water, bloom.
+// Help him care for the plant: find, pick up, guide, water, bloom.
 let wateringCan=null,waterDrops=null,gardenFlower=null,waterReady=false,waterBoot;
-let dropParts=[],flowerPetals=[],canDrag=null,canCarry=false,canHeld=false;
-let waterAngle=40,waterTarget=40,waterFill=0,waterPouring=false,waterAligned=false,bloomAt=-100,canHome={x:-135,y:20,z:95},canAt={...canHome};
+let canMeshes=[],dropParts=[],flowerPetals=[],canDrag=null,canCarry=false,canHeld=false;
+let waterAngle=40,waterTarget=40,waterFill=0,waterPouring=false,waterAligned=false,waterGuided=false,bloomAt=-100,canHome={x:-135,y:20,z:95},canAt={...canHome};
 const wateringStates=()=>chapter.startsWith('water-');
 async function prepareWatering(){
  try{
    const find=async name=>{const o=await spline.findObjectByName(name);if(!o)throw new Error('Missing '+name);return o;};
    wateringCan=await find('Watering Can');waterDrops=await find('Water Drops');gardenFlower=await find('Garden Flower');
+   for(const name of ['Can Enamel Body','Can Dark Opening','Can Loop Handle','Can Curved Spout','Can Spout Opening'])canMeshes.push(await find(name));
    for(let i=0;i<6;i++)dropParts.push(await find('Water Drop '+i));
    for(let i=0;i<5;i++)flowerPetals.push(await find('Flower Petal '+i));
    await update(wateringCan.id,{visible:false});await update(waterDrops.id,{visible:false});await update(gardenFlower.id,{visible:false});waterReady=true;
@@ -502,27 +519,23 @@ async function startWatering(){
  if(!waterReady){speak('Could you help me with the plant?',()=>choice('Try again',()=>location.reload()));return;}
  enter('water-intro');reaction='';$('pet').hidden=true;$('five').hidden=true;$('choice').hidden=true;
  speak('You helped me.',()=>speak('Can I help it?',()=>{
-   enter('water-find');canAt={...canHome};update(wateringCan.id,{visible:true});$('water-can').hidden=false;
+   enter('water-find');canAt={...canHome};revealWateringCan();$('water-can').hidden=false;$('spark').hidden=false;
    objective('Give him the watering can');
  }));
 }
 function carryCan(){
  if(!['water-find','water-carry'].includes(chapter))return;
- canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Place the can in his hand');
+ restoreFoundObject(wateringCan,canMeshes);canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Place the can in his hand');
 }
+function revealWateringCan(){revealFoundObject('can',wateringCan,canMeshes,screenPoint(canAt.x+10,canAt.y,canAt.z));}
+$('water-can').onfocus=()=>{if(chapter==='water-find'){revealFocus='can';revealWateringCan();}};
 function giveCan(){
  if(!['water-find','water-carry'].includes(chapter)||!lastPose)return;
- canCarry=false;canHeld=true;canDrag=null;waterAngle=40;waterTarget=40;
- $('water-hand').hidden=true;$('water-can').hidden=true;objective('');enter('water-miss');
- speak('I can do this.');
- after(2.8,()=>{
-   if(chapter!=='water-miss')return;waterPouring=false;
-   speak('I don’t think I grow.',()=>{
-     enter('water-aim');$('water-can').hidden=false;objective('Help him water the plant');
-     choice('Help him aim',()=>{if(chapter==='water-aim'){waterTarget=10;$('choice').hidden=true;}});
-
-   });
- });
+ restoreFoundObject(wateringCan,canMeshes);
+ canCarry=false;canHeld=true;canDrag=null;waterAngle=40;waterTarget=40;waterGuided=false;waterPouring=false;
+ $('water-hand').hidden=true;$('water-can').hidden=false;$('spark').hidden=true;enter('water-aim');
+ objective('Help him water the plant');speak('Can you help me?');
+ choice('Help him aim',()=>{if(chapter==='water-aim'){waterGuided=true;waterTarget=10;$('choice').hidden=true;}});
 }
 $('water-hand').onclick=giveCan;
 $('water-can').onpointerdown=e=>{
@@ -536,7 +549,7 @@ $('water-can').onclick=()=>{
 let suppressCanClickUntil=-1;
 $('water-can').onkeydown=e=>{
  if(chapter!=='water-aim'||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;
- e.preventDefault();waterTarget=bounded(waterTarget+(['ArrowUp','ArrowRight'].includes(e.key)?10:-10),-10,65);
+ e.preventDefault();waterGuided=true;waterTarget=bounded(waterTarget+(['ArrowUp','ArrowRight'].includes(e.key)?10:-10),-10,65);
 };
 window.addEventListener('pointermove',e=>{
  if(!canDrag||e.pointerId!==canDrag.id)return;
@@ -546,7 +559,7 @@ window.addEventListener('pointermove',e=>{
  if(chapter==='water-carry')canAt=pointAtHeight(e.clientX,e.clientY,120);
  if(chapter==='water-aim'){
    // The arm, can, nozzle and falling water all share this same pose.
-   const scale=innerHeight/720;waterTarget=bounded(d.angle+(e.clientX-d.x)/Math.max(.7,scale)*.45,-10,65);
+   waterGuided=true;const scale=innerHeight/720;waterTarget=bounded(d.angle+(e.clientX-d.x)/Math.max(.7,scale)*.45,-10,65);
  }
 });
 function releaseCan(e){
@@ -579,11 +592,6 @@ function wateringPose(p){
  if(canHeld){
    p.rightX=chapter==='water-aim'?-48*ease((chapterTime-chapterAt)/.8):0;p.elbowZ=0;p.elbowY=0;
    p.rightZ=waterAngle;
-   if(chapter==='water-miss'){
-     const t=chapterTime-chapterAt;
-     // He visibly tips the spout towards his own boot before looking down.
-     p.rightZ=12*ease(t/.6);p.headX=t>.8?25:12;p.headY=-7;
-   }
    if(chapter==='water-bloom'){
      const g=ease((chapterTime-bloomAt)/3);p.rightZ=waterAngle*(1-g);p.bodyY-=24*g;p.headX=24*g+10;
    }
@@ -593,21 +601,22 @@ function wateringPose(p){
 function wateringTick(dt){
  if(!waterReady)return;
  waterAngle+=(waterTarget-waterAngle)*(1-Math.exp(-dt*9));
+ if(chapter==='water-find')revealWateringCan();
  if(wateringStates()&&lastPose){
    const h=projectedHand(lastPose,'right');
    if(canHeld)canAt={...h};
-   const tilted=chapter==='water-miss'?-40:chapter==='water-aim'?-35:0;
-   const facing=chapter==='water-miss'?180:0;
+   const ready=chapter==='water-aim'&&waterGuided&&Math.abs(waterAngle-10)<13;
+   const tilted=ready?-35:0;
+   const facing=0;
    update(wateringCan.id,{position:canAt,rotation:{x:0,y:facing,z:tilted}});
    place($('water-can'),screenPoint(canAt.x+10,canAt.y,canAt.z));
    place($('water-hand'),handScreen(lastPose,'right'));
    const local=rotateVector({x:48,y:17,z:0},0,facing,tilted);
    const nozzle={x:canAt.x+local.x,y:canAt.y+local.y,z:canAt.z+local.z};
-   waterPouring=(chapter==='water-miss'&&chapterTime-chapterAt>.7&&chapterTime-chapterAt<2.8)||chapter==='water-aim';
-   waterAligned=chapter==='water-aim'&&Math.hypot(nozzle.x-145,nozzle.z-75)<22;
+   waterAligned=chapter==='water-aim'&&Math.hypot((nozzle.x-145)/18,(nozzle.z-75)/13)<1;
+   waterPouring=ready&&waterAligned;
    if(chapter==='water-aim'){
-     waterAligned=Math.hypot(nozzle.x-145,nozzle.z-75)<22;
-     if(waterAligned)waterFill=clamp(waterFill+dt/5.5);
+     if(waterPouring)waterFill=clamp(waterFill+dt/5.5);
      $('water-can').setAttribute('aria-label',waterAligned?'Keep his hand here to water the plant':'Guide his watering hand. Use arrow keys to move it.');
      if(waterFill>=1)finishWatering();
    }
@@ -719,7 +728,7 @@ function chapterTwoPose(p){
  lastPose={...p};refreshArmTargets(p);return p;
 }
 // His first keepsake. One clock, cached scene objects, no inventory screen.
-let blueCap=null,capEnamel=null,keepsakeBox=null,collectionHatch=null,collectionLid=null,collectionReady=false;
+let boxMeshes=[],blueCap=null,capEnamel=null,keepsakeBox=null,collectionHatch=null,collectionLid=null,collectionReady=false;
 let capAt={x:-235,y:5,z:100},capFrom=null,boxAt={x:-230,y:0,z:70},boxFrom=null;
 let collectionSettled=false,capInBox=false,capHeld=false,collectionDrag=null,collectionClickAfter=-100,collectionHappyAt=-100,collectionRestAt=-100;
 const collectionStates=()=>chapter.startsWith('collection-');
@@ -727,6 +736,7 @@ async function prepareCollection(){
  try{
    const find=async name=>{const o=await spline.findObjectByName(name);if(!o)throw new Error('Missing '+name);return o;};
    blueCap=await find('Blue Bottle Cap');capEnamel=await find('Blue Cap Enamel');keepsakeBox=await find('Keepsake Box');
+   for(const name of ['Keepsake Box Base','Keepsake Box Back','Keepsake Box Front','Keepsake Box Left','Keepsake Box Right','Box Folded Tape'])boxMeshes.push(await find(name));
    collectionHatch=await find('Collection Hatch');collectionLid=await find('Collection Hatch Lid Pivot');
    for(const o of [blueCap,keepsakeBox,collectionHatch])await update(o.id,{visible:false});
    collectionReady=true;
@@ -739,20 +749,20 @@ async function beginCollection(){
  if(!collectionReady){speak('I thought I saw something.',()=>choice('Try again',()=>location.reload()));return;}
  enter('collection-find');reaction='';$('pet').hidden=true;$('five').hidden=true;$('choice').hidden=true;
  $('spark').hidden=false;$('collect-cap').hidden=false;capAt={x:-235,y:5,z:100};
- update(blueCap.id,{visible:true});update(capEnamel.id,{material:{alpha:22}});
+ revealFoundObject('cap',blueCap,[capEnamel],screenPoint(capAt.x,capAt.y,capAt.z));
  objective('Find the blue glimmer');
  speak('Something over there.');
 }
 function carryKeepsake(){
  if(chapter!=='collection-find')return;enter('collection-carry');
- update(capEnamel.id,{material:{alpha:100}});$('collect-hand').hidden=false;
+ restoreFoundObject(blueCap,[capEnamel]);$('collect-hand').hidden=false;
  objective('Bring it to his hand');
 }
 function giveKeepsake(){
  if(!['collection-find','collection-carry'].includes(chapter)||!lastPose)return;
  enter('collection-reflex');capHeld=true;collectionDrag=null;
  $('collect-cap').hidden=true;$('collect-hand').hidden=true;$('spark').hidden=true;objective('');
- update(capEnamel.id,{material:{alpha:100}});update(collectionHatch.id,{visible:true});
+ restoreFoundObject(blueCap,[capEnamel]);update(collectionHatch.id,{visible:true});
  speak('Item collected.');
  after(2.3,()=>{
    if(chapter!=='collection-reflex')return;
@@ -764,17 +774,17 @@ function giveKeepsake(){
 function keepKeepsake(){
  if(chapter!=='collection-notice')return;
  enter('collection-box-find');collectionHappyAt=chapterTime;$('spark').hidden=false;$('collect-box').hidden=false;
- update(keepsakeBox.id,{visible:true});objective('Find somewhere to keep it safe');
+ revealFoundObject('box',keepsakeBox,boxMeshes,screenPoint(boxAt.x,boxAt.y+14,boxAt.z));objective('Find somewhere to keep it safe');
  speak('I’d like to keep this one.');
 }
 function carryKeepsakeBox(){
  if(chapter!=='collection-box-find')return;
- enter('collection-box-carry');$('collect-place').hidden=false;
+ restoreFoundObject(keepsakeBox,boxMeshes);enter('collection-box-carry');$('collect-place').hidden=false;
  objective('Put his box beside the garden');
 }
 function placeKeepsakeBox(){
  if(!['collection-box-find','collection-box-carry'].includes(chapter))return;
- enter('collection-box-settle');collectionDrag=null;boxFrom={...boxAt};
+ restoreFoundObject(keepsakeBox,boxMeshes);enter('collection-box-settle');collectionDrag=null;boxFrom={...boxAt};
  $('collect-box').hidden=true;$('collect-place').hidden=true;$('spark').hidden=true;objective('');
  after(1.1,()=>{
    if(chapter!=='collection-box-settle')return;
@@ -796,7 +806,8 @@ $('collect-cap').onclick=()=>{
  if(chapter==='collection-find')carryKeepsake();
  else if(collectionSettled&&capInBox&&['collection-end','collection-rest'].includes(chapter))speak('The blue one. My first one.');
 };
-$('collect-cap').onfocus=()=>{if(chapter==='collection-find')update(capEnamel.id,{material:{alpha:100}});};
+$('collect-cap').onfocus=()=>{if(chapter==='collection-find'){revealFocus='cap';revealFoundObject('cap',blueCap,[capEnamel],screenPoint(capAt.x,capAt.y,capAt.z));}};
+$('collect-box').onfocus=()=>{if(chapter==='collection-box-find'){revealFocus='box';revealFoundObject('box',keepsakeBox,boxMeshes,screenPoint(boxAt.x,boxAt.y+14,boxAt.z));}};
 $('collect-hand').onclick=giveKeepsake;
 $('collect-box').onclick=()=>{if(chapterTime>=collectionClickAfter)carryKeepsakeBox();};
 $('collect-place').onclick=placeKeepsakeBox;
@@ -808,10 +819,6 @@ function startCollectionDrag(e,kind){
 $('collect-cap').onpointerdown=e=>startCollectionDrag(e,'cap');
 $('collect-box').onpointerdown=e=>startCollectionDrag(e,'box');
 window.addEventListener('pointermove',e=>{
- if(chapter==='collection-find'&&collectionReady){
-   const p=screenPoint(capAt.x,capAt.y,capAt.z),distance=Math.hypot(e.clientX-p.x,e.clientY-p.y);
-   update(capEnamel.id,{material:{alpha:Math.max(22,100-distance*.65)}});
- }
  const d=collectionDrag;
  if(d&&e.pointerId===d.id){
    if(!d.moved&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<5)return;
@@ -860,6 +867,8 @@ function collectionPose(p){
 function collectionTick(){
  if(!collectionReady||!collectionStates()||!lastPose)return;
  const elapsed=chapterTime-chapterAt;
+ if(chapter==='collection-find')revealFoundObject('cap',blueCap,[capEnamel],screenPoint(capAt.x,capAt.y,capAt.z));
+ if(chapter==='collection-box-find')revealFoundObject('box',keepsakeBox,boxMeshes,screenPoint(boxAt.x,boxAt.y+14,boxAt.z));
  if(capHeld){
    const h=projectedHand(lastPose,'right');capAt={x:h.x,y:h.y+10,z:h.z+7};
  }

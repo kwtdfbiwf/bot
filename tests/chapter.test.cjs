@@ -17,6 +17,19 @@ const context={console,spline,Math,Promise,Error,localStorage:{getItem:k=>savedN
 vm.createContext(context);vm.runInContext(html.split('<script>')[1].split('</script>')[0],context);
 const $=id=>elements.get(id);
 async function advance(seconds){for(let i=0;i<Math.ceil(seconds*60);i++){now+=1000/60;for(let j=0;j<8;j++)await Promise.resolve();const due=queue.filter(t=>t.at<=now);queue=queue.filter(t=>t.at>now);due.forEach(t=>t.fn());const frames=rafs;rafs=[];frames.forEach(fn=>fn(now));}for(let j=0;j<12;j++)await Promise.resolve();}
+async function checkLightFind(controlId,objectId){
+ for(const fn of events.pointermove)fn({clientX:0,clientY:0});await advance(.1);
+ assert.equal(writes.get(objectId).visible,false,objectId+' must stay hidden outside the cursor light');
+ const el=$(controlId),rect=el.getBoundingClientRect();
+ const x=Number.isFinite(parseFloat(el.style.left))?parseFloat(el.style.left):rect.left+rect.width/2;
+ const y=Number.isFinite(parseFloat(el.style.top))?parseFloat(el.style.top):rect.top+rect.height/2;
+ for(const fn of events.pointermove)fn({clientX:x,clientY:y});await advance(.1);
+ assert.equal(writes.get(objectId).visible,true,objectId+' must reveal beneath the cursor light');
+ for(const fn of events.pointermove)fn({clientX:0,clientY:0});await advance(.1);
+ assert.equal(writes.get(objectId).visible,false,objectId+' must become hidden when the light leaves');
+ el.onfocus?.();await advance(.1);
+ assert.equal(writes.get(objectId).visible,true,objectId+' must remain discoverable with keyboard focus');
+}
 async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(predicate())return;await advance(.1)}throw Error('Timed out at phase '+body.dataset.phase+' / '+body.dataset.chapter)}
 (async()=>{
  await advance(2);assert.equal(writes.get('Robot').visible,true,'Prewarm the model underneath the opaque opening overlay');assert.equal(writes.get('Chapter One Plant').visible,false);assert.equal(writes.get('Chapter One Seed').visible,false);
@@ -72,7 +85,9 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  for(const fn of events.pointercancel)fn({pointerId:8});await advance(1.5);
  assert(Math.abs(writes.get('Robot Arm Pivot -1').rotation.z)<5,'Cancelled dragging should release the arm');
  $('choice').onclick();await until(()=>body.dataset.chapter==='finding');
- assert.equal(writes.get('Chapter One Seed').visible,true);$('seed').onclick();assert.equal(body.dataset.chapter,'carrying');assert(Number.isFinite(writes.get('Chapter One Seed').scale.x));await $('soil').onclick();assert.equal(writes.get('Chapter One Seed').visible,false);
+ for(const fn of events.pointermove)fn({clientX:0,clientY:0});await advance(30);
+ assert.equal(writes.get('Chapter One Seed').visible,false,'Waiting must not automatically brighten the seed');
+ await checkLightFind('seed','Chapter One Seed');assert(writes.get('Seed Shell').material.alpha<=85);$('seed').onclick();assert.equal(body.dataset.chapter,'carrying');assert(Number.isFinite(writes.get('Chapter One Seed').scale.x));await $('soil').onclick();assert.equal(writes.get('Chapter One Seed').visible,false);
  await until(()=>body.dataset.chapter==='growing');await advance(2);
  assert.equal($('growth').attributes['aria-valuenow'],'0','Growth must wait for light');
  $('soil').onclick();await advance(2);const litProgress=$('growth').attributes['aria-valuenow'];assert(Number(litProgress)>0);
@@ -104,7 +119,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  await until(()=>body.dataset.chapter==='named-play');assert.equal(savedNames.get('milo-chosen-name'),nickname?'Pip':'Milo');
  assert.equal(writes.get('Robot Leg Pivot 1').position.y,100,'Milo should stand before turning');
  $('choice').onclick();await until(()=>body.dataset.chapter==='water-find');
- assert.equal(writes.get('Watering Can').visible,true);assert.equal(writes.get('Garden Flower').visible,false);
+ await checkLightFind('water-can','Watering Can');assert.equal(writes.get('Garden Flower').visible,false);
  // First try a cancelled drag: it must not silently hand over the can.
  $('water-can').onpointerdown({pointerId:12,button:0,currentTarget:$('water-can'),clientX:300,clientY:480});
  for(const fn of events.pointermove)fn({pointerId:12,clientX:420,clientY:420});
@@ -120,12 +135,15 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  }else{
    $('water-can').onclick();assert.equal(body.dataset.chapter,'water-carry');$('water-hand').onclick();
  }
- assert.equal(body.dataset.chapter,'water-miss');await advance(1);
- assert.equal(writes.get('Water Drops').visible,true,'First pour must visibly miss');
- assert.equal(writes.get('Garden Flower').visible,false,'Spilling must not grow the flower');
- await until(()=>body.dataset.chapter==='water-aim');await advance(6);
- assert.equal(body.dataset.chapter,'water-aim','An unaligned stream must not complete watering');
+ assert.equal(body.dataset.chapter,'water-aim');await advance(6);
+ assert.equal(writes.get('Water Drops').visible,false,'Taking the can must not start pouring');
+ assert.equal(writes.get('Watering Can').rotation.y,0,'The spout must face away from his body');
+ assert.equal(writes.get('Watering Can').rotation.z,0,'He must hold the can upright until guided');
+ assert.equal(body.dataset.chapter,'water-aim','Watering must wait for user guidance');
  assert.equal(writes.get('Garden Flower').visible,false);
+ $('water-can').onkeydown({key:'ArrowUp',preventDefault(){}});await advance(.5);
+ assert.equal(writes.get('Water Drops').visible,false,'Guiding away from the plant must not spill onto Milo');
+ $('water-can').onkeydown({key:'ArrowDown',preventDefault(){}});await advance(.5);
  if(nickname){
    const x=parseFloat($('water-can').style.left),y=parseFloat($('water-can').style.top);
    $('water-can').onpointerdown({pointerId:14,button:0,currentTarget:$('water-can'),clientX:x,clientY:y});
@@ -133,6 +151,8 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
    for(const fn of events.pointerup)fn({pointerId:14,clientX:x-30/.45,clientY:y,type:'pointerup'});
  }else if(process.argv[2]==='assist')$('choice').onclick();
  else for(let i=0;i<3;i++)$('water-can').onkeydown({key:'ArrowDown',preventDefault(){}});
+ await advance(.8);assert.equal(writes.get('Water Drops').visible,true,'Guiding over the soil should start pouring');
+ assert.equal(writes.get('Watering Can').rotation.y,0,'Pouring must not reverse the spout toward his leg');
  await until(()=>body.dataset.chapter==='water-bloom',12);
  assert.equal(writes.get('Water Drops').visible,false);assert.equal(writes.get('Garden Flower').visible,true);
  await until(()=>body.dataset.chapter==='water-done');
@@ -152,7 +172,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  assert.equal(writes.get('Chapter One Plant').visible,true);
  await until(()=>!$('choice').hidden&&$('choice').textContent==='Look a little further');
  $('choice').onclick();await until(()=>body.dataset.chapter==='collection-find');
- assert.equal(writes.get('Blue Bottle Cap').visible,true);assert.equal(writes.get('Keepsake Box').visible,false);
+ await checkLightFind('collect-cap','Blue Bottle Cap');assert.equal(writes.get('Keepsake Box').visible,false);
  $('collect-cap').onpointerdown({pointerId:20,button:0,currentTarget:$('collect-cap'),clientX:300,clientY:480});
  for(const fn of events.pointermove)fn({pointerId:20,clientX:420,clientY:400});
  for(const fn of events.pointercancel)fn({pointerId:20});
@@ -169,7 +189,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  await until(()=>!$('answers').hidden&&body.dataset.chapter==='collection-notice');
  assert.equal(writes.get('Blue Bottle Cap').visible,true,'His first find must never be discarded');
  $('answers').children.find(b=>b.textContent===(nickname?'You can choose.':'Of course.')).onclick();
- assert.equal(body.dataset.chapter,'collection-box-find');assert.equal(writes.get('Keepsake Box').visible,true);
+ assert.equal(body.dataset.chapter,'collection-box-find');await checkLightFind('collect-box','Keepsake Box');
  $('collect-box').onpointerdown({pointerId:22,button:0,currentTarget:$('collect-box'),clientX:300,clientY:480});
  for(const fn of events.pointermove)fn({pointerId:22,clientX:420,clientY:400});
  for(const fn of events.pointercancel)fn({pointerId:22});

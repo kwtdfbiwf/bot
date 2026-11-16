@@ -12,7 +12,7 @@ for(let i=0;i<=n;i++){
  for(let j=0;j<m;j++){const b=j/m*Math.PI*2;hv.push(x+Math.cos(a)*Math.cos(b)*2.4,y+Math.sin(a)*Math.cos(b)*2.4,Math.sin(b)*2.4);}
 }
 for(let i=0;i<n;i++)for(let j=0;j<m;j++){const a=i*m+j,b=i*m+(j+1)%m;hi.push(a,a+m,b,b,a+m,b+m);}
-customMesh({vertices:hv,indices:hi});rename('Can Loop Handle');applyMaterial('Peach Enamel');
+customMesh({vertices:hv,indices:hi});rename('Can Loop Handle');applyMaterial('Peach Enamel');createMaterial('Watering Can Handle');
 position({x:-135,y:20,z:95});moveInto(can);
 // A tapered bent spout; open dark mouth is a separate recessed surface.
 const sv=[],si=[],rings=8,sides=12;
