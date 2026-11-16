@@ -36,6 +36,17 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  for(const fn of events.pointermove)fn({clientX:1280,clientY:260});await advance(.7);
  assert(writes.get('Robot Head Pivot').rotation.y>50,'He must clearly follow a cursor to his right');
  for(const fn of events.pointermove)fn({clientX:640,clientY:260});await advance(3);
+ $('pet').onclick();
+ for(const fn of events.pointermove)fn({clientX:0,clientY:0});await advance(.6);
+ const speakingHead={...writes.get('Robot Head Pivot').rotation};
+ assert(Math.abs(speakingHead.y-25.1)<2,'Milo must face the user while speaking');
+ for(const fn of events.pointermove)fn({clientX:1280,clientY:720});await advance(.5);
+ const stillSpeakingHead=writes.get('Robot Head Pivot').rotation;
+ assert(Math.abs(stillSpeakingHead.y-speakingHead.y)<2,'Mouse motion must not turn his head during speech');
+ assert(Math.abs(stillSpeakingHead.x)<6,'Speaking must hold eye contact rather than look down at the cursor');
+ await advance(3);
+ assert(writes.get('Robot Head Pivot').rotation.y>50,'Cursor tracking must resume after the speaking pause');
+ for(const fn of events.pointermove)fn({clientX:640,clientY:260});await advance(3);
  for(const fn of events.pointermove)fn({clientX:0,clientY:0});await advance(.02);
  for(const fn of events.pointermove)fn({clientX:1280,clientY:720});
  const initialHandTop=parseFloat($('five').style.top);

@@ -102,13 +102,22 @@ function update(id,props){
  const patch=changed(props,previous);
  return Object.keys(patch).length?spline.updateObject(id,patch):Promise.resolve();
 }
-let phase='boot',began=performance.now(),clock=began,visitor='',typing=0,active=true;
+let phase='boot',began=performance.now(),clock=began,visitor='',typing=0,speechTyping=false,speechUntil=0,active=true;
 const write=(name,props)=>update(parts[name].id,props);
 const clamp=x=>Math.max(0,Math.min(1,x)),ease=x=>.5-Math.cos(Math.PI*clamp(x))/2,pulse=(u,a,b,c,d)=>ease((u-a)/(b-a))*(1-ease((u-c)/(d-c)));
 function setPhase(next){phase=next;document.body.dataset.phase=next;began=performance.now();}
 function wakeButton(){const b=$('wake');b.hidden=false;b.disabled=false;requestAnimationFrame(()=>b.classList.add('ready'));}
 function hideWake(){$('wake').classList.remove('ready');$('wake').disabled=true;$('wake').hidden=true;}
-function speak(text,done){clearTimeout(typing);$('dialogue').hidden=false;$('dialogue').textContent='';let n=0;function next(){n+=1;$('dialogue').textContent=text.slice(0,n);if(n<text.length)typing=setTimeout(next,reduced?0:34);else if(done)typing=setTimeout(done,1100);}next();}
+function speak(text,done){
+ clearTimeout(typing);$('dialogue').hidden=false;$('dialogue').textContent='';
+ const talking=text!=='...';speechTyping=talking;speechUntil=0;let n=0;
+ function next(){
+   n+=1;$('dialogue').textContent=text.slice(0,n);
+   if(n<text.length)typing=setTimeout(next,reduced?0:34);
+   else{speechTyping=false;speechUntil=talking?performance.now()+Math.max(1400,text.length*25):0;if(done)typing=setTimeout(done,1100);}
+ }
+ next();
+}
 function askName(){setPhase('name');$('name-form').hidden=false;$('visitor-name').focus({preventScroll:true});}
 function search(){setPhase('search');$('objective').hidden=false;$('switch').hidden=false;$('spark').hidden=false;}
 $('wake').onclick=()=>{if(phase==='boot'){hideWake();setPhase('appear');setTimeout(wakeButton,1500);}else if(phase==='appear'){hideWake();setPhase('waking');}};
@@ -878,15 +887,17 @@ window.addEventListener('blur',()=>{gazeActive=false;});
 function followPointer(p,now){
  const dt=gazeFrame?Math.min(.1,Math.max(0,(now-gazeFrame)/1000)):0;gazeFrame=now;
  const locked=chapter==='name-search'||chapter==='name-found';
- const waking=phase!=='lit'||(now-began)/1000<(reduced?3.1:9.1);
- if(locked||waking){gazeWeight=0;return p;}
+ const talking=!$('dialogue').hidden&&(speechTyping||now<speechUntil);
+ const waking=(now-began)/1000<(reduced?3.1:9.1);
+ if(phase!=='lit'||locked||(waking&&!talking)){gazeWeight=0;return p;}
  const k=1-Math.exp(-dt*(reduced?7:12));
- gazeWeight+=((gazeActive?1:0)-gazeWeight)*k;
- if(gazeActive){
+ gazeWeight+=((talking||gazeActive?1:0)-gazeWeight)*k;
+ if(talking||gazeActive){
    const face=bodyScreen(0,317+p.bodyY,75),degrees=180/Math.PI;
    const facing=((25.1-yaw)%360+540)%360-180;
-   const targetYaw=bounded(facing+Math.atan2(gazeX-face.x,innerHeight*.32)*degrees,-55,70);
-   const targetPitch=bounded(-8+Math.atan2(gazeY-face.y,innerHeight*.25)*degrees,-38,30);
+   // Hold eye contact with the camera for each line and its reading pause.
+   const targetYaw=bounded(talking?facing:facing+Math.atan2(gazeX-face.x,innerHeight*.32)*degrees,-55,70);
+   const targetPitch=talking?-Math.atan2(360-(317+p.bodyY),Math.hypot(370,715))*degrees:bounded(-8+Math.atan2(gazeY-face.y,innerHeight*.25)*degrees,-38,30);
    gazeYaw+=(targetYaw-gazeYaw)*k;gazePitch+=(targetPitch-gazePitch)*k;
  }
  const weight=gazeWeight*.95;
