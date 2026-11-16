@@ -6,7 +6,7 @@ Live website: https://kwtdfbiwf.github.io/bot/
 
 The opening leads into cursor play, finding a seed, planting it beside Milo,
 growing a plant with your light, and a quiet seated ending. Continue by finding the name stamped on Milo’s
-back, choosing his name, helping him water the plant, and meeting a moth drawn to its new flower. After the moth settles, find a blue bottle cap and help Milo keep it in his first box. Hidden finds are revealed by the cursor light. Milo holds the watering can upright until the player drags it over the plant. Dropping the found can directly on the plant also works; no aim button is required. His arms can
+back, choosing his name, helping him water the plant, and meeting a moth drawn to its new flower. After the moth settles, find a blue bottle cap and help Milo keep it in his first box. Hidden finds are revealed by the cursor light. Give the can to Milo’s right hand, then drag that hand toward the plant. His body turns with the guided reach; he pours only over the soil. Cursor gaze is active during object searches, with eye contact during dialogue. His arms can
 be lifted by dragging. Pointer, touch, and keyboard interactions are supported.
 
 ## Source

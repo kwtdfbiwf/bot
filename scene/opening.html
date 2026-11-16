@@ -70,7 +70,7 @@ body[data-chapter^=collection-] #dialogue{top:max(11vh,70px);bottom:auto}
 <div id="answers" role="group" aria-label="Your answer" hidden></div>
 <form id="nickname-form" hidden><label for="robot-name">What should I be called?</label><div class="name-row"><input id="robot-name" aria-label="Robot’s new name" placeholder="A name for him" maxlength="20" autocomplete="off" required><button type="submit">That’s you</button></div></form>
 <button id="water-can" type="button" aria-label="Pick up the watering can" hidden></button>
-<button id="water-hand" type="button" aria-label="Place the watering can in his hand" hidden></button>
+<button id="water-hand" type="button" aria-label="Place the watering can in his right hand" hidden></button>
 <button id="collect-cap" type="button" aria-label="Pick up the blue bottle cap" hidden></button>
 <button id="collect-hand" type="button" aria-label="Give the bottle cap to Milo" hidden></button>
 <button id="collect-box" type="button" aria-label="Pick up the little keepsake box" hidden></button>
@@ -364,14 +364,14 @@ const namingStates=()=>['name-intro','name-search','name-found','nickname','name
 const bounded=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 function worldPoint(p){return rotateVector(p,0,yaw,0);}
 function bodyScreen(x,y,z){const p=worldPoint({x,y,z});return screenPoint(p.x,p.y,p.z);}
-function projectedHand(p,side='right'){
+function projectedHand(p,side='right',orientation=yaw){
  if(side==='right'){
    const q=rotateVector({x:5,y:-57,z:7},0,p.elbowY,p.elbowZ);
    const r=rotateVector({x:8+q.x,y:-43+q.y,z:q.z},p.rightX,0,p.rightZ);
-   return worldPoint({x:66+r.x,y:204+p.bodyY+r.y,z:r.z});
+   return rotateVector({x:66+r.x,y:204+p.bodyY+r.y,z:r.z},0,orientation,0);
  }
  const r=rotateVector({x:-13,y:-100,z:7},p.leftX,0,p.leftZ);
- return worldPoint({x:-66+r.x,y:204+p.bodyY+r.y,z:r.z});
+ return rotateVector({x:-66+r.x,y:204+p.bodyY+r.y,z:r.z},0,orientation,0);
 }
 function handScreen(p,side){const h=projectedHand(p,side);return screenPoint(h.x,h.y,h.z);}
 function refreshArmTargets(p){
@@ -500,6 +500,12 @@ function giveName(name){
 let wateringCan=null,waterDrops=null,gardenFlower=null,waterReady=false,waterBoot;
 let canMeshes=[],dropParts=[],flowerPetals=[],canDrag=null,canCarry=false,canHeld=false;
 let waterAngle=40,waterTarget=40,waterFill=0,waterPouring=false,waterAligned=false,waterGuided=false,bloomAt=-100,canHome={x:-135,y:20,z:95},canAt={...canHome};
+// The original rig labels +X as right; Milo's anatomical right is the -X arm.
+const wateringSide='left',waterTurn=103.3;
+let waterFacing=0;
+const waterProgress=angle=>clamp((40-angle)/30);
+const waterYaw=angle=>waterFacing+waterTurn*waterProgress(angle);
+function aimWater(angle){waterGuided=true;waterTarget=bounded(angle,-10,65);yawTarget=waterYaw(waterTarget);$('choice').hidden=true;}
 const wateringStates=()=>chapter.startsWith('water-');
 async function prepareWatering(){
  try{
@@ -523,18 +529,19 @@ function overPlant(x,y){
  return Math.hypot(x-soil.x,y-bounded(y,stem.y,soil.y))<radius;
 }
 function guideCan(x,y,drag){
- waterGuided=true;$('choice').hidden=true;
- if(overPlant(x,y)){waterTarget=10;return;}
+ if(overPlant(x,y)){aimWater(10);return;}
  // Match the hand's projected movement in both axes, keeping the original grab offset.
- const origin=projectedHand({...lastPose,rightX:-48,rightZ:drag.angle,elbowY:0,elbowZ:0},'right');
+ const origin=projectedHand({...lastPose,leftX:-48,leftZ:-drag.angle},wateringSide,waterYaw(drag.angle));
  const start=screenPoint(origin.x+10,origin.y,origin.z);
  const target={x:start.x+x-drag.x,y:start.y+y-drag.y};
  let best=Infinity;
- for(let angle=-10;angle<=65;angle++){
-   const hand=projectedHand({...lastPose,rightX:-48,rightZ:angle,elbowY:0,elbowZ:0},'right');
+ let bestAngle=drag.angle;
+ for(let angle=10;angle<=65;angle++){
+   const hand=projectedHand({...lastPose,leftX:-48,leftZ:-angle},wateringSide,waterYaw(angle));
    const p=screenPoint(hand.x+10,hand.y,hand.z),distance=Math.hypot(p.x-target.x,p.y-target.y);
-   if(distance<best){best=distance;waterTarget=angle;}
+   if(distance<best){best=distance;bestAngle=angle;}
  }
+ aimWater(bestAngle);
 }
 async function startWatering(){
  if(chapter!=='named-play')return;await waterBoot;
@@ -547,13 +554,14 @@ async function startWatering(){
 }
 function carryCan(){
  if(!['water-find','water-carry'].includes(chapter))return;
- restoreFoundObject(wateringCan,canMeshes);canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Place the can in his hand');
+ restoreFoundObject(wateringCan,canMeshes);canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Place the can in his right hand');
 }
 function revealWateringCan(){revealFoundObject('can',wateringCan,canMeshes,screenPoint(canAt.x+10,canAt.y,canAt.z));}
 $('water-can').onfocus=()=>{if(chapter==='water-find'){revealFocus='can';revealWateringCan();}};
 function giveCan(){
  if(!['water-find','water-carry'].includes(chapter)||!lastPose)return;
  restoreFoundObject(wateringCan,canMeshes);
+ waterFacing=Math.round(yaw/360)*360;yawTarget=waterFacing;
  canCarry=false;canHeld=true;canDrag=null;waterAngle=40;waterTarget=40;waterGuided=false;waterPouring=false;
  $('water-hand').hidden=true;$('water-can').hidden=false;$('spark').hidden=true;enter('water-aim');
  objective('Help him water the plant');speak('Can you help me?');
@@ -571,7 +579,7 @@ $('water-can').onclick=()=>{
 let suppressCanClickUntil=-1;
 $('water-can').onkeydown=e=>{
  if(chapter!=='water-aim'||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;
- e.preventDefault();waterGuided=true;waterTarget=bounded(waterTarget+(['ArrowUp','ArrowRight'].includes(e.key)?10:-10),-10,65);
+ e.preventDefault();aimWater(waterTarget+(['ArrowUp','ArrowRight'].includes(e.key)?10:-10));
 };
 window.addEventListener('pointermove',e=>{
  if(!canDrag||e.pointerId!==canDrag.id)return;
@@ -589,11 +597,8 @@ function releaseCan(e){
  canDrag=null;document.body.dataset.armDragging='false';
  if(d.moved){suppressCanClickUntil=chapterTime+.35;
    if(chapter==='water-carry'){
-     const h=handScreen(lastPose,'right');
-     const plantDrop=overPlant(e.clientX??-999,e.clientY??-999);
-     if(e.type!=='pointercancel'&&(plantDrop||Math.hypot((e.clientX??-999)-h.x,(e.clientY??-999)-h.y)<85)){
-       giveCan();if(plantDrop){waterGuided=true;waterTarget=10;}
-     }
+     const h=handScreen(lastPose,wateringSide);
+     if(e.type!=='pointercancel'&&Math.hypot((e.clientX??-999)-h.x,(e.clientY??-999)-h.y)<62)giveCan();
      else{canAt={...canHome};canCarry=false;enter('water-find');$('water-hand').hidden=true;objective('Give him the watering can');}
    }
  }
@@ -602,6 +607,7 @@ window.addEventListener('pointerup',releaseCan);window.addEventListener('pointer
 window.addEventListener('blur',()=>releaseCan({type:'pointercancel'}));
 function finishWatering(){
  if(chapter!=='water-aim')return;
+ yawTarget=waterFacing;
  enter('water-bloom');bloomAt=chapterTime;waterPouring=false;canDrag=null;document.body.dataset.armDragging='false';
  $('water-can').hidden=true;$('choice').hidden=true;objective('');
  update(gardenFlower.id,{visible:true});
@@ -612,12 +618,12 @@ function finishWatering(){
 }
 function wateringPose(p){
  if(!wateringStates())return p;
- p.headY=13;p.headX=12;
+ p.headY=13-(yaw-waterFacing)*.5;p.headX=12;
  if(canHeld){
-   p.rightX=chapter==='water-aim'?-48*ease((chapterTime-chapterAt)/.8):0;p.elbowZ=0;p.elbowY=0;
-   p.rightZ=waterAngle;
+   p.leftX=chapter==='water-aim'?-48*ease((chapterTime-chapterAt)/.8):0;
+   p.leftZ=-waterAngle;
    if(chapter==='water-bloom'){
-     const g=ease((chapterTime-bloomAt)/3);p.rightZ=waterAngle*(1-g);p.bodyY-=24*g;p.headX=24*g+10;
+     const g=ease((chapterTime-bloomAt)/3);p.leftZ=-waterAngle*(1-g);p.bodyY-=24*g;p.headX=24*g+10;
    }
  }else if(chapter==='water-done'){p.headX=22;p.bodyY-=24;}
  return p;
@@ -627,14 +633,14 @@ function wateringTick(dt){
  waterAngle+=(waterTarget-waterAngle)*(1-Math.exp(-dt*9));
  if(chapter==='water-find')revealWateringCan();
  if(wateringStates()&&lastPose){
-   const h=projectedHand(lastPose,'right');
+   const h=projectedHand(lastPose,wateringSide);
    if(canHeld)canAt={...h};
    const ready=chapter==='water-aim'&&waterGuided&&Math.abs(waterAngle-10)<13;
    const tilted=ready?-35:0;
-   const facing=0;
+   const facing=180*(1-waterProgress(waterAngle));
    update(wateringCan.id,{position:canAt,rotation:{x:0,y:facing,z:tilted}});
    place($('water-can'),screenPoint(canAt.x+10,canAt.y,canAt.z));
-   place($('water-hand'),handScreen(lastPose,'right'));
+   place($('water-hand'),handScreen(lastPose,wateringSide));
    const local=rotateVector({x:48,y:17,z:0},0,facing,tilted);
    const nozzle={x:canAt.x+local.x,y:canAt.y+local.y,z:canAt.z+local.z};
    waterAligned=chapter==='water-aim'&&Math.hypot((nozzle.x-145)/18,(nozzle.z-75)/13)<1;
@@ -690,10 +696,10 @@ function returnMoth(){
 function chapterTwoTick(now){
  const dt=twoLastFrame?Math.min(.05,(now-twoLastFrame)/1000):0;twoLastFrame=now;
  if(document.hidden)return;
- wateringTick(dt);collectionTick();
- yaw+=(yawTarget-yaw)*(1-Math.exp(-dt*9));
+ yaw+=(yawTarget-yaw)*(1-Math.exp(-dt*(wateringStates()?3.5:9)));
  if(Math.abs(yaw)<.001)yaw=0;
  update(parts.Robot.id,{rotation:{y:yaw}});
+ wateringTick(dt);collectionTick();
  if(chapter==='name-search'){
    const rear=Math.cos((yaw-25.1)*Math.PI/180)<-.6;
    $('back-name').hidden=!rear;place($('back-name'),bodyScreen(0,318,-81));
@@ -923,9 +929,11 @@ function followPointer(p,now){
  const talking=!$('dialogue').hidden&&(speechTyping||now<speechUntil);
  const waking=(now-began)/1000<(reduced?3.1:9.1);
  if(phase!=='lit'||locked||(waking&&!talking)){gazeWeight=0;return p;}
+ const searching=['finding','water-find','collection-find','collection-box-find'].includes(chapter);
+ const tracking=searching&&gazeActive;
  const k=1-Math.exp(-dt*(reduced?7:12));
- gazeWeight+=((talking||gazeActive?1:0)-gazeWeight)*k;
- if(talking||gazeActive){
+ gazeWeight+=((talking||tracking?1:0)-gazeWeight)*k;
+ if(talking||tracking){
    const face=bodyScreen(0,317+p.bodyY,75),degrees=180/Math.PI;
    const facing=((25.1-yaw)%360+540)%360-180;
    // Hold eye contact with the camera for each line and its reading pause.
