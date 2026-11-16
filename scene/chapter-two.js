@@ -90,7 +90,7 @@ async function prepareChapterTwo(){
 }
 const twoBoot=prepareChapterTwo();
 function answers(items){
- $('choice').hidden=true;hint('');const box=$('answers');box.replaceChildren();
+ $('choice').hidden=true;const box=$('answers');box.replaceChildren();
  for(const [text,fn] of items){const b=document.createElement('button');b.type='button';b.textContent=text;b.onclick=()=>{box.hidden=true;fn();};box.append(b);}
  box.hidden=false;
 }
@@ -98,7 +98,7 @@ function beginNaming(){
  if(chapter!=='end')return;
  enter('name-intro');standAt=chapterTime;reaction='';$('pet').hidden=true;$('five').hidden=true;
  speak('You have a name, '+visitor+'.',()=>speak('Do I have one?',()=>{
-   enter('name-search');objective('Find his name');hint('Drag him sideways to look around.');
+   enter('name-search');objective('Find his name');
    $('turn-milo').hidden=false;
  }));
 }
@@ -121,7 +121,7 @@ function releaseTurn(e){
 window.addEventListener('pointerup',releaseTurn);window.addEventListener('pointercancel',releaseTurn);
 $('back-name').onclick=()=>{
  if(chapter!=='name-search'||Math.cos((yaw-25.1)*Math.PI/180)>-.6)return;
- enter('name-found');objective('');hint('');yawTarget=Math.round(yaw/360)*360;turnDrag=null;$('turn-milo').hidden=true;$('back-name').hidden=true;
+ enter('name-found');objective('');yawTarget=Math.round(yaw/360)*360;turnDrag=null;$('turn-milo').hidden=true;$('back-name').hidden=true;
  speak('Milo.',()=>speak('Does that sound like me?',()=>answers([
    ['Yes. You’re Milo.',()=>giveName('Milo')],['Choose a name',()=>{
      enter('nickname');$('dialogue').hidden=true;$('nickname-form').hidden=false;$('robot-name').value='';$('robot-name').focus({preventScroll:true});
@@ -172,24 +172,24 @@ async function startWatering(){
  enter('water-intro');reaction='';$('pet').hidden=true;$('five').hidden=true;$('choice').hidden=true;
  speak('You helped me.',()=>speak('Can I help it?',()=>{
    enter('water-find');canAt={...canHome};update(wateringCan.id,{visible:true});$('water-can').hidden=false;
-   objective('Give him the watering can');hint(coarse?'Drag the can to his hand, or tap to pick it up.':'Drag the can into his hand. You can also click to pick it up.');
+   objective('Give him the watering can');
  }));
 }
 function carryCan(){
  if(!['water-find','water-carry'].includes(chapter))return;
- canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Place the can in his hand');hint('Bring it to his hand, or select his hand.');
+ canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Place the can in his hand');
 }
 function giveCan(){
  if(!['water-find','water-carry'].includes(chapter)||!lastPose)return;
  canCarry=false;canHeld=true;canDrag=null;waterAngle=40;waterTarget=40;
- $('water-hand').hidden=true;$('water-can').hidden=true;objective('');hint('');enter('water-miss');
+ $('water-hand').hidden=true;$('water-can').hidden=true;objective('');enter('water-miss');
  speak('I can do this.');
  after(2.8,()=>{
    if(chapter!=='water-miss')return;waterPouring=false;
    speak('I don’t think I grow.',()=>{
      enter('water-aim');$('water-can').hidden=false;objective('Help him water the plant');
      choice('Help him aim',()=>{if(chapter==='water-aim'){waterTarget=10;$('choice').hidden=true;}});
-     hint(coarse?'Drag his hand until the water reaches the plant.':'Drag his hand over the plant. Arrow keys move his arm too.');
+
    });
  });
 }
@@ -226,7 +226,7 @@ function releaseCan(e){
    if(chapter==='water-carry'){
      const h=handScreen(lastPose,'right');
      if(e.type!=='pointercancel'&&Math.hypot((e.clientX??-999)-h.x,(e.clientY??-999)-h.y)<85)giveCan();
-     else{canAt={...canHome};canCarry=false;enter('water-find');$('water-hand').hidden=true;objective('Give him the watering can');hint('Try bringing the can a little closer to his hand.');}
+     else{canAt={...canHome};canCarry=false;enter('water-find');$('water-hand').hidden=true;objective('Give him the watering can');}
    }
  }
 }
@@ -235,7 +235,7 @@ window.addEventListener('blur',()=>releaseCan({type:'pointercancel'}));
 function finishWatering(){
  if(chapter!=='water-aim')return;
  enter('water-bloom');bloomAt=chapterTime;waterPouring=false;canDrag=null;document.body.dataset.armDragging='false';
- $('water-can').hidden=true;$('choice').hidden=true;objective('');hint('');
+ $('water-can').hidden=true;$('choice').hidden=true;objective('');
  update(gardenFlower.id,{visible:true});
  after(3.8,()=>{
    if(chapter!=='water-bloom')return;enter('water-done');canHeld=false;canAt={x:205,y:20,z:80};
@@ -303,7 +303,7 @@ async function startMoth(){
  enter('moth-arrival');mothOffered=false;mothWarmth=0;mothPinned=false;
  $('spark').hidden=false;await update(moth.id,{visible:true});
  speak('Oh! What’s that?',()=>speak('It’s so small.',()=>{
-   enter('moth-coax');objective('Bring the moth closer');hint('Move your light slowly toward his hand.');
+   enter('moth-coax');objective('Bring the moth closer');
    after(3,()=>{if(chapter==='moth-coax'){mothOffered=true;mothOfferAt=chapterTime;$('moth-guide').hidden=false;speak('Okay. Slowly.');objective('Keep your light near his hand');}});
  }));
 }
@@ -311,7 +311,7 @@ $('moth-guide').onclick=()=>{
  if(chapter==='moth-coax'){mothPinned=!mothPinned;$('moth-guide').setAttribute('aria-pressed',String(mothPinned));}
 };
 function mothLands(){
- enter('moth-landed');objective('');hint('');$('moth-guide').hidden=true;$('spark').hidden=true;mothPinned=false;
+ enter('moth-landed');objective('');$('moth-guide').hidden=true;$('spark').hidden=true;mothPinned=false;
  speak('I think it likes me.',()=>speak('…What do I do now?',()=>answers([
    ['Stay very still',()=>{
      enter('moth-stay');speak('I can do still. Probably.',()=>choice('Let it rest on the plant',returnMoth));

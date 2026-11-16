@@ -5,5 +5,4 @@
 #collect-hand,#collect-place{width:70px;height:60px;border:1px dashed #d8cba170;box-shadow:0 0 24px #d8cba118;cursor:pointer;border-radius:50%}
 #collect-cap:focus-visible,#collect-box:focus-visible{outline:1px dashed #b6c9df}
 body[data-chapter^=collection-] #dialogue{top:max(11vh,70px);bottom:auto}
-body[data-chapter^=collection-] #hint{bottom:82px}
 @media(max-width:600px){body[data-chapter^=collection-] #dialogue{top:12vh}}

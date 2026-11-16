@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,interactive-widget=resizes-content"><style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400&display=swap');
-:root{--mx:50vw;--my:50vh;--ink:#e9e4d9;--font:'Space Mono',ui-monospace,monospace}*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;font-family:var(--font);color:var(--ink)}[hidden]{display:none!important}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid #d1bca0;outline-offset:5px}#air{position:fixed;inset:0;z-index:1;touch-action:none}#darkness{position:fixed;inset:0;z-index:4;background:#000000;pointer-events:none;transition:background 1.4s,opacity 1.5s}body[data-phase=appear] #darkness,body[data-phase=waking] #darkness,body[data-phase=name] #darkness,body[data-phase=greeting] #darkness{background:#000000}body[data-phase=search] #darkness{background:#000000;transition:none}body[data-phase=lit] #darkness{opacity:0}#wake{position:fixed;z-index:8;left:50%;top:51%;transform:translate(-50%,-50%);padding:15px 34px;min-height:48px;background:transparent;border:1px solid #c9c5b57a;border-radius:2px;color:#e9e4d9;font:13px var(--font);letter-spacing:.4px;opacity:0;transition:opacity 1s,background .3s;pointer-events:none}#wake.ready{opacity:1;pointer-events:auto}#wake:hover{background:#ddd4b710}body[data-phase=appear] #wake{top:auto;bottom:max(9vh,76px);transform:translateX(-50%)}#name-form{position:fixed;z-index:8;left:50%;bottom:max(8vh,76px);transform:translateX(-50%);width:min(360px,calc(100% - 44px));animation:arrive .8s both}label{display:block;text-align:center;font:20px/1.5 var(--font);margin-bottom:20px}.name-row{display:flex;border-bottom:1px solid #e9e4d970;gap:12px;padding-bottom:8px}input{min-width:0;flex:1;background:transparent;border:0;color:#e9e4d9;padding:12px 4px;font-size:16px;border-radius:0}input::placeholder{color:#a7a4a0}#name-form button{background:transparent;border:0;color:#d6c6af;padding:10px;min-height:44px;font-size:12px;white-space:nowrap}#dialogue{position:fixed;z-index:7;left:50%;bottom:max(8vh,80px);transform:translateX(-50%);width:min(440px,calc(100% - 48px));margin:0;text-align:center;color:#e9e4d9;font:clamp(16px,1.7vw,18px)/1.65 var(--font);white-space:pre-line;text-wrap:balance;pointer-events:none;text-shadow:0 2px 16px #0008}body[data-phase=lit] #dialogue{color:#e9e4d9;text-shadow:0 2px 16px #000;transition:color 1s}#switch{position:fixed;z-index:5;opacity:0;left:82%;top:39%;width:44px;height:68px;padding:8px;background:#dad3bd;border:1px solid #756e60;border-radius:4px;box-shadow:inset 0 0 0 3px #c6c0ae,0 2px 7px #0005;transform:translate(-50%,-50%)}#switch:before,#switch:after{content:'';position:absolute;left:20px;width:3px;height:3px;border-radius:50%;background:#756f60}#switch:before{top:5px}#switch:after{bottom:5px}#switch span{display:block;width:100%;height:38px;background:linear-gradient(#a8a18e 0,#ddd6c4 50%,#eee8d7 50%);border:1px solid #756f60;border-radius:2px;box-shadow:0 2px 3px #0005;transition:transform .15s}#switch[aria-pressed=true] span{transform:rotate(180deg)}#switch:disabled{cursor:default}#spark{position:fixed;z-index:5;left:var(--mx);top:var(--my);width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,239,201,.23),rgba(255,239,201,.10) 32%,rgba(255,239,201,.025) 54%,transparent 72%);transform:translate(-50%,-50%);pointer-events:none}#spark:after{content:"";position:absolute;left:128px;top:128px;width:4px;height:4px;border-radius:50%;background:#fff6d4;box-shadow:0 0 18px 5px #fce6ad80}#objective{position:fixed;z-index:7;left:24px;top:max(24px,env(safe-area-inset-top));margin:0;color:#e9e4d9;font-size:13px;line-height:1.7;letter-spacing:.2px;pointer-events:none;animation:arrive 1s both}#objective span{display:block;margin-bottom:3px;color:#999892;font-size:9px;letter-spacing:1.5px}#hint{position:fixed;z-index:6;left:50%;bottom:25px;transform:translateX(-50%);width:calc(100% - 50px);text-align:center;font-size:10px;letter-spacing:1px;color:#999892;pointer-events:none;animation:arrive 1.5s both}#error{position:fixed;z-index:9;inset:0;background:#000000;display:grid;place-content:center;text-align:center;color:#c9c2b6;font:16px/1.6 var(--font);padding:35px}#error button{background:transparent;border:1px solid #777;color:inherit;padding:12px;margin-top:15px}body[data-phase=search]{cursor:none}body[data-phase=search] button{cursor:none}@keyframes arrive{from{opacity:0}to{opacity:1}}@media(max-width:600px){#switch{left:85%;top:30%;width:42px;height:64px}#name-form{bottom:80px}#dialogue{bottom:82px;font-size:16px}#hint{bottom:21px;font-size:9px}body[data-phase=appear] #wake{bottom:82px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+:root{--mx:50vw;--my:50vh;--ink:#e9e4d9;--font:'Space Mono',ui-monospace,monospace}*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;font-family:var(--font);color:var(--ink)}[hidden]{display:none!important}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid #d1bca0;outline-offset:5px}#air{position:fixed;inset:0;z-index:1;touch-action:none}#darkness{position:fixed;inset:0;z-index:4;background:#000000;pointer-events:none;transition:background 1.4s,opacity 1.5s}body[data-phase=appear] #darkness,body[data-phase=waking] #darkness,body[data-phase=name] #darkness,body[data-phase=greeting] #darkness{background:#000000}body[data-phase=search] #darkness{background:#000000;transition:none}body[data-phase=lit] #darkness{opacity:0}#wake{position:fixed;z-index:8;left:50%;top:51%;transform:translate(-50%,-50%);padding:15px 34px;min-height:48px;background:transparent;border:1px solid #c9c5b57a;border-radius:2px;color:#e9e4d9;font:13px var(--font);letter-spacing:.4px;opacity:0;transition:opacity 1s,background .3s;pointer-events:none}#wake.ready{opacity:1;pointer-events:auto}#wake:hover{background:#ddd4b710}body[data-phase=appear] #wake{top:auto;bottom:max(9vh,76px);transform:translateX(-50%)}#name-form{position:fixed;z-index:8;left:50%;bottom:max(8vh,76px);transform:translateX(-50%);width:min(360px,calc(100% - 44px));animation:arrive .8s both}label{display:block;text-align:center;font:20px/1.5 var(--font);margin-bottom:20px}.name-row{display:flex;border-bottom:1px solid #e9e4d970;gap:12px;padding-bottom:8px}input{min-width:0;flex:1;background:transparent;border:0;color:#e9e4d9;padding:12px 4px;font-size:16px;border-radius:0}input::placeholder{color:#a7a4a0}#name-form button{background:transparent;border:0;color:#d6c6af;padding:10px;min-height:44px;font-size:12px;white-space:nowrap}#dialogue{position:fixed;z-index:7;left:50%;bottom:max(8vh,80px);transform:translateX(-50%);width:min(440px,calc(100% - 48px));margin:0;text-align:center;color:#e9e4d9;font:clamp(16px,1.7vw,18px)/1.65 var(--font);white-space:pre-line;text-wrap:balance;pointer-events:none;text-shadow:0 2px 16px #0008}body[data-phase=lit] #dialogue{color:#e9e4d9;text-shadow:0 2px 16px #000;transition:color 1s}#switch{position:fixed;z-index:5;opacity:0;left:82%;top:39%;width:44px;height:68px;padding:8px;background:#dad3bd;border:1px solid #756e60;border-radius:4px;box-shadow:inset 0 0 0 3px #c6c0ae,0 2px 7px #0005;transform:translate(-50%,-50%)}#switch:before,#switch:after{content:'';position:absolute;left:20px;width:3px;height:3px;border-radius:50%;background:#756f60}#switch:before{top:5px}#switch:after{bottom:5px}#switch span{display:block;width:100%;height:38px;background:linear-gradient(#a8a18e 0,#ddd6c4 50%,#eee8d7 50%);border:1px solid #756f60;border-radius:2px;box-shadow:0 2px 3px #0005;transition:transform .15s}#switch[aria-pressed=true] span{transform:rotate(180deg)}#switch:disabled{cursor:default}#spark{position:fixed;z-index:5;left:var(--mx);top:var(--my);width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,239,201,.23),rgba(255,239,201,.10) 32%,rgba(255,239,201,.025) 54%,transparent 72%);transform:translate(-50%,-50%);pointer-events:none}#spark:after{content:"";position:absolute;left:128px;top:128px;width:4px;height:4px;border-radius:50%;background:#fff6d4;box-shadow:0 0 18px 5px #fce6ad80}#objective{position:fixed;z-index:7;left:24px;top:max(24px,env(safe-area-inset-top));margin:0;color:#e9e4d9;font-size:13px;line-height:1.7;letter-spacing:.2px;pointer-events:none;animation:arrive 1s both}#objective span{display:block;margin-bottom:3px;color:#999892;font-size:9px;letter-spacing:1.5px}#error{position:fixed;z-index:9;inset:0;background:#000000;display:grid;place-content:center;text-align:center;color:#c9c2b6;font:16px/1.6 var(--font);padding:35px}#error button{background:transparent;border:1px solid #777;color:inherit;padding:12px;margin-top:15px}body[data-phase=search]{cursor:none}body[data-phase=search] button{cursor:none}@keyframes arrive{from{opacity:0}to{opacity:1}}@media(max-width:600px){#switch{left:85%;top:30%;width:42px;height:64px}#name-form{bottom:80px}#dialogue{bottom:82px;font-size:16px}body[data-phase=appear] #wake{bottom:82px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 
 #seed,#soil,#pet,#five{position:fixed;z-index:6;padding:0;touch-action:none;background:none;border:0;transform:translate(-50%,-50%)}
 #seed{left:19%;top:72%;width:56px;height:56px;opacity:.12;transition:opacity .3s}
@@ -36,7 +36,6 @@ body[data-chapter=planting] #dialogue,body[data-chapter=growing] #dialogue{top:1
 #nickname-form button{background:transparent;border:0;color:#d6c6af;padding:10px;font-size:12px;min-height:44px;white-space:nowrap}
 #moth-guide{width:76px;height:76px;border-radius:50%;z-index:7;cursor:pointer}
 #moth-guide:focus-visible{outline:1px dashed #e2d2a6}
-body[data-chapter=name-search] #hint{bottom:80px}
 body[data-chapter=name-search] #dialogue{top:11vh;bottom:auto}
 body[data-arm-dragging=true]{cursor:grabbing;user-select:none;-webkit-user-select:none}
 @media(max-width:600px){#turn-milo{width:240px;height:470px}#back-name{width:110px;height:58px}#answers{gap:8px}#answers button{padding:11px 13px;font-size:10px}#nickname-form label{font-size:17px}}
@@ -46,7 +45,6 @@ body[data-arm-dragging=true]{cursor:grabbing;user-select:none;-webkit-user-selec
 #water-can:hover,#water-can:focus-visible{outline:1px dashed #a8c2b880;background:#b6d7cd08}
 #water-hand{width:62px;height:62px;border:1px dashed #dac8a460;border-radius:50%;box-shadow:0 0 22px #f1dfb315;cursor:pointer}
 body[data-chapter^=water-] #dialogue{top:max(10vh,65px);bottom:auto}
-body[data-chapter^=water-] #hint{bottom:82px}
 
 #collect-cap,#collect-hand,#collect-box,#collect-place{position:fixed;z-index:8;transform:translate(-50%,-50%);padding:0;touch-action:none;background:transparent;border:0;border-radius:8px;min-width:48px;min-height:48px}
 #collect-cap{cursor:grab;width:54px;height:54px}
@@ -55,7 +53,6 @@ body[data-chapter^=water-] #hint{bottom:82px}
 #collect-hand,#collect-place{width:70px;height:60px;border:1px dashed #d8cba170;box-shadow:0 0 24px #d8cba118;cursor:pointer;border-radius:50%}
 #collect-cap:focus-visible,#collect-box:focus-visible{outline:1px dashed #b6c9df}
 body[data-chapter^=collection-] #dialogue{top:max(11vh,70px);bottom:auto}
-body[data-chapter^=collection-] #hint{bottom:82px}
 @media(max-width:600px){body[data-chapter^=collection-] #dialogue{top:12vh}}
 
 </style></head><body data-phase="boot">
@@ -80,7 +77,7 @@ body[data-chapter^=collection-] #hint{bottom:82px}
 <button id="collect-place" type="button" aria-label="Place the keepsake box beside Milo" hidden></button>
 <button id="moth-guide" type="button" aria-label="Keep your light by his hand" aria-pressed="false" hidden></button>
 <form id="name-form" hidden><label for="visitor-name">Oh… who are you?</label><div class="name-row"><input id="visitor-name" name="name" placeholder="Your name" autocomplete="given-name" maxlength="32" required aria-label="Your name"><button type="submit">Say hello ↗</button></div></form>
-<p id="objective" role="status" hidden><span>OBJECTIVE</span>Turn on the light</p><p id="dialogue" role="status" aria-live="polite" hidden></p><p id="hint" hidden></p><div id="error" role="alert" hidden><p>I’m having a little trouble waking up.</p><button type="button" id="retry">Try again</button></div>
+<p id="objective" role="status" hidden><span>OBJECTIVE</span>Turn on the light</p><p id="dialogue" role="status" aria-live="polite" hidden></p><div id="error" role="alert" hidden><p>I’m having a little trouble waking up.</p><button type="button" id="retry">Try again</button></div>
 <script>
 (async()=>{
 const $=id=>document.getElementById(id),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,coarse=matchMedia('(pointer: coarse)').matches;
@@ -113,13 +110,13 @@ function wakeButton(){const b=$('wake');b.hidden=false;b.disabled=false;requestA
 function hideWake(){$('wake').classList.remove('ready');$('wake').disabled=true;$('wake').hidden=true;}
 function speak(text,done){clearTimeout(typing);$('dialogue').hidden=false;$('dialogue').textContent='';let n=0;function next(){n+=1;$('dialogue').textContent=text.slice(0,n);if(n<text.length)typing=setTimeout(next,reduced?0:34);else if(done)typing=setTimeout(done,1100);}next();}
 function askName(){setPhase('name');$('name-form').hidden=false;$('visitor-name').focus({preventScroll:true});}
-function search(){setPhase('search');$('objective').hidden=false;$('switch').hidden=false;$('hint').hidden=false;$('hint').textContent=coarse?'Move your finger through the dark.':'Move your mouse through the dark.';$('spark').hidden=false;}
+function search(){setPhase('search');$('objective').hidden=false;$('switch').hidden=false;$('spark').hidden=false;}
 $('wake').onclick=()=>{if(phase==='boot'){hideWake();setPhase('appear');setTimeout(wakeButton,1500);}else if(phase==='appear'){hideWake();setPhase('waking');}};
 $('name-form').onsubmit=e=>{e.preventDefault();visitor=$('visitor-name').value.trim();if(!visitor){$('visitor-name').value='';$('visitor-name').focus();return;}visitor=visitor.slice(0,32);$('name-form').hidden=true;setPhase('greeting');speak('Hello, '+visitor+'.',()=>{speak('Finally, I’ve been alone here for a while.\nIt’s kind of dark.',search);});};
 function pointer(x,y){document.documentElement.style.setProperty('--mx',x+'px');document.documentElement.style.setProperty('--my',y+'px');px=(x/innerWidth-.5)*2;py=(y/innerHeight-.5)*2;if(phase==='search'){const r=$('switch').getBoundingClientRect(),d=Math.hypot(x-r.left-r.width/2,y-r.top-r.height/2);$('switch').style.opacity=String(Math.max(0,1-d/150));}}
 window.addEventListener('pointermove',e=>pointer(e.clientX,e.clientY));window.addEventListener('pointerdown',e=>pointer(e.clientX,e.clientY));
 $('switch').onfocus=()=>{if(phase==='search'){const r=$('switch').getBoundingClientRect();pointer(r.left+r.width/2,r.top+r.height/2);}};
-$('switch').onclick=()=>{if(phase!=='search')return;setPhase('lit');$('switch').setAttribute('aria-pressed','true');$('switch').setAttribute('aria-label','Light is on');$('switch').disabled=true;$('switch').hidden=true;$('spark').hidden=true;$('hint').hidden=true;$('objective').hidden=true;speak('That’s better.');startChapter();};
+$('switch').onclick=()=>{if(phase!=='search')return;setPhase('lit');$('switch').setAttribute('aria-pressed','true');$('switch').setAttribute('aria-label','Light is on');$('switch').disabled=true;$('switch').hidden=true;$('spark').hidden=true;$('objective').hidden=true;speak('That’s better.');startChapter();};
 // Chapter one runs inside the opening's async function, using its cached rig.
 let chapter='waiting',chapterTime=0,chapterAt=0,lastFrame=0,playCount=0;
 let pointerX=innerWidth/2,pointerY=innerHeight/2,lastPointerAt=0,reactionAt=-100,reaction='';
@@ -129,8 +126,7 @@ const tasks=[];
 const after=(seconds,fn)=>tasks.push({at:chapterTime+seconds,fn});
 const enter=next=>{chapter=next;chapterAt=chapterTime;document.body.dataset.chapter=next;};
 function objective(text){$('objective').hidden=!text;$('objective').replaceChildren();if(text){const s=document.createElement('span');s.textContent='OBJECTIVE';$('objective').append(s,document.createTextNode(text));}}
-function hint(text){$('hint').hidden=!text;$('hint').textContent=text||'';}
-function choice(text,fn){hint('');const b=$('choice');b.textContent=text;b.hidden=false;b.onclick=()=>{b.hidden=true;fn();};}
+function choice(text,fn){const b=$('choice');b.textContent=text;b.hidden=false;b.onclick=()=>{b.hidden=true;fn();};}
 // Project world positions through the existing portrait camera. UI follows the
 // same fixed framing at every aspect ratio, including narrow touch screens.
 function screenPoint(x,y,z){
@@ -178,7 +174,7 @@ function startChapter(){
  enter('intro');
  after(14,()=>speak('Oh. You’re still here.',()=>speak('Is that little light yours?',()=>{
    enter('play');$('spark').hidden=false;$('pet').hidden=false;$('five').hidden=false;
-   hint(coarse?'Move your light around him.':'Move your light. He’s curious.');
+
    choice('Look around together',lookAround);
    // Keep play available until the visitor chooses to look around.
  })));
@@ -195,10 +191,10 @@ function react(kind){
 }
 $('pet').onclick=()=>react('pet');$('five').onclick=()=>{if(!ignoreArmClick())react('five');};
 function lookAround(){
- if(chapter!=='play')return;enter('looking');$('choice').hidden=true;hint('');
+ if(chapter!=='play')return;enter('looking');$('choice').hidden=true;
  $('pet').hidden=true;$('five').hidden=true;
  speak('Oh. There really isn’t much here, is there?',()=>speak('Can you help me find something?',()=>{
-   enter('finding');objective('Find the little glimmer');hint(coarse?'Sweep your light through the dark.':'Move your light beyond the glow.');
+   enter('finding');objective('Find the little glimmer');
    $('seed').hidden=false;$('seed').style.opacity='.12';if(seedModel)update(seedModel.id,{visible:true});seedBrightness(.12);placeSeed();
    after(25,()=>{if(chapter==='finding'){speak('I think I saw something over there.');$('seed').style.opacity='.65';seedBrightness(.65);}});
  }));
@@ -207,19 +203,19 @@ function pickSeed(){
  if(chapter!=='finding')return;
  enter('carrying');document.body.dataset.carrying='true';$('seed').setAttribute('aria-label','Seed collected');$('seed').tabIndex=-1;
  place($('seed'),{x:pointerX+14,y:pointerY-12});seedBrightness(1);placeSeed();
- objective('Plant it beside Milo');hint('Choose the little patch of ground.');$('soil').hidden=false;layoutChapter();
+ objective('Plant it beside Milo');$('soil').hidden=false;layoutChapter();
  speak('A seed? What does it do?');
 }
 $('seed').onclick=pickSeed;
 $('seed').onfocus=()=>{if(chapter==='finding'){$('seed').style.opacity='1';seedBrightness(1);}};
 async function plantSeed(){
  if(chapter!=='carrying')return;
- enter('planting');if(seedModel)update(seedModel.id,{visible:false});$('seed').hidden=true;document.body.dataset.carrying='false';$('soil').disabled=true;objective('');hint('');
+ enter('planting');if(seedModel)update(seedModel.id,{visible:false});$('seed').hidden=true;document.body.dataset.carrying='false';$('soil').disabled=true;objective('');
  await plantBoot;
  if(!plantReady){$('soil').disabled=false;enter('carrying');speak('Something went wrong. Let’s try again.');choice('Try again',()=>location.reload());return;}
  await update(plant.id,{visible:true,scale:{x:.18,y:.015,z:.18}});
  speak('Maybe it needs your light.',()=>{
-   enter('growing');objective('Help it grow');hint(coarse?'Tap the seed to keep your light on it.':'Keep your light over the seed.');
+   enter('growing');objective('Help it grow');
    $('soil').disabled=false;$('soil').setAttribute('aria-label','Shine light on the planted seed');$('soil').setAttribute('aria-pressed','false');
    $('growth').hidden=false;$('soil').blur();
  });
@@ -232,13 +228,13 @@ $('soil').onclick=()=>{
  }
 };
 function finishGrowing(){
- enter('grown');objective('');hint('');$('growth').hidden=true;$('soil').classList.add('grown');$('soil').disabled=true;$('soil').hidden=true;lightPinned=false;
+ enter('grown');objective('');$('growth').hidden=true;$('soil').classList.add('grown');$('soil').disabled=true;$('soil').hidden=true;lightPinned=false;
  after(1.5,()=>speak('It’s… alive.',()=>speak('We did that. Together.',()=>{
    choice('Sit with Milo',restTogether);
  })));
 }
 function restTogether(){
- if(chapter!=='grown')return;enter('resting');seatedAt=chapterTime;$('spark').hidden=true;$('soil').hidden=true;hint('');
+ if(chapter!=='grown')return;enter('resting');seatedAt=chapterTime;$('spark').hidden=true;$('soil').hidden=true;
  after(4,()=>speak('It’s a good little spot.',()=>speak('But I think I like this.',()=>{
    after(3,()=>speak('Could we leave the light on?',()=>choice('Leave the light on',()=>{
      enter('end');speak('Okay. We can stay a little longer.',()=>{after(6,()=>{$('dialogue').hidden=true;choice('Keep him company',beginNaming);});});
@@ -416,7 +412,7 @@ async function prepareChapterTwo(){
 }
 const twoBoot=prepareChapterTwo();
 function answers(items){
- $('choice').hidden=true;hint('');const box=$('answers');box.replaceChildren();
+ $('choice').hidden=true;const box=$('answers');box.replaceChildren();
  for(const [text,fn] of items){const b=document.createElement('button');b.type='button';b.textContent=text;b.onclick=()=>{box.hidden=true;fn();};box.append(b);}
  box.hidden=false;
 }
@@ -424,7 +420,7 @@ function beginNaming(){
  if(chapter!=='end')return;
  enter('name-intro');standAt=chapterTime;reaction='';$('pet').hidden=true;$('five').hidden=true;
  speak('You have a name, '+visitor+'.',()=>speak('Do I have one?',()=>{
-   enter('name-search');objective('Find his name');hint('Drag him sideways to look around.');
+   enter('name-search');objective('Find his name');
    $('turn-milo').hidden=false;
  }));
 }
@@ -447,7 +443,7 @@ function releaseTurn(e){
 window.addEventListener('pointerup',releaseTurn);window.addEventListener('pointercancel',releaseTurn);
 $('back-name').onclick=()=>{
  if(chapter!=='name-search'||Math.cos((yaw-25.1)*Math.PI/180)>-.6)return;
- enter('name-found');objective('');hint('');yawTarget=Math.round(yaw/360)*360;turnDrag=null;$('turn-milo').hidden=true;$('back-name').hidden=true;
+ enter('name-found');objective('');yawTarget=Math.round(yaw/360)*360;turnDrag=null;$('turn-milo').hidden=true;$('back-name').hidden=true;
  speak('Milo.',()=>speak('Does that sound like me?',()=>answers([
    ['Yes. You’re Milo.',()=>giveName('Milo')],['Choose a name',()=>{
      enter('nickname');$('dialogue').hidden=true;$('nickname-form').hidden=false;$('robot-name').value='';$('robot-name').focus({preventScroll:true});
@@ -498,24 +494,24 @@ async function startWatering(){
  enter('water-intro');reaction='';$('pet').hidden=true;$('five').hidden=true;$('choice').hidden=true;
  speak('You helped me.',()=>speak('Can I help it?',()=>{
    enter('water-find');canAt={...canHome};update(wateringCan.id,{visible:true});$('water-can').hidden=false;
-   objective('Give him the watering can');hint(coarse?'Drag the can to his hand, or tap to pick it up.':'Drag the can into his hand. You can also click to pick it up.');
+   objective('Give him the watering can');
  }));
 }
 function carryCan(){
  if(!['water-find','water-carry'].includes(chapter))return;
- canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Place the can in his hand');hint('Bring it to his hand, or select his hand.');
+ canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Place the can in his hand');
 }
 function giveCan(){
  if(!['water-find','water-carry'].includes(chapter)||!lastPose)return;
  canCarry=false;canHeld=true;canDrag=null;waterAngle=40;waterTarget=40;
- $('water-hand').hidden=true;$('water-can').hidden=true;objective('');hint('');enter('water-miss');
+ $('water-hand').hidden=true;$('water-can').hidden=true;objective('');enter('water-miss');
  speak('I can do this.');
  after(2.8,()=>{
    if(chapter!=='water-miss')return;waterPouring=false;
    speak('I don’t think I grow.',()=>{
      enter('water-aim');$('water-can').hidden=false;objective('Help him water the plant');
      choice('Help him aim',()=>{if(chapter==='water-aim'){waterTarget=10;$('choice').hidden=true;}});
-     hint(coarse?'Drag his hand until the water reaches the plant.':'Drag his hand over the plant. Arrow keys move his arm too.');
+
    });
  });
 }
@@ -552,7 +548,7 @@ function releaseCan(e){
    if(chapter==='water-carry'){
      const h=handScreen(lastPose,'right');
      if(e.type!=='pointercancel'&&Math.hypot((e.clientX??-999)-h.x,(e.clientY??-999)-h.y)<85)giveCan();
-     else{canAt={...canHome};canCarry=false;enter('water-find');$('water-hand').hidden=true;objective('Give him the watering can');hint('Try bringing the can a little closer to his hand.');}
+     else{canAt={...canHome};canCarry=false;enter('water-find');$('water-hand').hidden=true;objective('Give him the watering can');}
    }
  }
 }
@@ -561,7 +557,7 @@ window.addEventListener('blur',()=>releaseCan({type:'pointercancel'}));
 function finishWatering(){
  if(chapter!=='water-aim')return;
  enter('water-bloom');bloomAt=chapterTime;waterPouring=false;canDrag=null;document.body.dataset.armDragging='false';
- $('water-can').hidden=true;$('choice').hidden=true;objective('');hint('');
+ $('water-can').hidden=true;$('choice').hidden=true;objective('');
  update(gardenFlower.id,{visible:true});
  after(3.8,()=>{
    if(chapter!=='water-bloom')return;enter('water-done');canHeld=false;canAt={x:205,y:20,z:80};
@@ -629,7 +625,7 @@ async function startMoth(){
  enter('moth-arrival');mothOffered=false;mothWarmth=0;mothPinned=false;
  $('spark').hidden=false;await update(moth.id,{visible:true});
  speak('Oh! What’s that?',()=>speak('It’s so small.',()=>{
-   enter('moth-coax');objective('Bring the moth closer');hint('Move your light slowly toward his hand.');
+   enter('moth-coax');objective('Bring the moth closer');
    after(3,()=>{if(chapter==='moth-coax'){mothOffered=true;mothOfferAt=chapterTime;$('moth-guide').hidden=false;speak('Okay. Slowly.');objective('Keep your light near his hand');}});
  }));
 }
@@ -637,7 +633,7 @@ $('moth-guide').onclick=()=>{
  if(chapter==='moth-coax'){mothPinned=!mothPinned;$('moth-guide').setAttribute('aria-pressed',String(mothPinned));}
 };
 function mothLands(){
- enter('moth-landed');objective('');hint('');$('moth-guide').hidden=true;$('spark').hidden=true;mothPinned=false;
+ enter('moth-landed');objective('');$('moth-guide').hidden=true;$('spark').hidden=true;mothPinned=false;
  speak('I think it likes me.',()=>speak('…What do I do now?',()=>answers([
    ['Stay very still',()=>{
      enter('moth-stay');speak('I can do still. Probably.',()=>choice('Let it rest on the plant',returnMoth));
@@ -735,18 +731,18 @@ async function beginCollection(){
  enter('collection-find');reaction='';$('pet').hidden=true;$('five').hidden=true;$('choice').hidden=true;
  $('spark').hidden=false;$('collect-cap').hidden=false;capAt={x:-235,y:5,z:100};
  update(blueCap.id,{visible:true});update(capEnamel.id,{material:{alpha:22}});
- objective('Find the blue glimmer');hint(coarse?'Sweep your light across the ground.':'Move your light beyond your little garden.');
+ objective('Find the blue glimmer');
  speak('Something over there.');
 }
 function carryKeepsake(){
  if(chapter!=='collection-find')return;enter('collection-carry');
  update(capEnamel.id,{material:{alpha:100}});$('collect-hand').hidden=false;
- objective('Bring it to his hand');hint('Bring the cap to his hand, or select his hand.');
+ objective('Bring it to his hand');
 }
 function giveKeepsake(){
  if(!['collection-find','collection-carry'].includes(chapter)||!lastPose)return;
  enter('collection-reflex');capHeld=true;collectionDrag=null;
- $('collect-cap').hidden=true;$('collect-hand').hidden=true;$('spark').hidden=true;objective('');hint('');
+ $('collect-cap').hidden=true;$('collect-hand').hidden=true;$('spark').hidden=true;objective('');
  update(capEnamel.id,{material:{alpha:100}});update(collectionHatch.id,{visible:true});
  speak('Item collected.');
  after(2.3,()=>{
@@ -760,17 +756,17 @@ function keepKeepsake(){
  if(chapter!=='collection-notice')return;
  enter('collection-box-find');collectionHappyAt=chapterTime;$('spark').hidden=false;$('collect-box').hidden=false;
  update(keepsakeBox.id,{visible:true});objective('Find somewhere to keep it safe');
- hint('There might be something on the ground nearby.');speak('I’d like to keep this one.');
+ speak('I’d like to keep this one.');
 }
 function carryKeepsakeBox(){
  if(chapter!=='collection-box-find')return;
  enter('collection-box-carry');$('collect-place').hidden=false;
- objective('Put his box beside the garden');hint('Bring the box to the marked spot, or select the spot.');
+ objective('Put his box beside the garden');
 }
 function placeKeepsakeBox(){
  if(!['collection-box-find','collection-box-carry'].includes(chapter))return;
  enter('collection-box-settle');collectionDrag=null;boxFrom={...boxAt};
- $('collect-box').hidden=true;$('collect-place').hidden=true;$('spark').hidden=true;objective('');hint('');
+ $('collect-box').hidden=true;$('collect-place').hidden=true;$('spark').hidden=true;objective('');
  after(1.1,()=>{
    if(chapter!=='collection-box-settle')return;
    enter('collection-store');capFrom={...capAt};capHeld=false;
@@ -824,9 +820,9 @@ function releaseCollectionDrag(e,cancelled=false){
  const close=Math.hypot((e.clientX??-999)-target.x,(e.clientY??-999)-target.y)<85;
  if(!cancelled&&close){if(d.kind==='cap')giveKeepsake();else placeKeepsakeBox();}
  else if(d.kind==='cap'){
-   enter('collection-find');capAt={x:-235,y:5,z:100};$('collect-hand').hidden=true;objective('Find the blue glimmer');hint('Bring the cap a little closer to his hand.');
+   enter('collection-find');capAt={x:-235,y:5,z:100};$('collect-hand').hidden=true;objective('Find the blue glimmer');
  }else{
-   enter('collection-box-find');boxAt={x:-230,y:0,z:70};$('collect-place').hidden=true;objective('Find somewhere to keep it safe');hint('Try bringing the box into the glow.');
+   enter('collection-box-find');boxAt={x:-230,y:0,z:70};$('collect-place').hidden=true;objective('Find somewhere to keep it safe');
  }
 }
 window.addEventListener('pointerup',e=>releaseCollectionDrag(e));

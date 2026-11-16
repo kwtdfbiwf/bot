@@ -20,18 +20,18 @@ async function beginCollection(){
  enter('collection-find');reaction='';$('pet').hidden=true;$('five').hidden=true;$('choice').hidden=true;
  $('spark').hidden=false;$('collect-cap').hidden=false;capAt={x:-235,y:5,z:100};
  update(blueCap.id,{visible:true});update(capEnamel.id,{material:{alpha:22}});
- objective('Find the blue glimmer');hint(coarse?'Sweep your light across the ground.':'Move your light beyond your little garden.');
+ objective('Find the blue glimmer');
  speak('Something over there.');
 }
 function carryKeepsake(){
  if(chapter!=='collection-find')return;enter('collection-carry');
  update(capEnamel.id,{material:{alpha:100}});$('collect-hand').hidden=false;
- objective('Bring it to his hand');hint('Bring the cap to his hand, or select his hand.');
+ objective('Bring it to his hand');
 }
 function giveKeepsake(){
  if(!['collection-find','collection-carry'].includes(chapter)||!lastPose)return;
  enter('collection-reflex');capHeld=true;collectionDrag=null;
- $('collect-cap').hidden=true;$('collect-hand').hidden=true;$('spark').hidden=true;objective('');hint('');
+ $('collect-cap').hidden=true;$('collect-hand').hidden=true;$('spark').hidden=true;objective('');
  update(capEnamel.id,{material:{alpha:100}});update(collectionHatch.id,{visible:true});
  speak('Item collected.');
  after(2.3,()=>{
@@ -45,17 +45,17 @@ function keepKeepsake(){
  if(chapter!=='collection-notice')return;
  enter('collection-box-find');collectionHappyAt=chapterTime;$('spark').hidden=false;$('collect-box').hidden=false;
  update(keepsakeBox.id,{visible:true});objective('Find somewhere to keep it safe');
- hint('There might be something on the ground nearby.');speak('I’d like to keep this one.');
+ speak('I’d like to keep this one.');
 }
 function carryKeepsakeBox(){
  if(chapter!=='collection-box-find')return;
  enter('collection-box-carry');$('collect-place').hidden=false;
- objective('Put his box beside the garden');hint('Bring the box to the marked spot, or select the spot.');
+ objective('Put his box beside the garden');
 }
 function placeKeepsakeBox(){
  if(!['collection-box-find','collection-box-carry'].includes(chapter))return;
  enter('collection-box-settle');collectionDrag=null;boxFrom={...boxAt};
- $('collect-box').hidden=true;$('collect-place').hidden=true;$('spark').hidden=true;objective('');hint('');
+ $('collect-box').hidden=true;$('collect-place').hidden=true;$('spark').hidden=true;objective('');
  after(1.1,()=>{
    if(chapter!=='collection-box-settle')return;
    enter('collection-store');capFrom={...capAt};capHeld=false;
@@ -109,9 +109,9 @@ function releaseCollectionDrag(e,cancelled=false){
  const close=Math.hypot((e.clientX??-999)-target.x,(e.clientY??-999)-target.y)<85;
  if(!cancelled&&close){if(d.kind==='cap')giveKeepsake();else placeKeepsakeBox();}
  else if(d.kind==='cap'){
-   enter('collection-find');capAt={x:-235,y:5,z:100};$('collect-hand').hidden=true;objective('Find the blue glimmer');hint('Bring the cap a little closer to his hand.');
+   enter('collection-find');capAt={x:-235,y:5,z:100};$('collect-hand').hidden=true;objective('Find the blue glimmer');
  }else{
-   enter('collection-box-find');boxAt={x:-230,y:0,z:70};$('collect-place').hidden=true;objective('Find somewhere to keep it safe');hint('Try bringing the box into the glow.');
+   enter('collection-box-find');boxAt={x:-230,y:0,z:70};$('collect-place').hidden=true;objective('Find somewhere to keep it safe');
  }
 }
 window.addEventListener('pointerup',e=>releaseCollectionDrag(e));

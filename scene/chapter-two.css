@@ -12,7 +12,6 @@
 #nickname-form button{background:transparent;border:0;color:#d6c6af;padding:10px;font-size:12px;min-height:44px;white-space:nowrap}
 #moth-guide{width:76px;height:76px;border-radius:50%;z-index:7;cursor:pointer}
 #moth-guide:focus-visible{outline:1px dashed #e2d2a6}
-body[data-chapter=name-search] #hint{bottom:80px}
 body[data-chapter=name-search] #dialogue{top:11vh;bottom:auto}
 body[data-arm-dragging=true]{cursor:grabbing;user-select:none;-webkit-user-select:none}
 @media(max-width:600px){#turn-milo{width:240px;height:470px}#back-name{width:110px;height:58px}#answers{gap:8px}#answers button{padding:11px 13px;font-size:10px}#nickname-form label{font-size:17px}}
@@ -22,4 +21,3 @@ body[data-arm-dragging=true]{cursor:grabbing;user-select:none;-webkit-user-selec
 #water-can:hover,#water-can:focus-visible{outline:1px dashed #a8c2b880;background:#b6d7cd08}
 #water-hand{width:62px;height:62px;border:1px dashed #dac8a460;border-radius:50%;box-shadow:0 0 22px #f1dfb315;cursor:pointer}
 body[data-chapter^=water-] #dialogue{top:max(10vh,65px);bottom:auto}
-body[data-chapter^=water-] #hint{bottom:82px}

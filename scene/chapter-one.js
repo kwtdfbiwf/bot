@@ -7,8 +7,7 @@ const tasks=[];
 const after=(seconds,fn)=>tasks.push({at:chapterTime+seconds,fn});
 const enter=next=>{chapter=next;chapterAt=chapterTime;document.body.dataset.chapter=next;};
 function objective(text){$('objective').hidden=!text;$('objective').replaceChildren();if(text){const s=document.createElement('span');s.textContent='OBJECTIVE';$('objective').append(s,document.createTextNode(text));}}
-function hint(text){$('hint').hidden=!text;$('hint').textContent=text||'';}
-function choice(text,fn){hint('');const b=$('choice');b.textContent=text;b.hidden=false;b.onclick=()=>{b.hidden=true;fn();};}
+function choice(text,fn){const b=$('choice');b.textContent=text;b.hidden=false;b.onclick=()=>{b.hidden=true;fn();};}
 // Project world positions through the existing portrait camera. UI follows the
 // same fixed framing at every aspect ratio, including narrow touch screens.
 function screenPoint(x,y,z){
@@ -56,7 +55,7 @@ function startChapter(){
  enter('intro');
  after(14,()=>speak('Oh. You’re still here.',()=>speak('Is that little light yours?',()=>{
    enter('play');$('spark').hidden=false;$('pet').hidden=false;$('five').hidden=false;
-   hint(coarse?'Move your light around him.':'Move your light. He’s curious.');
+
    choice('Look around together',lookAround);
    // Keep play available until the visitor chooses to look around.
  })));
@@ -73,10 +72,10 @@ function react(kind){
 }
 $('pet').onclick=()=>react('pet');$('five').onclick=()=>{if(!ignoreArmClick())react('five');};
 function lookAround(){
- if(chapter!=='play')return;enter('looking');$('choice').hidden=true;hint('');
+ if(chapter!=='play')return;enter('looking');$('choice').hidden=true;
  $('pet').hidden=true;$('five').hidden=true;
  speak('Oh. There really isn’t much here, is there?',()=>speak('Can you help me find something?',()=>{
-   enter('finding');objective('Find the little glimmer');hint(coarse?'Sweep your light through the dark.':'Move your light beyond the glow.');
+   enter('finding');objective('Find the little glimmer');
    $('seed').hidden=false;$('seed').style.opacity='.12';if(seedModel)update(seedModel.id,{visible:true});seedBrightness(.12);placeSeed();
    after(25,()=>{if(chapter==='finding'){speak('I think I saw something over there.');$('seed').style.opacity='.65';seedBrightness(.65);}});
  }));
@@ -85,19 +84,19 @@ function pickSeed(){
  if(chapter!=='finding')return;
  enter('carrying');document.body.dataset.carrying='true';$('seed').setAttribute('aria-label','Seed collected');$('seed').tabIndex=-1;
  place($('seed'),{x:pointerX+14,y:pointerY-12});seedBrightness(1);placeSeed();
- objective('Plant it beside Milo');hint('Choose the little patch of ground.');$('soil').hidden=false;layoutChapter();
+ objective('Plant it beside Milo');$('soil').hidden=false;layoutChapter();
  speak('A seed? What does it do?');
 }
 $('seed').onclick=pickSeed;
 $('seed').onfocus=()=>{if(chapter==='finding'){$('seed').style.opacity='1';seedBrightness(1);}};
 async function plantSeed(){
  if(chapter!=='carrying')return;
- enter('planting');if(seedModel)update(seedModel.id,{visible:false});$('seed').hidden=true;document.body.dataset.carrying='false';$('soil').disabled=true;objective('');hint('');
+ enter('planting');if(seedModel)update(seedModel.id,{visible:false});$('seed').hidden=true;document.body.dataset.carrying='false';$('soil').disabled=true;objective('');
  await plantBoot;
  if(!plantReady){$('soil').disabled=false;enter('carrying');speak('Something went wrong. Let’s try again.');choice('Try again',()=>location.reload());return;}
  await update(plant.id,{visible:true,scale:{x:.18,y:.015,z:.18}});
  speak('Maybe it needs your light.',()=>{
-   enter('growing');objective('Help it grow');hint(coarse?'Tap the seed to keep your light on it.':'Keep your light over the seed.');
+   enter('growing');objective('Help it grow');
    $('soil').disabled=false;$('soil').setAttribute('aria-label','Shine light on the planted seed');$('soil').setAttribute('aria-pressed','false');
    $('growth').hidden=false;$('soil').blur();
  });
@@ -110,13 +109,13 @@ $('soil').onclick=()=>{
  }
 };
 function finishGrowing(){
- enter('grown');objective('');hint('');$('growth').hidden=true;$('soil').classList.add('grown');$('soil').disabled=true;$('soil').hidden=true;lightPinned=false;
+ enter('grown');objective('');$('growth').hidden=true;$('soil').classList.add('grown');$('soil').disabled=true;$('soil').hidden=true;lightPinned=false;
  after(1.5,()=>speak('It’s… alive.',()=>speak('We did that. Together.',()=>{
    choice('Sit with Milo',restTogether);
  })));
 }
 function restTogether(){
- if(chapter!=='grown')return;enter('resting');seatedAt=chapterTime;$('spark').hidden=true;$('soil').hidden=true;hint('');
+ if(chapter!=='grown')return;enter('resting');seatedAt=chapterTime;$('spark').hidden=true;$('soil').hidden=true;
  after(4,()=>speak('It’s a good little spot.',()=>speak('But I think I like this.',()=>{
    after(3,()=>speak('Could we leave the light on?',()=>choice('Leave the light on',()=>{
      enter('end');speak('Okay. We can stay a little longer.',()=>{after(6,()=>{$('dialogue').hidden=true;choice('Keep him company',beginNaming);});});
