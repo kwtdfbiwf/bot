@@ -27,6 +27,15 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  const beforeLight=updateCount;$('switch').onclick();assert.equal(updateCount,beforeLight,'The switch must not trigger first-render scene updates');assert.equal(writes.get('Robot').visible,true);
  await until(()=>body.dataset.chapter==='play');assert.equal($('pet').hidden,false);
  await advance(4);
+ for(const fn of events.pointermove)fn({clientX:640,clientY:0});await advance(.7);
+ assert(writes.get('Robot Head Pivot').rotation.x< -28,'A cursor above Milo must make him visibly look up');
+ for(const fn of events.pointermove)fn({clientX:640,clientY:720});await advance(.7);
+ assert(writes.get('Robot Head Pivot').rotation.x>22,'A cursor below Milo must make him look down');
+ for(const fn of events.pointermove)fn({clientX:0,clientY:260});await advance(.7);
+ assert(writes.get('Robot Head Pivot').rotation.y< -15,'He must clearly follow a cursor to his left');
+ for(const fn of events.pointermove)fn({clientX:1280,clientY:260});await advance(.7);
+ assert(writes.get('Robot Head Pivot').rotation.y>50,'He must clearly follow a cursor to his right');
+ for(const fn of events.pointermove)fn({clientX:640,clientY:260});await advance(3);
  for(const fn of events.pointermove)fn({clientX:0,clientY:0});await advance(.02);
  for(const fn of events.pointermove)fn({clientX:1280,clientY:720});
  const initialHandTop=parseFloat($('five').style.top);
@@ -71,8 +80,8 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
    $('turn-milo').onpointerdown({pointerId:10,button:0,currentTarget:$('turn-milo'),clientX:640,clientY:400});
    for(const fn of events.pointermove)fn({pointerId:10,clientX:865,clientY:400});
    for(const fn of events.pointerup)fn({pointerId:10});
- }else for(let i=0;i<4;i++)$('turn-milo').onkeydown({key:'ArrowRight',preventDefault(){}});
- await advance(1.5);assert.equal($('back-name').hidden,false,'Rotating Milo should reveal the back stamp');
+ }else for(let i=0;i<(process.argv[2]==='assist'?12:4);i++)$('turn-milo').onkeydown({key:'ArrowRight',preventDefault(){}});
+ await advance(1.5);assert.equal(writes.get('Robot Head Pivot').rotation.y,0,'Name search must keep the back stamp steady');assert.equal($('back-name').hidden,false,'Rotating Milo should reveal the back stamp');
  $('back-name').onclick();await until(()=>!$('answers').hidden);
  const nickname=process.argv[2]==='nickname';
  if(nickname){
@@ -166,6 +175,9 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  assert.equal(writes.get('Collection Hatch Lid Pivot').rotation.x,0);assert.equal(writes.get('Garden Flower').visible,true);assert.equal(writes.get('Garden Moth').visible,true);
  await until(()=>!$('choice').hidden&&$('choice').textContent==='Sit with him');$('choice').onclick();await advance(3.2);
  assert.equal(body.dataset.chapter,'collection-rest');assert.equal(writes.get('Robot Leg Pivot 1').position.y,20);
+ for(const fn of events.pointermove)fn({clientX:640,clientY:0});await advance(.7);
+ assert(writes.get('Robot Head Pivot').rotation.x< -28,'Seated story poses must still allow upward cursor gaze');
+ assert(writes.get('Robot Head Pivot').rotation.y>0,'Gaze must remain relative to the camera after full robot rotations');
  $('collect-cap').onclick();await advance(2);assert.match($('dialogue').textContent,/My first one/);
  assert.equal(writes.get('Blue Bottle Cap').visible,true,'Inspecting the keepsake must preserve it');
  console.log('PASS: arm dragging, high five, planting, '+(nickname?'nickname':'Milo name')+', turning, watering, flower, moth, blue cap, keepsake box and collection ending');
