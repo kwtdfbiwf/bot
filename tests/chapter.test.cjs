@@ -14,8 +14,9 @@ for(const m of html.matchAll(/id="([^"]+)"/g))elements.set(m[1],new Element(m[1]
 const body=new Element('body'),root=new Element('root');
 const spline={ready:Promise.resolve(),async findObjectByName(name){if(!objects.has(name))objects.set(name,{id:name,name,position:{x:0,y:name.startsWith('Robot Leg')?100:102,z:0}});return objects.get(name)},async updateObject(id,props){updateCount++;writes.set(id,merge(writes.get(id)||{},props));return true},async createObject(type,props){const o={id:props.name,...props};objects.set(o.id,o);writes.set(o.id,props);return o}};
 const context={console,spline,Math,Promise,Error,localStorage:{getItem:k=>savedNames.get(k),setItem:(k,v)=>savedNames.set(k,v)},document:{body,documentElement:root,hidden:false,getElementById:id=>elements.get(id),createElement:()=>new Element('span'),createTextNode:text=>text},innerWidth:1280,innerHeight:720,performance:{now:()=>now},matchMedia:()=>({matches:false}),location:{reload(){}},requestAnimationFrame:fn=>{rafs.push(fn)},setTimeout:(fn,delay=0)=>{const id=++timerId;queue.push({id,at:now+delay,fn});return id},clearTimeout:id=>{queue=queue.filter(t=>t.id!==id)},window:{addEventListener:(name,fn)=>{(events[name]??=[]).push(fn)}}};
-vm.createContext(context);vm.runInContext(html.split('<script>')[1].split('</script>')[0],context);
+vm.createContext(context);vm.runInContext(html.split('<script>')[1].split('</script>')[0].replace('function screenPoint(', 'window.testProject=screenPoint;window.testPointAtHeight=pointAtHeight;function screenPoint('),context);
 const $=id=>elements.get(id);
+const project=(x,y,z)=>context.window.testProject(x,y,z);
 async function advance(seconds){for(let i=0;i<Math.ceil(seconds*60);i++){now+=1000/60;for(let j=0;j<8;j++)await Promise.resolve();const due=queue.filter(t=>t.at<=now);queue=queue.filter(t=>t.at>now);due.forEach(t=>t.fn());const frames=rafs;rafs=[];frames.forEach(fn=>fn(now));}for(let j=0;j<12;j++)await Promise.resolve();}
 async function checkLightFind(controlId,objectId){
  for(const fn of events.pointermove)fn({clientX:0,clientY:0});await advance(.1);
@@ -32,6 +33,13 @@ async function checkLightFind(controlId,objectId){
 }
 async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(predicate())return;await advance(.1)}throw Error('Timed out at phase '+body.dataset.phase+' / '+body.dataset.chapter)}
 (async()=>{
+ await advance(2);
+ const verticalVanishingPoint=project(0,1e9,0);
+ assert(Math.abs(verticalVanishingPoint.x-640)<1,'Camera roll must center the vertical vanishing point');
+ for(const [x,y,z] of [[145,4,75],[-135,20,95],[0,120,0]]){
+   const p=project(x,y,z),world=context.window.testPointAtHeight(p.x,p.y,y);
+   assert(Math.hypot(world.x-x,world.y-y,world.z-z)<.001,'Screen and world projections must stay aligned');
+ }
  await advance(2);assert.equal(writes.get('Robot').visible,true,'Prewarm the model underneath the opaque opening overlay');assert.equal(writes.get('Chapter One Plant').visible,false);assert.equal(writes.get('Chapter One Seed').visible,false);
  const idleUpdates=updateCount;await advance(2);assert.equal(updateCount,idleUpdates,'Sleeping pose must not resend unchanged scene properties');
  $('wake').onclick();await advance(2);$('wake').onclick();await advance(2);
@@ -106,7 +114,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
    $('turn-milo').onpointerdown({pointerId:10,button:0,currentTarget:$('turn-milo'),clientX:640,clientY:400});
    for(const fn of events.pointermove)fn({pointerId:10,clientX:865,clientY:400});
    for(const fn of events.pointerup)fn({pointerId:10});
- }else for(let i=0;i<(process.argv[2]==='assist'?12:4);i++)$('turn-milo').onkeydown({key:'ArrowRight',preventDefault(){}});
+ }else for(let i=0;i<(process.argv[2]==='direct'?12:4);i++)$('turn-milo').onkeydown({key:'ArrowRight',preventDefault(){}});
  await advance(1.5);assert.equal(writes.get('Robot Head Pivot').rotation.y,0,'Name search must keep the back stamp steady');assert.equal($('back-name').hidden,false,'Rotating Milo should reveal the back stamp');
  $('back-name').onclick();await until(()=>!$('answers').hidden);
  const nickname=process.argv[2]==='nickname';
@@ -126,7 +134,13 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  for(const fn of events.pointercancel)fn({pointerId:12,type:'pointercancel'});
  assert.equal(body.dataset.chapter,'water-find','Cancelled pickup should leave the can available');
  await advance(.5);
- if(nickname){
+ const direct=process.argv[2]==='direct';
+ if(direct){
+   const plant=project(145,4,75);
+   $('water-can').onpointerdown({pointerId:13,button:0,currentTarget:$('water-can'),clientX:300,clientY:480});
+   for(const fn of events.pointermove)fn({pointerId:13,clientX:plant.x,clientY:plant.y});
+   for(const fn of events.pointerup)fn({pointerId:13,clientX:plant.x,clientY:plant.y,type:'pointerup'});
+ }else if(nickname){
    // Drag pickup and release beside the current hand.
    $('water-can').onpointerdown({pointerId:13,button:0,currentTarget:$('water-can'),clientX:300,clientY:480});
    const hx=parseFloat($('five').style.left),hy=parseFloat($('five').style.top);
@@ -135,7 +149,10 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  }else{
    $('water-can').onclick();assert.equal(body.dataset.chapter,'water-carry');$('water-hand').onclick();
  }
- assert.equal(body.dataset.chapter,'water-aim');await advance(6);
+ assert.equal(body.dataset.chapter,'water-aim');
+ assert.equal($('choice').hidden,true,'Watering must not require an aim button');
+ if(!direct){
+ await advance(6);
  assert.equal(writes.get('Water Drops').visible,false,'Taking the can must not start pouring');
  assert.equal(writes.get('Watering Can').rotation.y,0,'The spout must face away from his body');
  assert.equal(writes.get('Watering Can').rotation.z,0,'He must hold the can upright until guided');
@@ -147,11 +164,12 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  if(nickname){
    const x=parseFloat($('water-can').style.left),y=parseFloat($('water-can').style.top);
    $('water-can').onpointerdown({pointerId:14,button:0,currentTarget:$('water-can'),clientX:x,clientY:y});
-   for(const fn of events.pointermove)fn({pointerId:14,clientX:x-30/.45,clientY:y});
-   for(const fn of events.pointerup)fn({pointerId:14,clientX:x-30/.45,clientY:y,type:'pointerup'});
- }else if(process.argv[2]==='assist')$('choice').onclick();
- else for(let i=0;i<3;i++)$('water-can').onkeydown({key:'ArrowDown',preventDefault(){}});
- await advance(.8);assert.equal(writes.get('Water Drops').visible,true,'Guiding over the soil should start pouring');
+   const plant=project(145,40,75);
+   for(const fn of events.pointermove)fn({pointerId:14,clientX:plant.x,clientY:plant.y});
+   for(const fn of events.pointerup)fn({pointerId:14,clientX:plant.x,clientY:plant.y,type:'pointerup'});
+ }else for(let i=0;i<3;i++)$('water-can').onkeydown({key:'ArrowDown',preventDefault(){}});
+ }
+ await advance(1.1);assert.equal(writes.get('Water Drops').visible,true,'Guiding over the soil should start pouring');
  assert.equal(writes.get('Watering Can').rotation.y,0,'Pouring must not reverse the spout toward his leg');
  await until(()=>body.dataset.chapter==='water-bloom',12);
  assert.equal(writes.get('Water Drops').visible,false);assert.equal(writes.get('Garden Flower').visible,true);

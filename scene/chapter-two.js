@@ -160,12 +160,28 @@ async function prepareWatering(){
 }
 waterBoot=prepareWatering();
 function pointAtHeight(x,y,height){
- const a=25.1*Math.PI/180,b=-10.4*Math.PI/180,tan=Math.tan(45*Math.PI/360);
- const cx=(x-innerWidth/2)/(innerHeight/2)*tan,cy=-(y-innerHeight/2)/(innerHeight/2)*tan;
- const zz=-Math.sin(a)*cx-Math.cos(a),rx=Math.cos(a)*cx-Math.sin(a);
- const ry=Math.cos(b)*cy-Math.sin(b)*zz,rz=Math.sin(b)*cy+Math.cos(b)*zz;
- const depth=bounded((height-360)/ry,120,1700);
- return{x:370+depth*rx,y:360+depth*ry,z:790+depth*rz};
+ const r=cameraRay(x,y),depth=bounded((height-360)/r.y,120,1700);
+ return{x:370+depth*r.x,y:360+depth*r.y,z:790+depth*r.z};
+}
+function overPlant(x,y){
+ const soil=screenPoint(145,4,75),stem=screenPoint(145,70,75);
+ const radius=bounded(innerHeight/720*60,38,90);
+ // The whole plant silhouette accepts the gesture, not just the tiny soil patch.
+ return Math.hypot(x-soil.x,y-bounded(y,stem.y,soil.y))<radius;
+}
+function guideCan(x,y,drag){
+ waterGuided=true;$('choice').hidden=true;
+ if(overPlant(x,y)){waterTarget=10;return;}
+ // Match the hand's projected movement in both axes, keeping the original grab offset.
+ const origin=projectedHand({...lastPose,rightX:-48,rightZ:drag.angle,elbowY:0,elbowZ:0},'right');
+ const start=screenPoint(origin.x+10,origin.y,origin.z);
+ const target={x:start.x+x-drag.x,y:start.y+y-drag.y};
+ let best=Infinity;
+ for(let angle=-10;angle<=65;angle++){
+   const hand=projectedHand({...lastPose,rightX:-48,rightZ:angle,elbowY:0,elbowZ:0},'right');
+   const p=screenPoint(hand.x+10,hand.y,hand.z),distance=Math.hypot(p.x-target.x,p.y-target.y);
+   if(distance<best){best=distance;waterTarget=angle;}
+ }
 }
 async function startWatering(){
  if(chapter!=='named-play')return;await waterBoot;
@@ -188,7 +204,7 @@ function giveCan(){
  canCarry=false;canHeld=true;canDrag=null;waterAngle=40;waterTarget=40;waterGuided=false;waterPouring=false;
  $('water-hand').hidden=true;$('water-can').hidden=false;$('spark').hidden=true;enter('water-aim');
  objective('Help him water the plant');speak('Can you help me?');
- choice('Help him aim',()=>{if(chapter==='water-aim'){waterGuided=true;waterTarget=10;$('choice').hidden=true;}});
+ $('choice').hidden=true;
 }
 $('water-hand').onclick=giveCan;
 $('water-can').onpointerdown=e=>{
@@ -211,8 +227,7 @@ window.addEventListener('pointermove',e=>{
  if(chapter==='water-find')carryCan();
  if(chapter==='water-carry')canAt=pointAtHeight(e.clientX,e.clientY,120);
  if(chapter==='water-aim'){
-   // The arm, can, nozzle and falling water all share this same pose.
-   waterGuided=true;const scale=innerHeight/720;waterTarget=bounded(d.angle+(e.clientX-d.x)/Math.max(.7,scale)*.45,-10,65);
+   guideCan(e.clientX,e.clientY,d);
  }
 });
 function releaseCan(e){
@@ -222,7 +237,10 @@ function releaseCan(e){
  if(d.moved){suppressCanClickUntil=chapterTime+.35;
    if(chapter==='water-carry'){
      const h=handScreen(lastPose,'right');
-     if(e.type!=='pointercancel'&&Math.hypot((e.clientX??-999)-h.x,(e.clientY??-999)-h.y)<85)giveCan();
+     const plantDrop=overPlant(e.clientX??-999,e.clientY??-999);
+     if(e.type!=='pointercancel'&&(plantDrop||Math.hypot((e.clientX??-999)-h.x,(e.clientY??-999)-h.y)<85)){
+       giveCan();if(plantDrop){waterGuided=true;waterTarget=10;}
+     }
      else{canAt={...canHome};canCarry=false;enter('water-find');$('water-hand').hidden=true;objective('Give him the watering can');}
    }
  }

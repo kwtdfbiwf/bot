@@ -6,7 +6,7 @@ Live website: https://kwtdfbiwf.github.io/bot/
 
 The opening leads into cursor play, finding a seed, planting it beside Milo,
 growing a plant with your light, and a quiet seated ending. Continue by finding the name stamped on Milo’s
-back, choosing his name, helping him water the plant, and meeting a moth drawn to its new flower. After the moth settles, find a blue bottle cap and help Milo keep it in his first box. Hidden finds are revealed by the cursor light. Milo holds the watering can upright until the player guides it over the soil. His arms can
+back, choosing his name, helping him water the plant, and meeting a moth drawn to its new flower. After the moth settles, find a blue bottle cap and help Milo keep it in his first box. Hidden finds are revealed by the cursor light. Milo holds the watering can upright until the player drags it over the plant. Dropping the found can directly on the plant also works; no aim button is required. His arms can
 be lifted by dragging. Pointer, touch, and keyboard interactions are supported.
 
 ## Source
@@ -15,6 +15,7 @@ be lifted by dragging. Pointer, touch, and keyboard interactions are supported.
 - `scene/opening.html`: complete Spline HTML overlay, story, and animation loop.
 - `scene/chapter-one.js`, `scene/chapter-two.js`, `scene/chapter-three.js`, and their `.css` files: chapter authoring sources,
   inlined into `opening.html` so the Spline export is self contained.
+- `scene/level-camera.js`: camera roll correction for level ground; the overlay uses matching projections.
 - `scene/circular-blue-eyes.js`: eye changes applied in the Spline editor.
 - `scene/botanical-models.js`: authored Spline seed and folded-leaf plant meshes.
   The story references these named assets and animates their growth.
@@ -49,7 +50,7 @@ GitHub Pages serves the root of `gh-pages`.
 ```sh
 node tests/chapter.test.cjs
 node tests/chapter.test.cjs nickname
-node tests/chapter.test.cjs assist
+node tests/chapter.test.cjs direct
 ```
 
 This exercises the story and controls with a mock Spline bridge. Verify model
