@@ -1,7 +1,7 @@
 // His first keepsake. One clock, cached scene objects, no inventory screen.
 let boxMeshes=[],blueCap=null,capEnamel=null,keepsakeBox=null,collectionHatch=null,collectionLid=null,collectionReady=false;
 let capAt={x:-235,y:5,z:100},capFrom=null,boxAt={x:-230,y:0,z:70},boxFrom=null;
-let collectionSettled=false,capInBox=false,capHeld=false,collectionDrag=null,collectionClickAfter=-100,collectionHappyAt=-100,collectionRestAt=-100;
+let collectionSettled=false,capInBox=false,capHeld=false,collectionDrag=null,collectionClickAfter=-100,collectionHappyAt=-100;
 const collectionStates=()=>chapter.startsWith('collection-');
 async function prepareCollection(){
  try{
@@ -64,19 +64,14 @@ function placeKeepsakeBox(){
    speak('This can be its place.');
    after(2.6,()=>{
      if(chapter!=='collection-store')return;capInBox=true;enter('collection-end');$('collect-cap').setAttribute('aria-label','Look at his first keepsake');
-     speak('One thing.',()=>speak('I’d like to find another.',()=>{collectionSettled=true;$('collect-cap').hidden=false;$('pet').hidden=false;choice('Sit with him',restWithCollection);}));
+     speak('One thing.',()=>speak('I’d like to find another.',()=>{collectionSettled=true;$('collect-cap').hidden=false;$('pet').hidden=false;$('choice').hidden=true;after(4,()=>{$('dialogue').hidden=true;});}));
    });
  });
-}
-function restWithCollection(){
- if(chapter!=='collection-end')return;
- enter('collection-rest');collectionRestAt=chapterTime;$('choice').hidden=true;
- speak('I’ll look after it.',()=>{after(4,()=>{$('dialogue').hidden=true;});});
 }
 $('collect-cap').onclick=()=>{
  if(chapterTime<collectionClickAfter)return;
  if(chapter==='collection-find')carryKeepsake();
- else if(collectionSettled&&capInBox&&['collection-end','collection-rest'].includes(chapter))speak('The blue one. My first one.');
+ else if(collectionSettled&&capInBox&&chapter==='collection-end')speak('The blue one. My first one.');
 };
 $('collect-cap').onfocus=()=>{if(chapter==='collection-find'){revealFocus='cap';revealFoundObject('cap',blueCap,[capEnamel],screenPoint(capAt.x,capAt.y,capAt.z));}};
 $('collect-box').onfocus=()=>{if(chapter==='collection-box-find'){revealFocus='box';revealFoundObject('box',keepsakeBox,boxMeshes,screenPoint(boxAt.x,boxAt.y+14,boxAt.z));}};
@@ -130,10 +125,7 @@ function collectionPose(p){
  }
  const happy=chapterTime-collectionHappyAt;
  if(happy>=0&&happy<2.8){const g=pulse(happy,0,.3,1.8,2.7);p.headZ+=Math.sin(happy*4)*4*g;p.leftZ-=18*g;}
- if(chapter==='collection-rest'){
-   const g=ease((chapterTime-collectionRestAt)/3);p.bodyY-=82*g;p.headX=12;p.leftX-=40*g;p.rightX-=40*g;
-   for(const side of [-1,1])write('Robot Leg Pivot '+side,{position:{y:100-80*g},rotation:{x:-78*g,y:0,z:0}});
- }
+
  return p;
 }
 function collectionTick(){

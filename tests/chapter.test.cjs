@@ -247,12 +247,13 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  await until(()=>body.dataset.chapter==='collection-end');await advance(.1);
  assert.equal(writes.get('Keepsake Box').position.x,-135);assert.equal(writes.get('Blue Bottle Cap').position.x,-135);
  assert.equal(writes.get('Collection Hatch Lid Pivot').rotation.x,0);assert.equal(writes.get('Garden Flower').visible,true);assert.equal(writes.get('Garden Moth').visible,true);
- await until(()=>!$('choice').hidden&&$('choice').textContent==='Sit with him');$('choice').onclick();await advance(3.2);
- assert.equal(body.dataset.chapter,'collection-rest');assert.equal(writes.get('Robot Leg Pivot 1').position.y,20);
- for(const fn of events.pointermove)fn({clientX:640,clientY:0});await advance(.7);
- assert(writes.get('Robot Head Pivot').rotation.x>0,'Resting Milo should keep his seated pose outside object searches');
+ await until(()=>!$('pet').hidden);await advance(5);
+ assert.equal(body.dataset.chapter,'collection-end');
+ assert.equal($('choice').hidden,true,'The second sitting choice must not appear');
+ assert.equal($('dialogue').hidden,true,'The closing dialogue should clear without another sit');
+ for(const side of [-1,1])assert.equal(writes.get('Robot Leg Pivot '+side).position.y,100,'Milo must remain standing after storing his first keepsake');
  $('collect-cap').onclick();await advance(2);assert.match($('dialogue').textContent,/My first one/);
  assert.equal(writes.get('Blue Bottle Cap').visible,true,'Inspecting the keepsake must preserve it');
- await advance(20);assert.equal(body.dataset.chapter,'collection-rest','The story should end quietly with the first keepsake');assert.equal($('choice').hidden,true,'The removed fan chapter must not be offered');
+ await advance(20);assert.equal(body.dataset.chapter,'collection-end','The story should end quietly with the first keepsake');assert.equal($('choice').hidden,true,'The removed fan chapter must not be offered');
  console.log('PASS: arm dragging, high five, planting, '+(nickname?'nickname':'Milo name')+', turning, watering, flower, moth, blue cap, keepsake box and collection ending');
 })().catch(error=>{console.error(error);process.exitCode=1});

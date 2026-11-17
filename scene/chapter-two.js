@@ -6,7 +6,7 @@ let standAt=-100,happyAt=-100,nameConfirmed=false;
 let moth=null,mothLeft=null,mothRight=null,mothOffered=false,mothWarmth=0,mothPinned=false,mothAt={x:145,y:85,z:75},mothFlightFrom=null;
 let mothReady=false,twoReady=false,mothOfferAt=0;
 try{chosenName=localStorage.getItem('milo-chosen-name')||'Milo';}catch{}
-const freeArms=()=>['play','end','named-play','garden-end','collection-rest'].includes(chapter)||(chapter==='collection-end'&&collectionSettled);
+const freeArms=()=>['play','end','named-play','garden-end'].includes(chapter)||(chapter==='collection-end'&&collectionSettled);
 const namingStates=()=>['name-intro','name-search','name-found','nickname','name-happy','named-play','water-intro','water-find','water-carry','water-aim','water-bloom','water-done','moth-arrival','moth-coax','moth-landed','moth-stay','moth-return','garden-end'].includes(chapter)||chapter.startsWith('collection-');
 const bounded=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 function worldPoint(p){return rotateVector(p,0,yaw,0);}
@@ -30,7 +30,7 @@ function refreshArmTargets(p){
    el.style.height=Math.max(64,Math.abs(h.y-s.y)*.65+25)+'px';
  }
  if(freeArms()){
-   const down=['end','collection-rest'].includes(chapter)?82:0;
+   const down=chapter==='end'?82:0;
    place($('pet'),bodyScreen(0,310-down,80));
  }
 }
