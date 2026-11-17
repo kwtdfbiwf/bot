@@ -232,83 +232,12 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  await until(()=>body.dataset.chapter==='collection-end');await advance(.1);
  assert.equal(writes.get('Keepsake Box').position.x,-135);assert.equal(writes.get('Blue Bottle Cap').position.x,-135);
  assert.equal(writes.get('Collection Hatch Lid Pivot').rotation.x,0);assert.equal(writes.get('Garden Flower').visible,true);assert.equal(writes.get('Garden Moth').visible,true);
- await until(()=>!$('choice').hidden&&$('choice').textContent==='Sit with him');$('choice').onclick();
- await advance(.3);$('collect-cap').onclick(); // Interrupt his line: the next chapter must still unlock.
- await advance(3.2);
+ await until(()=>!$('choice').hidden&&$('choice').textContent==='Sit with him');$('choice').onclick();await advance(3.2);
  assert.equal(body.dataset.chapter,'collection-rest');assert.equal(writes.get('Robot Leg Pivot 1').position.y,20);
  for(const fn of events.pointermove)fn({clientX:640,clientY:0});await advance(.7);
  assert(writes.get('Robot Head Pivot').rotation.x>0,'Resting Milo should keep his seated pose outside object searches');
  $('collect-cap').onclick();await advance(2);assert.match($('dialogue').textContent,/My first one/);
  assert.equal(writes.get('Blue Bottle Cap').visible,true,'Inspecting the keepsake must preserve it');
- // A full second collection chapter, including failed fits and cancelled repairs.
- await until(()=>!$('choice').hidden&&$('choice').textContent==='Find something else');
- if(direct)context.innerWidth=390; // Exercise all fan controls on a narrow viewport too.
- $('choice').onclick();
- await until(()=>body.dataset.chapter==='fan-find');
- for(const name of ['Fan Stand','Fan Motor','Fan Grille'])assert.equal(writes.get(name).visible,false,'Unfound fan pieces must stay hidden');
- for(const [key,name] of [['blades','Fan Blades'],['stand','Fan Stand'],['motor','Fan Motor'],['grille','Fan Grille']]){
-   await until(()=>body.dataset.chapter==='fan-find'&&!$('fan-'+key).hidden);
-   await checkLightFind('fan-'+key,name);
-   if(nickname||direct){
-     const el=$('fan-'+key),x=parseFloat(el.style.left),y=parseFloat(el.style.top);
-     el.onpointerdown({pointerId:31,button:0,currentTarget:el,clientX:x,clientY:y});
-     for(const fn of events.pointermove)fn({pointerId:31,clientX:x+12,clientY:y});await advance(.1);
-     const hx=parseFloat($('fan-hand').style.left),hy=parseFloat($('fan-hand').style.top);
-     for(const fn of events.pointermove)fn({pointerId:31,clientX:hx,clientY:hy});
-     for(const fn of events.pointerup)fn({pointerId:31,clientX:hx,clientY:hy});
-   }else{$('fan-'+key).onclick();assert.equal(body.dataset.chapter,'fan-carry');$('fan-hand').onclick();}
-   assert.equal(body.dataset.chapter,'fan-inspect');
- }
- await until(()=>body.dataset.chapter==='fan-assemble');await advance(.2);
- for(const key of ['stand','motor','blades','grille']){
-   const el=$('fan-'+key),target=$('fan-target');
-   assert(Math.hypot(parseFloat(el.style.left)-parseFloat(target.style.left),parseFloat(el.style.top)-parseFloat(target.style.top))>34,'The fit target must not cover a loose part’s grab point');
- }
- $('fan-blades').onclick();$('fan-target').onclick();
- assert.equal(body.dataset.chapter,'fan-assemble','The blades must not fit before their axle');
- for(const [key,turns] of [['stand',0],['motor',-2],['blades',-1],['grille',1]]){
-   const el=$('fan-'+key);await advance(.4);el.onclick();
-   if(turns){$('fan-target').onclick();assert.equal(body.dataset.chapter,'fan-assemble','A misaligned key must not snap into place');}
-   if(nickname){
-     for(let i=0;i<Math.abs(turns);i++)$(turns<0?'fan-turn-left':'fan-turn-right').onclick();
-   }else for(let i=0;i<Math.abs(turns);i++)el.onkeydown({key:turns<0?'ArrowLeft':'ArrowRight',preventDefault(){}});
-   if(direct||nickname){
-     await advance(.1);const x=parseFloat(el.style.left),y=parseFloat(el.style.top),tx=parseFloat($('fan-target').style.left),ty=parseFloat($('fan-target').style.top);
-     el.onpointerdown({pointerId:32,button:0,currentTarget:el,clientX:x,clientY:y});
-     for(const fn of events.pointermove)fn({pointerId:32,clientX:tx,clientY:ty});
-     for(const fn of events.pointerup)fn({pointerId:32,clientX:tx,clientY:ty});
-   }else $('fan-target').onclick();
-   assert.equal(body.dataset.chapter,'fan-fit','Aligned parts must fit through the chosen control');
-   await until(()=>body.dataset.chapter!=='fan-fit');
- }
- assert.equal(body.dataset.chapter,'fan-test');
- const standAt=writes.get('Fan Stand').position,standScreen=project(standAt.x,standAt.y,standAt.z);
- assert(standScreen.x>=60&&standScreen.x<context.innerWidth-30,'The assembled fan must remain on screen');
- assert.equal(writes.get('Fan Motor').position.y,80);assert.equal(writes.get('Fan Grille Face').position.z,-8);
- $('fan-switch').onclick();assert.equal(body.dataset.chapter,'fan-sputter');assert.equal($('fan-switch').disabled,true);
- const sputter=writes.get('Fan Blades').rotation.z;await advance(.5);assert.notEqual(writes.get('Fan Blades').rotation.z,sputter,'The first test must visibly rattle the blades');
- await until(()=>body.dataset.chapter==='fan-jammed');await advance(.1);
- // Pulling clear and cancelling must not silently complete the repair.
- const grille=$('fan-grille'),gx=parseFloat(grille.style.left),gy=parseFloat(grille.style.top);
- grille.onpointerdown({pointerId:33,button:0,currentTarget:grille,clientX:gx,clientY:gy});
- for(const fn of events.pointermove)fn({pointerId:33,clientX:gx+90,clientY:gy});await advance(.1);
- for(const fn of events.pointercancel)fn({pointerId:33});await advance(.1);
- assert.equal(body.dataset.chapter,'fan-jammed');assert.equal(writes.get('Fan Grille Face').position.z,-8,'Cancelled repair must restore the bent guard');
- if(nickname||direct){
-   grille.onpointerdown({pointerId:34,button:0,currentTarget:grille,clientX:gx,clientY:gy});
-   for(const fn of events.pointermove)fn({pointerId:34,clientX:gx+70,clientY:gy-10});
-   for(const fn of events.pointerup)fn({pointerId:34,clientX:gx+70,clientY:gy-10});
- }else for(let i=0;i<4;i++)grille.onkeydown({key:'ArrowUp',preventDefault(){}});
- assert.equal(body.dataset.chapter,'fan-ready');await advance(.2);
- assert.equal(Math.abs(writes.get('Fan Grille Face').position.z),0);assert.equal(Math.abs(writes.get('Fan Grille Face').rotation.x),0);
- $('fan-switch').onclick();assert.equal(body.dataset.chapter,'fan-running');await advance(.2);
- const running=writes.get('Fan Blades').rotation.z;await advance(.2);assert.notEqual(writes.get('Fan Blades').rotation.z,running,'The repaired fan must spin');
- $('fan-switch').onclick();await advance(.1);const stopped=writes.get('Fan Blades').rotation.z;await advance(.5);
- assert.equal(writes.get('Fan Blades').rotation.z,stopped,'The physical switch must stop the fan');
- $('fan-switch').onclick();await until(()=>!$('choice').hidden&&$('choice').textContent==='Sit in the breeze');$('choice').onclick();await advance(3.2);
- assert.equal(body.dataset.chapter,'fan-rest');assert.equal(writes.get('Robot Leg Pivot 1').position.y,20);
- assert.equal(writes.get('Garden Flower').visible,true);assert.equal(writes.get('Garden Moth').visible,true);assert.equal(writes.get('Keepsake Box').visible,true);
- assert.equal($('fan-switch').attributes['aria-pressed'],'true');
- $('pet').onclick();await advance(.6);assert.match($('dialogue').textContent,/Oh|My head/,'Milo must still respond to a pat in the new ending');
- console.log('PASS: opening, play, garden, naming, guided watering, moth, first keepsake, fan discovery, keyed assembly, grille repair, working switch and quiet ending');
+ await advance(20);assert.equal(body.dataset.chapter,'collection-rest','The story should end quietly with the first keepsake');assert.equal($('choice').hidden,true,'The removed fan chapter must not be offered');
+ console.log('PASS: arm dragging, high five, planting, '+(nickname?'nickname':'Milo name')+', turning, watering, flower, moth, blue cap, keepsake box and collection ending');
 })().catch(error=>{console.error(error);process.exitCode=1});

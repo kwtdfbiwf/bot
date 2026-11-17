@@ -158,7 +158,7 @@ async function prepareWatering(){
  try{
    const find=async name=>{const o=await spline.findObjectByName(name);if(!o)throw new Error('Missing '+name);return o;};
    wateringCan=await find('Watering Can');waterDrops=await find('Water Drops');gardenFlower=await find('Garden Flower');
-   for(const name of ['Can Enamel Body','Can Dark Opening','Can Loop Handle','Can Curved Spout','Can Spout Opening'])canMeshes.push(await find(name));
+   for(const name of ['Can Enamel Body','Can Dark Opening','Can Loop Handle','Can Curved Spout','Can Spout Opening','Can Rolled Lip'])canMeshes.push(await find(name));
    for(let i=0;i<6;i++)dropParts.push(await find('Water Drop '+i));
    for(let i=0;i<5;i++)flowerPetals.push(await find('Flower Petal '+i));
    await update(wateringCan.id,{visible:false});await update(waterDrops.id,{visible:false});await update(gardenFlower.id,{visible:false});waterReady=true;
@@ -304,7 +304,7 @@ function wateringTick(dt){
    }
    if(chapter==='water-bloom')update(waterDrops.id,{visible:false});
  }
- if(bloomAt>0&&!fanStates()){
+ if(bloomAt>0){
    const t=chapterTime-bloomAt;
    for(let i=0;i<flowerPetals.length;i++){
      const g=ease((t-i*.16)/2.5);
@@ -346,7 +346,7 @@ function chapterTwoTick(now){
  yaw+=(yawTarget-yaw)*(1-Math.exp(-dt*(wateringStates()?3.5:9)));
  if(Math.abs(yaw)<.001)yaw=0;
  update(parts.Robot.id,{rotation:{y:yaw}});
- wateringTick(dt);collectionTick();fanTick(dt);
+ wateringTick(dt);collectionTick();
  if(chapter==='name-search'){
    const rear=Math.cos((yaw-25.1)*Math.PI/180)<-.6;
    $('back-name').hidden=!rear;place($('back-name'),bodyScreen(0,318,-81));
@@ -401,6 +401,6 @@ function chapterTwoPose(p){
      if(side==='right'){p.elbowZ*=1-weight;p.elbowY*=1-weight;}
    }
  }
- p=wateringPose(p);p=collectionPose(p);p=fanPose(p);
+ p=wateringPose(p);p=collectionPose(p);
  lastPose={...p};refreshArmTargets(p);return p;
 }

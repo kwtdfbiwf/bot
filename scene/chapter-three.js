@@ -70,8 +70,7 @@ function placeKeepsakeBox(){
 function restWithCollection(){
  if(chapter!=='collection-end')return;
  enter('collection-rest');collectionRestAt=chapterTime;$('choice').hidden=true;
- speak('I’ll look after it.');
- after(6,()=>{if(chapter!=='collection-rest')return;$('dialogue').hidden=true;choice('Find something else',beginFan);});
+ speak('I’ll look after it.',()=>{after(4,()=>{$('dialogue').hidden=true;});});
 }
 $('collect-cap').onclick=()=>{
  if(chapterTime<collectionClickAfter)return;
