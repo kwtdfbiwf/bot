@@ -146,7 +146,7 @@ function giveName(name){
 // Help him care for the plant: find, pick up, guide, water, bloom.
 let wateringCan=null,waterDrops=null,gardenFlower=null,waterReady=false,waterBoot;
 let canMeshes=[],dropParts=[],flowerPetals=[],canDrag=null,canCarry=false,canHeld=false;
-let waterAngle=40,waterTarget=40,waterFill=0,waterPouring=false,waterAligned=false,waterGuided=false,bloomAt=-100,canHome={x:-135,y:20,z:95},canAt={...canHome};
+let waterAngle=40,waterTarget=40,waterFill=0,waterPouring=false,waterAligned=false,waterGuided=false,bloomAt=-100,canHome={x:431,y:20,z:-150},canAt={...canHome};
 // The original rig labels +X as right; Milo's anatomical right is the -X arm.
 const wateringSide='left',waterTurn=103.3;
 let waterFacing=0;
@@ -169,6 +169,15 @@ function pointAtHeight(x,y,height){
  const r=cameraRay(x,y),depth=bounded((height-360)/r.y,120,1700);
  return{x:370+depth*r.x,y:360+depth*r.y,z:790+depth*r.z};
 }
+// Keep the find on the right and beyond the floor's existing pool of light.
+// On narrow screens it sits deeper in the void, rather than beside the plant.
+function layoutCanHome(){
+ const wide=clamp((innerWidth-600)/680);
+ canHome=pointAtHeight(innerWidth*.86,innerHeight*(.68+.10*wide),20);
+ canHome.x-=10;
+ if(chapter==='water-find')canAt={...canHome};
+}
+window.addEventListener('resize',layoutCanHome);
 function overPlant(x,y){
  const soil=screenPoint(145,4,75),stem=screenPoint(145,70,75);
  const radius=bounded(innerHeight/720*60,38,90);
@@ -193,6 +202,7 @@ function guideCan(x,y,drag){
 async function startWatering(){
  if(chapter!=='named-play')return;await waterBoot;
  if(!waterReady){speak('Could you help me with the plant?',()=>choice('Try again',()=>location.reload()));return;}
+ layoutCanHome();waterFacing=Math.round(yaw/360)*360;
  enter('water-intro');reaction='';$('pet').hidden=true;$('five').hidden=true;$('choice').hidden=true;
  speak('You helped me.',()=>speak('Can I help it?',()=>{
    enter('water-find');canAt={...canHome};revealWateringCan();$('water-can').hidden=false;$('spark').hidden=false;
@@ -265,7 +275,9 @@ function finishWatering(){
 }
 function wateringPose(p){
  if(!wateringStates())return p;
- p.headY=13-(yaw-waterFacing)*.5;p.headX=12;
+ // Whole turns from reading his back must never become neck rotations.
+ const turn=((yaw-waterFacing+180)%360+360)%360-180;
+ p.headY=bounded(13-turn*.5,-65,65);p.headX=12;
  if(canHeld){
    p.leftX=chapter==='water-aim'?-48*ease((chapterTime-chapterAt)/.8):0;
    p.leftZ=-waterAngle;

@@ -2,7 +2,7 @@ const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
 const html=fs.readFileSync('scene/opening.html','utf8');
 let now=0,rafs=[],queue=[],timerId=0,focused=null;
 const elements=new Map(),objects=new Map(),writes=new Map(),events={},savedNames=new Map();
-let updateCount=0;
+let updateCount=0,traceHead=false;const pickupHead=[];
 function merge(target,source){for(const [key,value] of Object.entries(source)){if(value&&typeof value==='object')merge(target[key]||(target[key]={}),value);else target[key]=value;}return target;}
 class Element{
  constructor(id){this.id=id;this.hidden=true;this.disabled=false;this.value='';this.textContent='';this.style={setProperty(k,v){this[k]=v}};this.dataset={};this.attributes={};this.children=[];this.classList={add(){},remove(){},toggle(){}};this.firstElementChild={style:{}};}
@@ -12,7 +12,7 @@ class Element{
 }
 for(const m of html.matchAll(/id="([^"]+)"/g))elements.set(m[1],new Element(m[1]));
 const body=new Element('body'),root=new Element('root');
-const spline={ready:Promise.resolve(),async findObjectByName(name){if(!objects.has(name))objects.set(name,{id:name,name,position:{x:0,y:name.startsWith('Robot Leg')?100:102,z:0}});return objects.get(name)},async updateObject(id,props){updateCount++;writes.set(id,merge(writes.get(id)||{},props));return true},async createObject(type,props){const o={id:props.name,...props};objects.set(o.id,o);writes.set(o.id,props);return o}};
+const spline={ready:Promise.resolve(),async findObjectByName(name){if(!objects.has(name))objects.set(name,{id:name,name,position:{x:0,y:name.startsWith('Robot Leg')?100:102,z:0}});return objects.get(name)},async updateObject(id,props){updateCount++;if(traceHead&&id==='Robot Head Pivot'&&Number.isFinite(props.rotation?.y))pickupHead.push(props.rotation.y);writes.set(id,merge(writes.get(id)||{},props));return true},async createObject(type,props){const o={id:props.name,...props};objects.set(o.id,o);writes.set(o.id,props);return o}};
 const context={console,spline,Math,Promise,Error,localStorage:{getItem:k=>savedNames.get(k),setItem:(k,v)=>savedNames.set(k,v)},document:{body,documentElement:root,hidden:false,getElementById:id=>elements.get(id),createElement:()=>new Element('span'),createTextNode:text=>text},innerWidth:1280,innerHeight:720,performance:{now:()=>now},matchMedia:()=>({matches:false}),location:{reload(){}},requestAnimationFrame:fn=>{rafs.push(fn)},setTimeout:(fn,delay=0)=>{const id=++timerId;queue.push({id,at:now+delay,fn});return id},clearTimeout:id=>{queue=queue.filter(t=>t.id!==id)},window:{addEventListener:(name,fn)=>{(events[name]??=[]).push(fn)}}};
 vm.createContext(context);vm.runInContext(html.split('<script>')[1].split('</script>')[0].replace('function screenPoint(', 'window.testProject=screenPoint;window.testPointAtHeight=pointAtHeight;function screenPoint('),context);
 const $=id=>elements.get(id);
@@ -129,10 +129,21 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  await until(()=>body.dataset.chapter==='named-play');assert.equal(savedNames.get('milo-chosen-name'),nickname?'Pip':'Milo');
  assert.equal(writes.get('Robot Leg Pivot 1').position.y,100,'Milo should stand before turning');
  $('choice').onclick();await until(()=>body.dataset.chapter==='water-find');
+ await advance(.2);
+ for(const width of [1280,390]){
+   context.innerWidth=width;for(const fn of events.resize)fn();await advance(.2);
+   const can=writes.get('Watering Can').position;
+   assert(Math.abs(parseFloat($('water-can').style.left)-width*.86)<1,'The can must stay on the right at every screen width');
+   assert(Math.hypot(can.x,can.z)>240,'The can must sit outside Milo’s existing pool of light');
+ }
+ context.innerWidth=1280;for(const fn of events.resize)fn();await advance(.2);
+ traceHead=true;
  await checkLightFind('water-can','Watering Can');assert.equal(writes.get('Garden Flower').visible,false);
  // First try a cancelled drag: it must not silently hand over the can.
  $('water-can').onpointerdown({pointerId:12,button:0,currentTarget:$('water-can'),clientX:300,clientY:480});
  for(const fn of events.pointermove)fn({pointerId:12,clientX:420,clientY:420});
+ await advance(3);
+ assert(Math.abs(writes.get('Robot Head Pivot').rotation.y)<70,'Picking up the can after naming must not unwind whole turns through Milo’s head');
  for(const fn of events.pointercancel)fn({pointerId:12,type:'pointercancel'});
  assert.equal(body.dataset.chapter,'water-find','Cancelled pickup should leave the can available');
  await advance(.5);
@@ -152,6 +163,9 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  assert.equal(body.dataset.chapter,'water-aim');
  assert.equal($('choice').hidden,true,'Watering must not require an aim button');
  await advance(6);
+ traceHead=false;
+ assert(pickupHead.every(y=>Math.abs(y)<80),'Head rotation must remain bounded throughout pickup and handoff');
+ assert(pickupHead.every((y,i)=>!i||Math.abs(y-pickupHead[i-1])<60),'Pickup must not make a large rotational jump');
  assert.equal(writes.get('Water Drops').visible,false,'Taking the can must not start pouring');
  assert.equal(writes.get('Watering Can').rotation.y,180,'The spout must face outward from his right hand');
  assert(writes.get('Robot Arm Pivot -1').rotation.z< -35,'Milo’s right arm must hold the can');

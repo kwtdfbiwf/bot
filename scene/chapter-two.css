@@ -18,6 +18,6 @@ body[data-arm-dragging=true]{cursor:grabbing;user-select:none;-webkit-user-selec
 
 #water-can,#water-hand{position:fixed;z-index:8;transform:translate(-50%,-50%);width:76px;height:68px;padding:0;background:transparent;border:0;border-radius:18px;touch-action:none;cursor:grab}
 #water-can:active{cursor:grabbing}
-#water-can:hover,#water-can:focus-visible{outline:1px dashed #a8c2b880;background:#b6d7cd08}
-#water-hand{width:62px;height:62px;border:1px dashed #dac8a460;border-radius:50%;box-shadow:0 0 22px #f1dfb315;cursor:pointer}
+#water-can,#water-can:hover,#water-can:focus-visible,#water-hand,#water-hand:focus-visible{outline:none;box-shadow:none;background:transparent}
+#water-hand{width:62px;height:62px;border:0;border-radius:50%;cursor:pointer}
 body[data-chapter^=water-] #dialogue{top:max(10vh,65px);bottom:auto}
