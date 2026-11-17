@@ -45,13 +45,20 @@ let revealFocus='';
 window.addEventListener('pointermove',()=>{revealFocus='';});
 function revealFoundObject(key,root,meshes,point){
  if(!root)return 0;
- const distance=Math.hypot(pointerX-point.x,pointerY-point.y);
- const amount=revealFocus===key?.85:.75*Math.pow(clamp(1-distance/115),1.6);
+ const distance=Math.hypot(pointerX-point.x,pointerY-point.y),focused=revealFocus===key;
+ if(driveSearchLight(root,point,focused)){
+   // Cull only well beyond the beam plus the object's footprint. The shader
+   // is already completely black here, so this never exposes a silhouette.
+   update(root.id,{visible:focused||distance<260});
+   return focused?1:Math.pow(1-ease(clamp((distance-16)/114)),1.5);
+ }
+ const amount=focused?.85:.75*Math.pow(clamp(1-distance/130),1.6);
  update(root.id,{visible:amount>.005});
  for(const mesh of meshes)if(mesh)update(mesh.id,{material:{alpha:amount*100}});
  return amount;
 }
 function restoreFoundObject(root,meshes){
+ releaseSearchLight(root);
  if(root)update(root.id,{visible:true});
  for(const mesh of meshes)if(mesh)update(mesh.id,{material:{alpha:100}});
 }
@@ -71,6 +78,7 @@ async function preparePlant(){
  seedModel=await find('Chapter One Seed');await update(seedModel.id,{visible:false});
  seedShell=await find('Seed Shell');stem=await find('Plant Stem');
  leafLeft=await find('Plant Leaf Left');leafRight=await find('Plant Leaf Right');newLeaf=await find('Plant New Leaf');
+ await prepareSearchLight(seedModel,[seedShell]);
  plantReady=true;
  }catch(error){chapterFailed=true;console.error('Plant assets:',error);}
 }

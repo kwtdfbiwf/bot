@@ -122,10 +122,76 @@ function askName(){setPhase('name');$('name-form').hidden=false;$('visitor-name'
 function search(){setPhase('search');$('objective').hidden=false;$('switch').hidden=false;$('spark').hidden=false;}
 $('wake').onclick=()=>{if(phase==='boot'){hideWake();setPhase('appear');setTimeout(wakeButton,1500);}else if(phase==='appear'){hideWake();setPhase('waking');}};
 $('name-form').onsubmit=e=>{e.preventDefault();visitor=$('visitor-name').value.trim();if(!visitor){$('visitor-name').value='';$('visitor-name').focus();return;}visitor=visitor.slice(0,32);$('name-form').hidden=true;setPhase('greeting');speak('Hello, '+visitor+'.',()=>{speak('Finally, I’ve been alone here for a while.\nIt’s kind of dark.',search);});};
-function pointer(x,y){document.documentElement.style.setProperty('--mx',x+'px');document.documentElement.style.setProperty('--my',y+'px');if(phase==='search'){const r=$('switch').getBoundingClientRect(),d=Math.hypot(x-r.left-r.width/2,y-r.top-r.height/2);$('switch').style.opacity=String(Math.max(0,1-d/150));}}
+function pointer(x,y){document.documentElement.style.setProperty('--mx',x+'px');document.documentElement.style.setProperty('--my',y+'px');if(phase==='search'){const r=$('switch').getBoundingClientRect();$('switch').style.opacity='1';$('switch').style.maskImage=`radial-gradient(circle at ${x-r.left}px ${y-r.top}px,#000 16px,#0009 65px,transparent 130px)`;}}
 window.addEventListener('pointermove',e=>{if(e.pointerType!=='touch'){gazeActive=true;gazeX=e.clientX;gazeY=e.clientY;}pointer(e.clientX,e.clientY);});window.addEventListener('pointerdown',e=>pointer(e.clientX,e.clientY));
 $('switch').onfocus=()=>{if(phase==='search'){const r=$('switch').getBoundingClientRect();pointer(r.left+r.width/2,r.top+r.height/2);}};
 $('switch').onclick=()=>{if(phase!=='search')return;setPhase('lit');$('switch').setAttribute('aria-pressed','true');$('switch').setAttribute('aria-label','Light is on');$('switch').disabled=true;$('switch').hidden=true;$('spark').hidden=true;$('objective').hidden=true;speak('That’s better.',()=>{if(chapter==='intro')speak('...');});startChapter();};
+// Per-fragment cursor light for finds. Black stays opaque: objects never turn
+// into transparent ghosts, and a handle can emerge before the rest of the can.
+const searchLights=new Map();
+const findClay={
+ 'Seed Shell':['#c9a377',.84],
+ 'Can Enamel Body':['#9cb3a2',.72],'Can Curved Spout':['#9cb3a2',.72],'Can Rolled Lip':['#9cb3a2',.72],
+ 'Can Loop Handle':['#d3a095',.74],'Can Dark Opening':['#596c5b',.9],'Can Spout Opening':['#596c5b',.9],
+ 'Blue Cap Enamel':['#789bb5',.76],'Box Folded Tape':['#d3a095',.74]
+};
+async function prepareSearchLight(root,meshes){
+ const state={active:null,pointer:null,viewport:null,ready:false};searchLights.set(root.id,state);
+ try{
+   if(!spline.createCustomMaterial||!spline.setMaterial)throw new Error('Surface shaders unavailable');
+   // Shared by this find's pieces; changing these values never sends mesh edits.
+   for(const mesh of meshes){
+     const [color]=findClay[mesh.name]||['#c29f7c',.86];
+     const material=await spline.createCustomMaterial(three=>{
+       const {tsl}=three;
+       if(!state.active){
+         state.active=tsl.uniform(0);
+         state.pointer=tsl.uniform(new three.Vector2(0,0));
+         state.viewport=tsl.uniform(new three.Vector2(innerWidth,innerHeight));
+       }
+       // The same fixed camera projection as screenPoint, evaluated at EVERY
+       // surface fragment, not at the object's centre. Independent of DPR.
+       const a=25.1*Math.PI/180,b=-10.4*Math.PI/180,c=4.442*Math.PI/180;
+       const d=tsl.positionWorld.sub(tsl.vec3(370,360,790));
+       const yy=d.y.mul(Math.cos(b)).add(d.z.mul(Math.sin(b)));
+       const zz=d.y.mul(-Math.sin(b)).add(d.z.mul(Math.cos(b)));
+       const xx=d.x.mul(Math.cos(a)).sub(zz.mul(Math.sin(a)));
+       const depth=d.x.mul(Math.sin(a)).add(zz.mul(Math.cos(a))).negate();
+       const f=state.viewport.y.div(2*Math.tan(Math.PI/8));
+       const sx=xx.mul(Math.cos(c)).add(yy.mul(Math.sin(c))).mul(f).div(depth).add(state.viewport.x.mul(.5));
+       const sy=xx.mul(-Math.sin(c)).add(yy.mul(Math.cos(c))).mul(f).div(depth).negate().add(state.viewport.y.mul(.5));
+       const distance=tsl.vec2(sx,sy).sub(state.pointer).length();
+       const beam=tsl.float(1).sub(tsl.smoothstep(16,130,distance)).pow(1.5);
+       const illumination=tsl.mix(tsl.float(1),beam,state.active);
+       // Matte clay with a broad front/overhead key. Apply the beam to the
+       // final colour so ambient light and specular can't reveal unlit parts.
+       const diffuse=tsl.normalWorld.dot(tsl.vec3(.35,.8,.45).normalize()).max(0).mul(.65).add(.35);
+       const m=new three.MeshBasicNodeMaterial();
+       // Pass numeric linear RGB: the runtime's vec3(Color) conversion
+       // renders black on this backend.
+       const rgb=[1,3,5].map(i=>{const s=parseInt(color.slice(i,i+2),16)/255;return s<=.04045?s/12.92:Math.pow((s+.055)/1.055,2.4);});
+       m.colorNode=tsl.vec3(...rgb).mul(diffuse).mul(illumination);
+       m.side=three.DoubleSide;m.transparent=false;
+       return m;
+     });
+     await spline.setMaterial(mesh.id,material);
+   }
+   state.ready=true;
+ }catch(error){console.warn('Cursor surface light fallback:',error.message);}
+}
+function driveSearchLight(root,point,focused){
+ const state=searchLights.get(root.id);
+ if(!state?.ready)return false;
+ state.active.value=focused?0:1;
+ state.pointer.value.set(pointerX,pointerY);
+ state.viewport.value.set(innerWidth,innerHeight);
+ return true;
+}
+function releaseSearchLight(root){
+ const state=root&&searchLights.get(root.id);
+ if(state?.active)state.active.value=0;
+}
+
 // Chapter one runs inside the opening's async function, using its cached rig.
 let chapter='waiting',chapterTime=0,chapterAt=0,lastFrame=0,playCount=0;
 let pointerX=innerWidth/2,pointerY=innerHeight/2,lastPointerAt=0,reactionAt=-100,reaction='';
@@ -173,13 +239,20 @@ let revealFocus='';
 window.addEventListener('pointermove',()=>{revealFocus='';});
 function revealFoundObject(key,root,meshes,point){
  if(!root)return 0;
- const distance=Math.hypot(pointerX-point.x,pointerY-point.y);
- const amount=revealFocus===key?.85:.75*Math.pow(clamp(1-distance/115),1.6);
+ const distance=Math.hypot(pointerX-point.x,pointerY-point.y),focused=revealFocus===key;
+ if(driveSearchLight(root,point,focused)){
+   // Cull only well beyond the beam plus the object's footprint. The shader
+   // is already completely black here, so this never exposes a silhouette.
+   update(root.id,{visible:focused||distance<260});
+   return focused?1:Math.pow(1-ease(clamp((distance-16)/114)),1.5);
+ }
+ const amount=focused?.85:.75*Math.pow(clamp(1-distance/130),1.6);
  update(root.id,{visible:amount>.005});
  for(const mesh of meshes)if(mesh)update(mesh.id,{material:{alpha:amount*100}});
  return amount;
 }
 function restoreFoundObject(root,meshes){
+ releaseSearchLight(root);
  if(root)update(root.id,{visible:true});
  for(const mesh of meshes)if(mesh)update(mesh.id,{material:{alpha:100}});
 }
@@ -199,6 +272,7 @@ async function preparePlant(){
  seedModel=await find('Chapter One Seed');await update(seedModel.id,{visible:false});
  seedShell=await find('Seed Shell');stem=await find('Plant Stem');
  leafLeft=await find('Plant Leaf Left');leafRight=await find('Plant Leaf Right');newLeaf=await find('Plant New Leaf');
+ await prepareSearchLight(seedModel,[seedShell]);
  plantReady=true;
  }catch(error){chapterFailed=true;console.error('Plant assets:',error);}
 }
@@ -514,7 +588,7 @@ async function prepareWatering(){
    for(const name of ['Can Enamel Body','Can Dark Opening','Can Loop Handle','Can Curved Spout','Can Spout Opening','Can Rolled Lip'])canMeshes.push(await find(name));
    for(let i=0;i<6;i++)dropParts.push(await find('Water Drop '+i));
    for(let i=0;i<5;i++)flowerPetals.push(await find('Flower Petal '+i));
-   await update(wateringCan.id,{visible:false});await update(waterDrops.id,{visible:false});await update(gardenFlower.id,{visible:false});waterReady=true;
+   await update(wateringCan.id,{visible:false});await update(waterDrops.id,{visible:false});await update(gardenFlower.id,{visible:false});await prepareSearchLight(wateringCan,canMeshes);waterReady=true;
  }catch(error){console.error('Watering assets:',error);}
 }
 waterBoot=prepareWatering();
@@ -781,6 +855,7 @@ async function prepareCollection(){
    for(const name of ['Keepsake Box Base','Keepsake Box Back','Keepsake Box Front','Keepsake Box Left','Keepsake Box Right','Box Folded Tape'])boxMeshes.push(await find(name));
    collectionHatch=await find('Collection Hatch');collectionLid=await find('Collection Hatch Lid Pivot');
    for(const o of [blueCap,keepsakeBox,collectionHatch])await update(o.id,{visible:false});
+   await prepareSearchLight(blueCap,[capEnamel]);await prepareSearchLight(keepsakeBox,boxMeshes);
    collectionReady=true;
  }catch(error){console.error('Collection assets:',error);}
 }

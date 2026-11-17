@@ -15,6 +15,7 @@ be lifted by dragging. Pointer, touch, and keyboard interactions are supported.
 - `scene/opening.html`: complete Spline HTML overlay, story, and animation loop.
 - `scene/chapter-one.js`, `scene/chapter-two.js`, `scene/chapter-three.js`, and their `.css` files: chapter authoring sources,
   inlined into `opening.html` so the Spline export is self contained.
+- `scene/search-light.js`: per-surface cursor beam for hidden collectibles; matte clay stays opaque and dark outside the soft beam.
 - `scene/level-camera.js`: camera roll correction for level ground; the overlay uses matching projections.
 - `scene/circular-blue-eyes.js`: eye changes applied in the Spline editor.
 - `scene/botanical-models.js`: authored Spline seed and folded-leaf plant meshes.
@@ -52,6 +53,7 @@ GitHub Pages serves the root of `gh-pages`.
 node tests/chapter.test.cjs
 node tests/chapter.test.cjs nickname
 node tests/chapter.test.cjs direct
+node tests/search-light.test.cjs
 ```
 
 This exercises the story and controls with a mock Spline bridge. Verify model

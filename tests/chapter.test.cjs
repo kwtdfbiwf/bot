@@ -1,5 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
 const html=fs.readFileSync('scene/opening.html','utf8');
+const {three}=require('./shader-runtime.cjs');const shaderMaterials=new Map();
 let now=0,rafs=[],queue=[],timerId=0,focused=null;
 const elements=new Map(),objects=new Map(),writes=new Map(),events={},savedNames=new Map();
 let updateCount=0,traceHead=false;const pickupHead=[];
@@ -12,7 +13,7 @@ class Element{
 }
 for(const m of html.matchAll(/id="([^"]+)"/g))elements.set(m[1],new Element(m[1]));
 const body=new Element('body'),root=new Element('root');
-const spline={ready:Promise.resolve(),async findObjectByName(name){if(!objects.has(name))objects.set(name,{id:name,name,position:{x:0,y:name.startsWith('Robot Leg')?100:102,z:0}});return objects.get(name)},async updateObject(id,props){updateCount++;if(traceHead&&id==='Robot Head Pivot'&&Number.isFinite(props.rotation?.y))pickupHead.push(props.rotation.y);writes.set(id,merge(writes.get(id)||{},props));return true},async createObject(type,props){const o={id:props.name,...props};objects.set(o.id,o);writes.set(o.id,props);return o}};
+const spline={ready:Promise.resolve(),async createCustomMaterial(factory){return factory(three)},async setMaterial(id,m){shaderMaterials.set(id,m);return m},async findObjectByName(name){if(!objects.has(name))objects.set(name,{id:name,name,position:{x:0,y:name.startsWith('Robot Leg')?100:102,z:0}});return objects.get(name)},async updateObject(id,props){updateCount++;if(traceHead&&id==='Robot Head Pivot'&&Number.isFinite(props.rotation?.y))pickupHead.push(props.rotation.y);writes.set(id,merge(writes.get(id)||{},props));return true},async createObject(type,props){const o={id:props.name,...props};objects.set(o.id,o);writes.set(o.id,props);return o}};
 const context={console,spline,Math,Promise,Error,localStorage:{getItem:k=>savedNames.get(k),setItem:(k,v)=>savedNames.set(k,v)},document:{body,documentElement:root,hidden:false,getElementById:id=>elements.get(id),createElement:()=>new Element('span'),createTextNode:text=>text},innerWidth:1280,innerHeight:720,performance:{now:()=>now},matchMedia:()=>({matches:false}),location:{reload(){}},requestAnimationFrame:fn=>{rafs.push(fn)},setTimeout:(fn,delay=0)=>{const id=++timerId;queue.push({id,at:now+delay,fn});return id},clearTimeout:id=>{queue=queue.filter(t=>t.id!==id)},window:{addEventListener:(name,fn)=>{(events[name]??=[]).push(fn)}}};
 vm.createContext(context);vm.runInContext(html.split('<script>')[1].split('</script>')[0].replace('function screenPoint(', 'window.testProject=screenPoint;window.testPointAtHeight=pointAtHeight;function screenPoint('),context);
 const $=id=>elements.get(id);
@@ -97,7 +98,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  for(const fn of events.pointermove)fn({clientX:1280,clientY:260});await advance(.7);
  assert(writes.get('Robot Head Pivot').rotation.y>50,'He must clearly follow a cursor to his right');
  for(const fn of events.pointermove)fn({clientX:640,clientY:260});await advance(3);
- await checkLightFind('seed','Chapter One Seed');assert(writes.get('Seed Shell').material.alpha<=85);$('seed').onclick();assert.equal(body.dataset.chapter,'carrying');assert(Number.isFinite(writes.get('Chapter One Seed').scale.x));await $('soil').onclick();assert.equal(writes.get('Chapter One Seed').visible,false);
+ await checkLightFind('seed','Chapter One Seed');assert.equal(shaderMaterials.get('Seed Shell').transparent,false,'Search lighting must keep the seed opaque');$('seed').onclick();assert.equal(body.dataset.chapter,'carrying');assert(Number.isFinite(writes.get('Chapter One Seed').scale.x));await $('soil').onclick();assert.equal(writes.get('Chapter One Seed').visible,false);
  await until(()=>body.dataset.chapter==='growing');await advance(2);
  assert.equal($('growth').attributes['aria-valuenow'],'0','Growth must wait for light');
  $('soil').onclick();await advance(2);const litProgress=$('growth').attributes['aria-valuenow'];assert(Number(litProgress)>0);

@@ -10,6 +10,7 @@ async function prepareCollection(){
    for(const name of ['Keepsake Box Base','Keepsake Box Back','Keepsake Box Front','Keepsake Box Left','Keepsake Box Right','Box Folded Tape'])boxMeshes.push(await find(name));
    collectionHatch=await find('Collection Hatch');collectionLid=await find('Collection Hatch Lid Pivot');
    for(const o of [blueCap,keepsakeBox,collectionHatch])await update(o.id,{visible:false});
+   await prepareSearchLight(blueCap,[capEnamel]);await prepareSearchLight(keepsakeBox,boxMeshes);
    collectionReady=true;
  }catch(error){console.error('Collection assets:',error);}
 }

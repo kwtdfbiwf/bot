@@ -161,7 +161,7 @@ async function prepareWatering(){
    for(const name of ['Can Enamel Body','Can Dark Opening','Can Loop Handle','Can Curved Spout','Can Spout Opening','Can Rolled Lip'])canMeshes.push(await find(name));
    for(let i=0;i<6;i++)dropParts.push(await find('Water Drop '+i));
    for(let i=0;i<5;i++)flowerPetals.push(await find('Flower Petal '+i));
-   await update(wateringCan.id,{visible:false});await update(waterDrops.id,{visible:false});await update(gardenFlower.id,{visible:false});waterReady=true;
+   await update(wateringCan.id,{visible:false});await update(waterDrops.id,{visible:false});await update(gardenFlower.id,{visible:false});await prepareSearchLight(wateringCan,canMeshes);waterReady=true;
  }catch(error){console.error('Watering assets:',error);}
 }
 waterBoot=prepareWatering();
