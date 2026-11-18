@@ -25,6 +25,7 @@ be lifted by dragging. Pointer, touch, and keyboard interactions are supported.
 - `scene/watering-models.js`: enamel watering can, falling drops, and folded flower petals.
 - `scene/collection-models.js`: blue crimped cap, keepsake box, and hinged collection hatch.
 - `scene/shelf-models.js`: one-time Spline shelf and single-book builder, including a locally drawn wood-grain texture.
+- `scene/shelf-refinement.js`: run after the shelf builder, before the dust builder, to give the existing frame its compact proportions, rounded overhanging top, gently splayed legs, sculpted edges and directional walnut grain with knots.
 - `scene/shelf-dust-layout.js`: surface patch positions shared by the dust builder and cleaning interaction. Run it before `scene/shelf-dust-models.js` when authoring the feathered dust decals.
 - `scene/clay-props.js`: final prop remodeling pass; apply after the base model scripts. Preserves object names and interaction anchors while adding rounded clay forms and muted pastel materials.
 - `scene/story-outline.json`: accepted story direction and implemented/planned chapter beats.

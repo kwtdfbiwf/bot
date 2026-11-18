@@ -29,7 +29,7 @@ async function prepareShelf(){
    await update(cozyShelf.id,{visible:false});await update(shelfDustRoot.id,{visible:false});
    const frame=['Top','Middle','Bottom','Front Left','Front Right','Back Left','Back Right','Back Rail'];
    const colors={},textured=[];
-   for(const name of frame){const o=await find('Cozy Shelf '+name);shelfMeshes.push(o);colors[o.name]=['#94704e'];textured.push(o.name);}
+   for(const name of frame){const o=await find('Cozy Shelf '+name);shelfMeshes.push(o);colors[o.name]=['#936945'];textured.push(o.name);}
    for(const x of [-46,46])for(const y of [65,116]){const o=await find('Cozy Shelf Dowel '+x+' '+y);shelfMeshes.push(o);colors[o.name]=['#735237'];}
    for(const name of ['Lower Cover','Upper Cover','Pages','Spine','Page Seam 0','Page Seam 1','Page Seam 2']){
      const o=await find('Cozy Book '+name);shelfMeshes.push(o);colors[o.name]=[name==='Pages'?'#d5c6a4':name.startsWith('Page Seam')?'#b5a783':'#74836a'];
@@ -46,9 +46,9 @@ async function startShelf(){
  enter('shelf-find');reaction='';$('pet').hidden=true;$('five').hidden=true;$('collect-cap').hidden=true;$('choice').hidden=true;
  $('spark').hidden=false;$('shelf-find').hidden=false;layoutShelfSearch();
  objective('Find what '+chosenName+' sees');speak('Something bigger, this time.');
- revealFoundObject('shelf',cozyShelf,shelfMeshes,shelfPoint(0,61,0));
+ revealFoundObject('shelf',cozyShelf,shelfMeshes,shelfPoint(0,48,0));
 }
-$('shelf-find').onfocus=()=>{if(chapter==='shelf-find'){revealFocus='shelf';revealFoundObject('shelf',cozyShelf,shelfMeshes,shelfPoint(0,61,0));}};
+$('shelf-find').onfocus=()=>{if(chapter==='shelf-find'){revealFocus='shelf';revealFoundObject('shelf',cozyShelf,shelfMeshes,shelfPoint(0,48,0));}};
 $('shelf-find').onclick=()=>{
  if(chapter!=='shelf-find')return;
  restoreFoundObject(cozyShelf,shelfMeshes);enter('shelf-arrive');shelfFrom={...shelfAt};shelfFromScale=shelfScale;shelfGoal=shelfInspectLayout();
@@ -152,7 +152,7 @@ function shelfPose(p){
 function shelfTick(dt){
  if(!shelfReady||!shelfStates())return;
  const elapsed=chapterTime-chapterAt;
- if(chapter==='shelf-find')revealFoundObject('shelf',cozyShelf,shelfMeshes,shelfPoint(0,61,0));
+ if(chapter==='shelf-find')revealFoundObject('shelf',cozyShelf,shelfMeshes,shelfPoint(0,48,0));
  else if(chapter==='shelf-arrive'){
    const g=ease(elapsed/1.8),goal=shelfGoal.at;
    shelfAt={x:shelfFrom.x+(goal.x-shelfFrom.x)*g,y:0,z:shelfFrom.z+(goal.z-shelfFrom.z)*g};shelfScale=shelfFromScale+(shelfGoal.scale-shelfFromScale)*g;
@@ -160,8 +160,8 @@ function shelfTick(dt){
    const g=ease(elapsed/2),home=shelfHomePosition();shelfAt={x:shelfFrom.x+(home.x-shelfFrom.x)*g,y:0,z:shelfFrom.z+(home.z-shelfFrom.z)*g};shelfScale=shelfFromScale+(1-shelfFromScale)*g;
  }else if(chapter==='shelf-home'){shelfAt=shelfHomePosition();place($('collect-cap'),screenPoint(capAt.x,capAt.y,capAt.z));}
  update(cozyShelf.id,{position:shelfAt,rotation:{y:shelfYaw},scale:{x:shelfScale,y:shelfScale,z:shelfScale}});
- const top=shelfPoint(0,125,0),bottom=shelfPoint(0,0,0),left=shelfPoint(-55,60,0),right=shelfPoint(55,60,0);
- place($('shelf-find'),shelfPoint(0,61,0));
+ const top=shelfPoint(0,100,0),bottom=shelfPoint(0,0,0),left=shelfPoint(-58,48,0),right=shelfPoint(58,48,0);
+ place($('shelf-find'),shelfPoint(0,48,0));
  place($('shelf-clean'),{x:(left.x+right.x)/2,y:(top.y+bottom.y)/2});
  $('shelf-clean').style.width=Math.max(85,Math.abs(right.x-left.x)+28)+'px';$('shelf-clean').style.height=Math.max(110,Math.abs(bottom.y-top.y)+36)+'px';
  const home=shelfHomePosition();place($('shelf-place'),screenPoint(home.x,home.y+35,home.z));
