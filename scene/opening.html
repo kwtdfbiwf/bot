@@ -67,16 +67,15 @@ body[data-chapter^=collection-] #dialogue{top:max(11vh,70px);bottom:auto}
 body[data-phase=lit] #hanging-light{opacity:1!important;mask-image:none!important}
 @media(max-width:600px){#hanging-light{left:80%;transform:translateX(-50%) scale(.78);transform-origin:top center}#switch{left:104px;top:0;width:44px;height:291px}}
 
-#shelf-find,#shelf-clean,#shelf-place,#shelf-book{position:fixed;z-index:8;padding:0;border:0;background:transparent;transform:translate(-50%,-50%);touch-action:none}
-#shelf-find{width:130px;height:160px;cursor:grab}
+#shelf-find,#shelf-clean,#shelf-book{position:fixed;z-index:8;padding:0;border:0;background:transparent;transform:translate(-50%,-50%);touch-action:none}
+#shelf-find{width:130px;height:160px;cursor:pointer}
 #shelf-clean{cursor:grab;border-radius:4px}
 body[data-chapter=shelf-cleaning] #shelf-clean{cursor:crosshair}
 body[data-shelf-wiping=true]{user-select:none;-webkit-user-select:none}
-#shelf-place{width:110px;height:90px;cursor:pointer}
 #shelf-book{width:64px;height:34px;cursor:pointer}
 #shelf-clean:active{cursor:grabbing}
 body[data-chapter=shelf-cleaning] #shelf-clean:active{cursor:crosshair}
-#shelf-find:focus-visible,#shelf-clean:focus-visible,#shelf-place:focus-visible,#shelf-book:focus-visible{outline:1px solid #c3aa7580;outline-offset:4px}
+#shelf-find:focus-visible,#shelf-clean:focus-visible:focus-visible,#shelf-book:focus-visible{outline:1px solid #c3aa7580;outline-offset:4px}
 body[data-chapter^=shelf-] #dialogue{top:max(11vh,70px);bottom:auto}
 
 #preview-menu{position:fixed;z-index:30;inset:0;display:grid;place-content:center;background:#090b0ff2;padding:24px;overflow:auto;cursor:auto}
@@ -87,6 +86,7 @@ body[data-chapter^=shelf-] #dialogue{top:max(11vh,70px);bottom:auto}
 #preview-menu button:hover{background:#343c44}
 #preview-actions{display:flex;gap:8px;margin-top:18px}
 #preview-status{margin-top:12px!important}
+body[data-room-preview=true] #pet,body[data-room-preview=true] .arm-handle,body[data-room-preview=true] #collect-cap,body[data-room-preview=true] #shelf-book{display:none;pointer-events:none}
 
 </style></head><body data-phase="boot">
 <div id="air" aria-hidden="true"></div><div id="hanging-light" aria-hidden="false" hidden>
@@ -110,9 +110,8 @@ body[data-chapter^=shelf-] #dialogue{top:max(11vh,70px);bottom:auto}
 <button id="collect-hand" type="button" aria-label="Give the bottle cap to Milo" hidden></button>
 <button id="collect-box" type="button" aria-label="Pick up the little keepsake box" hidden></button>
 <button id="collect-place" type="button" aria-label="Place the keepsake box beside Milo" hidden></button>
-<button id="shelf-find" type="button" aria-label="Bring the little shelf closer" hidden></button>
+<button id="shelf-find" type="button" aria-label="Look at the little shelf" hidden></button>
 <button id="shelf-clean" type="button" aria-label="Clean the dusty shelf" hidden></button>
-<button id="shelf-place" type="button" aria-label="Put the shelf beside us" hidden></button>
 <button id="shelf-book" type="button" aria-label="Look at the book on the shelf" hidden></button>
 <button id="moth-guide" type="button" aria-label="Keep your light by his hand" aria-pressed="false" hidden></button>
 <form id="name-form" hidden><label for="visitor-name">Oh… who are you?</label><div class="name-row"><input id="visitor-name" name="name" placeholder="Your name" autocomplete="given-name" maxlength="32" required aria-label="Your name"><button type="submit">Say hello</button></div></form>
@@ -128,7 +127,8 @@ body[data-chapter^=shelf-] #dialogue{top:max(11vh,70px);bottom:auto}
 <button id="preview-cap" type="button">Find the bottle cap</button>
 <button id="preview-shelf" type="button">Find the shelf</button>
 <button id="preview-dust" type="button">Wipe the shelf</button>
-<button id="preview-home" type="button">Shelf placed / home</button>
+<button id="preview-home" type="button">Shelf cleaned / home</button>
+<button id="preview-room" type="button">Room model</button>
 </div><div id="preview-actions"><button id="preview-restart" type="button">Restart story</button><button id="preview-close" type="button">Close</button></div><p id="preview-status" role="status"></p></div></section>
 <script>
 (async()=>{
@@ -1096,6 +1096,25 @@ function collectionTick(){
 
 // Cursor gaze is composed after story poses so quiet chapters cannot overwrite it.
 // The anchor follows Milo's face, including his seated pose, rather than the viewport centre.
+// A fixed 3D set, rather than finds being brought to an inspection stage.
+// The room shell is deliberately absent from normal searches: only the
+// active find receives cursor lighting. Completed objects remain at home.
+const homeLayout={shelf:{position:{x:-235,y:0,z:-30},scale:1.35,yaw:15}};
+let homeRoom=null,roomCamera=null,roomPreview=false;
+async function prepareRoom(){
+ homeRoom=await spline.findObjectByName('Home Room');
+ roomCamera=await spline.findObjectByName('Robot Portrait Camera');
+ if(!homeRoom||!roomCamera)throw new Error('Missing Home Room');
+ await update(homeRoom.id,{visible:false});
+}
+const roomBoot=prepareRoom();
+async function showRoomModel(visible){
+ await roomBoot;roomPreview=visible;document.body.dataset.roomPreview=String(visible);await update(homeRoom.id,{visible});
+ // The author-only overview pulls back the camera, never the room objects.
+ // Every story task restores the camera used by cursor-light projection.
+ await update(roomCamera.id,{position:visible?{x:520,y:430,z:1110}:{x:370,y:360,z:790}});
+}
+
 // Local patches on the shelf's top, middle board, book and front uprights.
 // Shared by the one-time Spline builder and the runtime wiping interaction.
 const shelfDustLayout=[];
@@ -1103,28 +1122,23 @@ for(const y of [96.3,58.8])for(const x of [-31,-10,11,32])for(const z of [-15,7]
 for(const x of [-29,-10,9])for(const z of [-8,9])shelfDustLayout.push({x,y:29.3,z,w:18,h:.3,d:13});
 for(const x of [-44,44])for(const y of [30,74])shelfDustLayout.push({x,y,z:28.7,w:9,h:22,d:.3});
 
-// The first piece of furniture. Discover, wipe local dust, make a place for it.
+// The shelf is already part of the room. Discover and clean it in place.
 let cozyShelf=null,shelfDustRoot=null,shelfBook=null,shelfReady=false;
-let shelfMeshes=[],shelfDust=[],shelfAt={x:-235,y:0,z:-30},shelfFrom=null,shelfGoal=null,shelfScale=1,shelfFromScale=1;
-let shelfDrag=null,shelfWipe=null,shelfClickAfter=-100,shelfFirstWipe=false,shelfKeyboardRow=0;
-const shelfHome={x:-235,y:0,z:-30},shelfYaw=15;
+let shelfMeshes=[],shelfDust=[],shelfAt={x:-235,y:0,z:-30},shelfScale=homeLayout.shelf.scale;
+let shelfWipe=null,shelfFirstWipe=false,shelfKeyboardRow=0;
+const shelfHome={...homeLayout.shelf.position},shelfYaw=homeLayout.shelf.yaw;
 const shelfStates=()=>chapter.startsWith('shelf-');
 function shelfHomePosition(){
  const foot=screenPoint(shelfHome.x,0,shelfHome.z);
- return foot.x<78?pointAtHeight(78,foot.y,0):{...shelfHome};
+ return foot.x<90?pointAtHeight(90,foot.y,0):{...shelfHome};
 }
 function shelfPoint(x,y,z){
  const q=rotateVector({x:x*shelfScale,y:y*shelfScale,z:z*shelfScale},0,shelfYaw,0);
  return screenPoint(shelfAt.x+q.x,shelfAt.y+q.y,shelfAt.z+q.z);
 }
-function shelfInspectLayout(){
- return {at:pointAtHeight(innerWidth*.26,innerHeight*.79,0),scale:Math.min(1.8,innerWidth/250)};
-}
 function layoutShelfSearch(){
- if(chapter==='shelf-find'){shelfAt=pointAtHeight(innerWidth*.84,innerHeight*.66,0);shelfScale=1;}
- else if(['shelf-cleaning','shelf-ready'].includes(chapter)){
-   const p=shelfInspectLayout();shelfAt=p.at;shelfScale=p.scale;
- }
+ if(!shelfStates())return;
+ shelfAt=shelfHomePosition();shelfScale=homeLayout.shelf.scale;
 }
 window.addEventListener('resize',layoutShelfSearch);
 async function prepareShelf(){
@@ -1146,7 +1160,7 @@ async function prepareShelf(){
 const shelfBoot=prepareShelf();
 function offerShelf(){if(chapter==='collection-end')choice('Look a little further',startShelf);}
 async function startShelf(){
- if(chapter!=='collection-end')return;await shelfBoot;
+ if(chapter!=='collection-end')return;await Promise.all([shelfBoot,showRoomModel(false)]);
  if(!shelfReady){speak('There’s something over there.',()=>choice('Try again',startShelf));return;}
  enter('shelf-find');reaction='';$('pet').hidden=true;$('five').hidden=true;$('collect-cap').hidden=true;$('choice').hidden=true;
  $('spark').hidden=false;$('shelf-find').hidden=false;layoutShelfSearch();
@@ -1156,7 +1170,7 @@ async function startShelf(){
 $('shelf-find').onfocus=()=>{if(chapter==='shelf-find'){revealFocus='shelf';revealFoundObject('shelf',cozyShelf,shelfMeshes,shelfPoint(0,48,0));}};
 $('shelf-find').onclick=()=>{
  if(chapter!=='shelf-find')return;
- restoreFoundObject(cozyShelf,shelfMeshes);enter('shelf-arrive');shelfFrom={...shelfAt};shelfFromScale=shelfScale;shelfGoal=shelfInspectLayout();
+ restoreFoundObject(cozyShelf,shelfMeshes);enter('shelf-arrive');
  $('shelf-find').hidden=true;$('spark').hidden=true;objective('');
  update(shelfDustRoot.id,{visible:true});
  speak('A little shelf.',()=>speak('It’s a bit dusty.'));
@@ -1184,69 +1198,39 @@ function finishShelfCleaning(){
  if(chapter!=='shelf-cleaning')return;
  shelfWipe=null;document.body.dataset.shelfWiping='false';
  for(const d of shelfDust){d.clean=1;update(d.object.id,{visible:false});}
- update(shelfDustRoot.id,{visible:false});enter('shelf-ready');objective('Make a place for the shelf');
- $('shelf-clean').setAttribute('aria-label','Bring the clean shelf beside us');
- speak('There’s a book already.',()=>speak('And room for more.',()=>{if(chapter==='shelf-ready')choice('Put it beside us',placeShelf);}));
+ update(shelfDustRoot.id,{visible:false});enter('shelf-ready');objective('');$('shelf-clean').hidden=true;
+ speak('There’s a book already.',()=>speak('And room for more.',()=>{if(chapter==='shelf-ready')placeShelf();}));
 }
 $('shelf-clean').onpointerdown=e=>{
- if(e.button>0||!['shelf-cleaning','shelf-ready','shelf-carry'].includes(chapter))return;
+ if(e.button>0||chapter!=='shelf-cleaning')return;
  e.currentTarget.setPointerCapture?.(e.pointerId);
- if(chapter==='shelf-cleaning'){
-   shelfWipe={id:e.pointerId,x:e.clientX,y:e.clientY,el:e.currentTarget};document.body.dataset.shelfWiping='true';
- }else{
-   const foot=shelfPoint(0,0,0);shelfDrag={id:e.pointerId,x:e.clientX,y:e.clientY,offsetX:foot.x-e.clientX,offsetY:foot.y-e.clientY,moved:false,el:e.currentTarget};
- }
+ shelfWipe={id:e.pointerId,x:e.clientX,y:e.clientY,el:e.currentTarget};document.body.dataset.shelfWiping='true';
 };
-$('shelf-clean').onclick=()=>{if(chapter==='shelf-ready'&&chapterTime>shelfClickAfter)choice('Put it beside us',placeShelf);};
 $('shelf-clean').onkeydown=e=>{
- if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter',' '].includes(e.key))return;
+ if(chapter!=='shelf-cleaning'||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter',' '].includes(e.key))return;
  e.preventDefault();
- if(chapter==='shelf-cleaning'){
-   // Target an actual dusty region at any viewport size, using the same
-   // projected surface brush as a pointer stroke.
-   const remaining=shelfDust.filter(d=>d.clean<.9),dust=remaining[shelfKeyboardRow++%remaining.length];
-   if(dust){const p=shelfPoint(dust.point.x,dust.point.y,dust.point.z);wipeShelf({x:p.x-24,y:p.y},{x:p.x+24,y:p.y});}
- }else if(['shelf-ready','shelf-carry'].includes(chapter)&&['Enter',' '].includes(e.key))placeShelf();
+ const remaining=shelfDust.filter(d=>d.clean<.9),dust=remaining[shelfKeyboardRow++%remaining.length];
+ if(dust){const p=shelfPoint(dust.point.x,dust.point.y,dust.point.z);wipeShelf({x:p.x-24,y:p.y},{x:p.x+24,y:p.y});}
 };
 window.addEventListener('pointermove',e=>{
  if(shelfWipe&&e.pointerId===shelfWipe.id){
    const a={x:shelfWipe.x,y:shelfWipe.y},b={x:e.clientX,y:e.clientY};wipeShelf(a,b);
    if(shelfWipe){shelfWipe.x=b.x;shelfWipe.y=b.y;}
  }
- if(shelfDrag&&e.pointerId===shelfDrag.id){
-   const d=shelfDrag;if(!d.moved&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<5)return;
-   if(!d.moved){d.moved=true;enter('shelf-carry');$('choice').hidden=true;$('shelf-place').hidden=false;}
-   shelfAt=pointAtHeight(bounded(e.clientX+d.offsetX,45,innerWidth-45),bounded(e.clientY+d.offsetY,innerHeight*.53,innerHeight*.9),0);
-   shelfClickAfter=chapterTime+.4;
- }
 });
-function releaseShelf(e,cancelled=false){
+function releaseShelf(e){
  if(shelfWipe&&(e.pointerId===undefined||e.pointerId===shelfWipe.id)){
    try{shelfWipe.el.releasePointerCapture?.(shelfWipe.id);}catch{}shelfWipe=null;document.body.dataset.shelfWiping='false';
  }
- const d=shelfDrag;if(!d||(e.pointerId!==undefined&&e.pointerId!==d.id))return;
- try{d.el.releasePointerCapture?.(d.id);}catch{}shelfDrag=null;
- if(!d.moved)return;
- const home=shelfHomePosition(),target=screenPoint(home.x,home.y+35,home.z);
- if(!cancelled&&Math.hypot((e.clientX??-999)-target.x,(e.clientY??-999)-target.y)<110)placeShelf();
- else{
-   enter('shelf-ready');layoutShelfSearch();$('shelf-place').hidden=true;choice('Put it beside us',placeShelf);
- }
 }
-window.addEventListener('pointerup',e=>releaseShelf(e));
-window.addEventListener('pointercancel',e=>releaseShelf(e,true));
-window.addEventListener('blur',()=>releaseShelf({},true));
+window.addEventListener('pointerup',releaseShelf);
+window.addEventListener('pointercancel',releaseShelf);
+window.addEventListener('blur',()=>releaseShelf({}));
 function placeShelf(){
- if(!['shelf-ready','shelf-carry'].includes(chapter))return;
- shelfDrag=null;enter('shelf-settle');shelfFrom={...shelfAt};shelfFromScale=shelfScale;
- $('shelf-clean').hidden=true;$('shelf-place').hidden=true;$('choice').hidden=true;objective('');
- after(2.2,()=>{
-   if(chapter!=='shelf-settle')return;
-   enter('shelf-home');$('shelf-book').hidden=false;$('collect-cap').hidden=false;
-   speak('Our little corner.',()=>speak('We can put the next thing here.',()=>{$('pet').hidden=false;after(4,()=>{$('dialogue').hidden=true;});}));
- });
+ if(chapter!=='shelf-ready')return;
+ enter('shelf-home');$('shelf-book').hidden=false;$('collect-cap').hidden=false;$('choice').hidden=true;
+ speak('Our little corner.',()=>speak('We can put the next thing here.',()=>{$('pet').hidden=false;after(4,()=>{$('dialogue').hidden=true;});}));
 }
-$('shelf-place').onclick=placeShelf;
 $('shelf-book').onclick=()=>{if(chapter==='shelf-home')speak('Maybe we can read it together.');};
 function shelfPose(p){
  if(!shelfStates())return p;
@@ -1256,20 +1240,14 @@ function shelfPose(p){
 }
 function shelfTick(dt){
  if(!shelfReady||!shelfStates())return;
- const elapsed=chapterTime-chapterAt;
+ layoutShelfSearch();
  if(chapter==='shelf-find')revealFoundObject('shelf',cozyShelf,shelfMeshes,shelfPoint(0,48,0));
- else if(chapter==='shelf-arrive'){
-   const g=ease(elapsed/1.8),goal=shelfGoal.at;
-   shelfAt={x:shelfFrom.x+(goal.x-shelfFrom.x)*g,y:0,z:shelfFrom.z+(goal.z-shelfFrom.z)*g};shelfScale=shelfFromScale+(shelfGoal.scale-shelfFromScale)*g;
- }else if(chapter==='shelf-settle'){
-   const g=ease(elapsed/2),home=shelfHomePosition();shelfAt={x:shelfFrom.x+(home.x-shelfFrom.x)*g,y:0,z:shelfFrom.z+(home.z-shelfFrom.z)*g};shelfScale=shelfFromScale+(1-shelfFromScale)*g;
- }else if(chapter==='shelf-home'){shelfAt=shelfHomePosition();place($('collect-cap'),screenPoint(capAt.x,capAt.y,capAt.z));}
+ if(chapter==='shelf-home')place($('collect-cap'),screenPoint(capAt.x,capAt.y,capAt.z));
  update(cozyShelf.id,{position:shelfAt,rotation:{y:shelfYaw},scale:{x:shelfScale,y:shelfScale,z:shelfScale}});
  const top=shelfPoint(0,100,0),bottom=shelfPoint(0,0,0),left=shelfPoint(-58,48,0),right=shelfPoint(58,48,0);
  place($('shelf-find'),shelfPoint(0,48,0));
  place($('shelf-clean'),{x:(left.x+right.x)/2,y:(top.y+bottom.y)/2});
  $('shelf-clean').style.width=Math.max(85,Math.abs(right.x-left.x)+28)+'px';$('shelf-clean').style.height=Math.max(110,Math.abs(bottom.y-top.y)+36)+'px';
- const home=shelfHomePosition();place($('shelf-place'),screenPoint(home.x,home.y+35,home.z));
  place($('shelf-book'),shelfPoint(-10,22,1));
 }
 
@@ -1325,7 +1303,7 @@ requestAnimationFrame(tick);
 }
 // Hidden author preview. Reset the existing runtime: Spline play frames
 // need their parent scene configuration and cannot reload themselves.
-const previewStops=['play','seed','name','water','moth','cap','shelf','dust','home'];
+const previewStops=['play','seed','name','water','moth','cap','shelf','dust','home','room'];
 let previewReturnFocus=null;
 function closePreview(){
  $('preview-menu').hidden=true;previewReturnFocus?.focus?.({preventScroll:true});
@@ -1343,12 +1321,12 @@ window.addEventListener('keydown',e=>{
 $('preview-close').onclick=closePreview;
 let previewBusy=false;
 async function resetPreview(){
- await Promise.all([plantBoot,twoBoot,waterBoot,collectionBoot,shelfBoot]);
+ await Promise.all([plantBoot,twoBoot,waterBoot,collectionBoot,shelfBoot,roomBoot]);
  if(!plantReady||!twoReady||!waterReady||!collectionReady||!shelfReady)throw new Error('Preview assets are not ready');
  clearTimeout(typing);tasks.length=0;speechTyping=false;speechUntil=0;
  releaseArm({});releaseTurn({});releaseCan({type:'pointercancel'});releaseCollectionDrag({},true);releaseShelf({},true);
  // Release handlers may schedule a return gesture; discard those too.
- tasks.length=0;enter('waiting');setPhase('boot');armDrag=null;turnDrag=null;canDrag=null;collectionDrag=null;shelfDrag=null;shelfWipe=null;
+ tasks.length=0;enter('waiting');setPhase('boot');armDrag=null;turnDrag=null;canDrag=null;collectionDrag=null;shelfWipe=null;
  reaction='';reactionAt=-100;happyAt=-100;collectionHappyAt=-100;armDialogueAt=-100;
  growth=0;lightPinned=false;pointerNearPlant=false;petCount=0;playCount=0;
  yaw=frontYaw;yawTarget=frontYaw;standAt=-100;nameConfirmed=false;
@@ -1358,8 +1336,8 @@ async function resetPreview(){
  mothOffered=false;mothWarmth=0;mothPinned=false;mothFlightFrom=null;
  capHeld=false;capInBox=false;collectionSettled=false;collectionClickAfter=-100;
  capAt={x:-235,y:5,z:100};boxAt={x:-230,y:0,z:70};
- shelfFirstWipe=false;shelfKeyboardRow=0;shelfClickAfter=-100;shelfScale=1;shelfAt={...shelfHome};revealFocus='';
- for(const id of ['wake','name-form','nickname-form','objective','dialogue','choice','answers','spark','seed','soil','growth','pet','five','arm-left','arm-right','turn-milo','back-name','water-can','water-hand','moth-guide','collect-cap','collect-hand','collect-box','collect-place','shelf-find','shelf-clean','shelf-place','shelf-book'])$(id).hidden=true;
+ shelfFirstWipe=false;shelfKeyboardRow=0;shelfScale=homeLayout.shelf.scale;shelfAt={...shelfHome};revealFocus='';
+ for(const id of ['wake','name-form','nickname-form','objective','dialogue','choice','answers','spark','seed','soil','growth','pet','five','arm-left','arm-right','turn-milo','back-name','water-can','water-hand','moth-guide','collect-cap','collect-hand','collect-box','collect-place','shelf-find','shelf-clean','shelf-book'])$(id).hidden=true;
  document.body.dataset.carrying='false';document.body.dataset.armDragging='false';document.body.dataset.shelfWiping='false';
  $('hanging-light').hidden=true;$('switch').disabled=false;$('switch').setAttribute('aria-pressed','false');
  $('seed').tabIndex=0;$('seed').setAttribute('aria-label','Pick up the seed');$('seed').style.opacity='0';
@@ -1375,7 +1353,7 @@ async function resetPreview(){
  await update(collectionLid.id,{rotation:{x:0,y:0,z:0}});
  for(const d of shelfDust){d.clean=0;await update(d.object.id,{visible:true,material:{layers:[{type:'texture',alpha:85}]}});}
  for(const side of [-1,1])write('Robot Leg Pivot '+side,{position:{y:100},rotation:{x:0,y:0,z:0}});
- enter('waiting');setPhase('boot');
+ await showRoomModel(false);enter('waiting');setPhase('boot');
 }
 async function requestPreview(stop){
  if(previewBusy)return;previewBusy=true;
@@ -1389,7 +1367,7 @@ async function requestPreview(stop){
 for(const stop of previewStops)$('preview-'+stop).onclick=()=>requestPreview(stop);
 $('preview-restart').onclick=()=>requestPreview('');
 async function startPreview(stop){
- await Promise.all([plantBoot,twoBoot,waterBoot,collectionBoot,shelfBoot]);
+ await Promise.all([plantBoot,twoBoot,waterBoot,collectionBoot,shelfBoot,roomBoot]);
  if(!plantReady||!twoReady||!waterReady||!collectionReady||!shelfReady)throw new Error('Preview assets are not ready');
  setPhase('lit');began=performance.now()-45000;visitor='friend';
  hideWake();$('name-form').hidden=true;$('switch').disabled=true;$('switch').setAttribute('aria-pressed','true');
@@ -1426,13 +1404,13 @@ async function startPreview(stop){
  await update(keepsakeBox.id,{position:boxAt});await update(blueCap.id,{position:capAt});
  enter('collection-end');await startShelf();
  if(stop==='dust'){$('shelf-find').onclick();return;}
- if(stop==='home'){
+ if(stop==='home'||stop==='room'){
    clearTimeout(typing);speechTyping=false;speechUntil=0;$('dialogue').hidden=true;tasks.length=0;
-   restoreFoundObject(cozyShelf,shelfMeshes);shelfAt=shelfHomePosition();shelfScale=1;
+   restoreFoundObject(cozyShelf,shelfMeshes);shelfAt=shelfHomePosition();shelfScale=homeLayout.shelf.scale;
    for(const d of shelfDust){d.clean=1;await update(d.object.id,{visible:false});}
    await update(shelfDustRoot.id,{visible:false});enter('shelf-home');
    $('shelf-find').hidden=true;$('spark').hidden=true;$('shelf-book').hidden=false;$('collect-cap').hidden=false;$('pet').hidden=false;
-   objective('');
+   objective('');if(stop==='room')await showRoomModel(true);
  }
 }
 

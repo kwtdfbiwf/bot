@@ -1,6 +1,6 @@
 // Hidden author preview. Reset the existing runtime: Spline play frames
 // need their parent scene configuration and cannot reload themselves.
-const previewStops=['play','seed','name','water','moth','cap','shelf','dust','home'];
+const previewStops=['play','seed','name','water','moth','cap','shelf','dust','home','room'];
 let previewReturnFocus=null;
 function closePreview(){
  $('preview-menu').hidden=true;previewReturnFocus?.focus?.({preventScroll:true});
@@ -18,12 +18,12 @@ window.addEventListener('keydown',e=>{
 $('preview-close').onclick=closePreview;
 let previewBusy=false;
 async function resetPreview(){
- await Promise.all([plantBoot,twoBoot,waterBoot,collectionBoot,shelfBoot]);
+ await Promise.all([plantBoot,twoBoot,waterBoot,collectionBoot,shelfBoot,roomBoot]);
  if(!plantReady||!twoReady||!waterReady||!collectionReady||!shelfReady)throw new Error('Preview assets are not ready');
  clearTimeout(typing);tasks.length=0;speechTyping=false;speechUntil=0;
  releaseArm({});releaseTurn({});releaseCan({type:'pointercancel'});releaseCollectionDrag({},true);releaseShelf({},true);
  // Release handlers may schedule a return gesture; discard those too.
- tasks.length=0;enter('waiting');setPhase('boot');armDrag=null;turnDrag=null;canDrag=null;collectionDrag=null;shelfDrag=null;shelfWipe=null;
+ tasks.length=0;enter('waiting');setPhase('boot');armDrag=null;turnDrag=null;canDrag=null;collectionDrag=null;shelfWipe=null;
  reaction='';reactionAt=-100;happyAt=-100;collectionHappyAt=-100;armDialogueAt=-100;
  growth=0;lightPinned=false;pointerNearPlant=false;petCount=0;playCount=0;
  yaw=frontYaw;yawTarget=frontYaw;standAt=-100;nameConfirmed=false;
@@ -33,8 +33,8 @@ async function resetPreview(){
  mothOffered=false;mothWarmth=0;mothPinned=false;mothFlightFrom=null;
  capHeld=false;capInBox=false;collectionSettled=false;collectionClickAfter=-100;
  capAt={x:-235,y:5,z:100};boxAt={x:-230,y:0,z:70};
- shelfFirstWipe=false;shelfKeyboardRow=0;shelfClickAfter=-100;shelfScale=1;shelfAt={...shelfHome};revealFocus='';
- for(const id of ['wake','name-form','nickname-form','objective','dialogue','choice','answers','spark','seed','soil','growth','pet','five','arm-left','arm-right','turn-milo','back-name','water-can','water-hand','moth-guide','collect-cap','collect-hand','collect-box','collect-place','shelf-find','shelf-clean','shelf-place','shelf-book'])$(id).hidden=true;
+ shelfFirstWipe=false;shelfKeyboardRow=0;shelfScale=homeLayout.shelf.scale;shelfAt={...shelfHome};revealFocus='';
+ for(const id of ['wake','name-form','nickname-form','objective','dialogue','choice','answers','spark','seed','soil','growth','pet','five','arm-left','arm-right','turn-milo','back-name','water-can','water-hand','moth-guide','collect-cap','collect-hand','collect-box','collect-place','shelf-find','shelf-clean','shelf-book'])$(id).hidden=true;
  document.body.dataset.carrying='false';document.body.dataset.armDragging='false';document.body.dataset.shelfWiping='false';
  $('hanging-light').hidden=true;$('switch').disabled=false;$('switch').setAttribute('aria-pressed','false');
  $('seed').tabIndex=0;$('seed').setAttribute('aria-label','Pick up the seed');$('seed').style.opacity='0';
@@ -50,7 +50,7 @@ async function resetPreview(){
  await update(collectionLid.id,{rotation:{x:0,y:0,z:0}});
  for(const d of shelfDust){d.clean=0;await update(d.object.id,{visible:true,material:{layers:[{type:'texture',alpha:85}]}});}
  for(const side of [-1,1])write('Robot Leg Pivot '+side,{position:{y:100},rotation:{x:0,y:0,z:0}});
- enter('waiting');setPhase('boot');
+ await showRoomModel(false);enter('waiting');setPhase('boot');
 }
 async function requestPreview(stop){
  if(previewBusy)return;previewBusy=true;
@@ -64,7 +64,7 @@ async function requestPreview(stop){
 for(const stop of previewStops)$('preview-'+stop).onclick=()=>requestPreview(stop);
 $('preview-restart').onclick=()=>requestPreview('');
 async function startPreview(stop){
- await Promise.all([plantBoot,twoBoot,waterBoot,collectionBoot,shelfBoot]);
+ await Promise.all([plantBoot,twoBoot,waterBoot,collectionBoot,shelfBoot,roomBoot]);
  if(!plantReady||!twoReady||!waterReady||!collectionReady||!shelfReady)throw new Error('Preview assets are not ready');
  setPhase('lit');began=performance.now()-45000;visitor='friend';
  hideWake();$('name-form').hidden=true;$('switch').disabled=true;$('switch').setAttribute('aria-pressed','true');
@@ -101,12 +101,12 @@ async function startPreview(stop){
  await update(keepsakeBox.id,{position:boxAt});await update(blueCap.id,{position:capAt});
  enter('collection-end');await startShelf();
  if(stop==='dust'){$('shelf-find').onclick();return;}
- if(stop==='home'){
+ if(stop==='home'||stop==='room'){
    clearTimeout(typing);speechTyping=false;speechUntil=0;$('dialogue').hidden=true;tasks.length=0;
-   restoreFoundObject(cozyShelf,shelfMeshes);shelfAt=shelfHomePosition();shelfScale=1;
+   restoreFoundObject(cozyShelf,shelfMeshes);shelfAt=shelfHomePosition();shelfScale=homeLayout.shelf.scale;
    for(const d of shelfDust){d.clean=1;await update(d.object.id,{visible:false});}
    await update(shelfDustRoot.id,{visible:false});enter('shelf-home');
    $('shelf-find').hidden=true;$('spark').hidden=true;$('shelf-book').hidden=false;$('collect-cap').hidden=false;$('pet').hidden=false;
-   objective('');
+   objective('');if(stop==='room')await showRoomModel(true);
  }
 }

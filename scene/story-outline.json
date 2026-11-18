@@ -3,7 +3,7 @@
   "principles": [
     "The home grows one meaningful object at a time; each chapter leaves something usable behind.",
     "Use the warm wooden room reference for the small furniture, worn books and gentle light.",
-    "Begin in the endless dark space; a sheltered home gradually takes shape through play.",
+    "The home is one fixed 3D room. Its unearned structure stays completely hidden; the cursor beam only reveals the object required by the active task.",
     "Keep the plant and visiting moth central; living visitors are never possessions.",
     "Make reactions visibly match player actions. Use simple objectives, no inventory dashboard or instructional footer.",
     "Milo develops preferences and contributes ideas. The player is making a place with him.",
@@ -49,10 +49,9 @@
       "status": "implemented",
       "find": "small open wooden shelf, with one worn green book already on the bottom level",
       "actions": [
-        "Discover it with the cursor light",
-        "Bring it closer",
-        "Wipe local patches of dust from the boards, book and uprights",
-        "Place the clean shelf beside the growing home",
+        "Discover it at its permanent position in the room",
+        "Wipe local patches of dust from the boards, book and uprights in place",
+        "Keep the clean shelf where it stands",
         "Inspect the book afterward"
       ],
       "lastingChange": "A warm wooden shelf with its original book and empty space for future finds.",

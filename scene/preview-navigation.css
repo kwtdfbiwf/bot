@@ -6,3 +6,4 @@
 #preview-menu button:hover{background:#343c44}
 #preview-actions{display:flex;gap:8px;margin-top:18px}
 #preview-status{margin-top:12px!important}
+body[data-room-preview=true] #pet,body[data-room-preview=true] .arm-handle,body[data-room-preview=true] #collect-cap,body[data-room-preview=true] #shelf-book{display:none;pointer-events:none}

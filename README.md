@@ -6,14 +6,14 @@ Live website: https://kwtdfbiwf.github.io/bot/
 
 The opening leads into cursor play, finding a seed, planting it beside Milo,
 growing a plant with your light, and a quiet seated ending. Continue by finding the name stamped on Milo’s
-back, choosing his name, helping him water the plant, and meeting a moth drawn to its new flower. After the moth settles, find a blue bottle cap and help Milo keep it in his first box. The next find is a small wooden shelf with one green book already on it: scrub away local dust, then move the shelf into your shared corner. Hidden finds are revealed by the cursor light. Give the can to Milo’s right hand, then drag that hand toward the plant. His body turns with the guided reach; he pours only over the soil. Cursor gaze is active during object searches, with eye contact during dialogue. His arms can
+back, choosing his name, helping him water the plant, and meeting a moth drawn to its new flower. After the moth settles, find a blue bottle cap and help Milo keep it in his first box. The next find is a small wooden shelf with one green book already on it: scrub away local dust where it stands in the room. The shelf stays in its permanent position through discovery, cleaning and the ending. Hidden finds are revealed by the cursor light. Give the can to Milo’s right hand, then drag that hand toward the plant. His body turns with the guided reach; he pours only over the soil. Cursor gaze is active during object searches, with eye contact during dialogue. His arms can
 be lifted by dragging. Pointer, touch, and keyboard interactions are supported.
 
 ## Source
 
 For checking updates, click inside the game and press **Shift + P** to open
 the hidden chapter preview menu. Choose any checkpoint, including finding,
-cleaning, or placing the shelf. **Escape** closes the menu; **Restart story**
+cleaning, or inspecting the shelf. Choose **Room model** to inspect the timber floor, A-frame and roof together; this overview is only in the preview menu. **Escape** closes the menu; **Restart story**
 returns to the black opening. Jumps reset scene state without reloading the
 Spline frame. Refreshing the site always starts the ordinary story.
 
@@ -23,6 +23,8 @@ Spline frame. Refreshing the site always starts the ordinary story.
   inlined into `opening.html` so the Spline export is self contained.
 - `scene/hanging-light.js` and `.css`: discoverable hanging pull cord and native keyboard activation, inlined into the opening.
 - `scene/search-light.js`: per-surface cursor beam for hidden collectibles; matte clay stays opaque and dark outside the soft beam.
+- `scene/room-models.js`: native timber floor, A-frame and roof model, authored as separate named groups under `Home Room`. Kept hidden during normal play.
+- `scene/room-layout.js`: permanent furniture anchors, room visibility and author overview camera. Active searches illuminate only the current object, without revealing the hidden room structure.
 - `scene/level-camera.js`: camera roll correction for level ground; the overlay uses matching projections.
 - `scene/preview-navigation.js` and `.css`: hidden chapter selector and scene reset, inlined into the opening.
 - `scene/circular-blue-eyes.js`: eye changes applied in the Spline editor.
