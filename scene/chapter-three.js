@@ -22,7 +22,7 @@ async function beginCollection(){
  enter('collection-find');reaction='';$('pet').hidden=true;$('five').hidden=true;$('choice').hidden=true;
  $('spark').hidden=false;$('collect-cap').hidden=false;capAt={x:-235,y:5,z:100};
  revealFoundObject('cap',blueCap,[capEnamel],screenPoint(capAt.x,capAt.y,capAt.z));
- objective('Find the blue glimmer');
+ objective('Find what '+chosenName+' sees');
  speak('Something over there.');
 }
 function carryKeepsake(){
@@ -60,28 +60,40 @@ function placeKeepsakeBox(){
  $('collect-box').hidden=true;$('collect-place').hidden=true;$('spark').hidden=true;objective('');
  after(1.1,()=>{
    if(chapter!=='collection-box-settle')return;
-   enter('collection-store');capFrom={...capAt};capHeld=false;
-   speak('This can be its place.');
-   after(2.6,()=>{
-     if(chapter!=='collection-store')return;capInBox=true;enter('collection-end');$('collect-cap').setAttribute('aria-label','Look at his first keepsake');
-     speak('One thing.',()=>speak('I’d like to find another.',()=>{collectionSettled=true;$('collect-cap').hidden=false;$('pet').hidden=false;$('choice').hidden=true;after(4,()=>{$('dialogue').hidden=true;});}));
-   });
+   enter('collection-offer');$('collect-cap').hidden=false;
+   $('collect-cap').setAttribute('aria-label','Take the cap from '+chosenName);
+   objective('Put the cap in the box');speak('This can be its place.');
+ });
+}
+function takeCapFromMilo(){
+ if(chapter!=='collection-offer')return;
+ enter('collection-put-carry');capHeld=false;$('collect-place').hidden=false;
+ $('collect-place').setAttribute('aria-label','Put the cap in the box');
+}
+function storeCapInBox(){
+ if(chapter!=='collection-put-carry')return;
+ enter('collection-store');collectionDrag=null;capFrom={...capAt};
+ $('collect-cap').hidden=true;$('collect-place').hidden=true;objective('');
+ after(2.6,()=>{
+   if(chapter!=='collection-store')return;capInBox=true;enter('collection-end');$('collect-cap').setAttribute('aria-label','Look at his first keepsake');
+   speak('One thing.',()=>speak('I’d like to find another.',()=>{collectionSettled=true;$('collect-cap').hidden=false;$('pet').hidden=false;$('choice').hidden=true;after(4,()=>{$('dialogue').hidden=true;});}));
  });
 }
 $('collect-cap').onclick=()=>{
  if(chapterTime<collectionClickAfter)return;
  if(chapter==='collection-find')carryKeepsake();
+ else if(chapter==='collection-offer')takeCapFromMilo();
  else if(collectionSettled&&capInBox&&chapter==='collection-end')speak('The blue one. My first one.');
 };
 $('collect-cap').onfocus=()=>{if(chapter==='collection-find'){revealFocus='cap';revealFoundObject('cap',blueCap,[capEnamel],screenPoint(capAt.x,capAt.y,capAt.z));}};
 $('collect-box').onfocus=()=>{if(chapter==='collection-box-find'){revealFocus='box';revealFoundObject('box',keepsakeBox,boxMeshes,screenPoint(boxAt.x,boxAt.y+14,boxAt.z));}};
 $('collect-hand').onclick=giveKeepsake;
 $('collect-box').onclick=()=>{if(chapterTime>=collectionClickAfter)carryKeepsakeBox();};
-$('collect-place').onclick=placeKeepsakeBox;
+$('collect-place').onclick=()=>{if(chapter==='collection-put-carry')storeCapInBox();else placeKeepsakeBox();};
 function startCollectionDrag(e,kind){
- const available=kind==='cap'?['collection-find','collection-carry']:['collection-box-find','collection-box-carry'];
+ const available=kind==='cap'?['collection-find','collection-carry','collection-offer','collection-put-carry']:['collection-box-find','collection-box-carry'];
  if(e.button>0||!available.includes(chapter))return;
- collectionDrag={kind,id:e.pointerId,x:e.clientX,y:e.clientY,moved:false,el:e.currentTarget};e.currentTarget.setPointerCapture?.(e.pointerId);
+ collectionDrag={kind,toBox:kind==='cap'&&['collection-offer','collection-put-carry'].includes(chapter),id:e.pointerId,x:e.clientX,y:e.clientY,moved:false,el:e.currentTarget};e.currentTarget.setPointerCapture?.(e.pointerId);
 }
 $('collect-cap').onpointerdown=e=>startCollectionDrag(e,'cap');
 $('collect-box').onpointerdown=e=>startCollectionDrag(e,'box');
@@ -90,20 +102,22 @@ window.addEventListener('pointermove',e=>{
  if(d&&e.pointerId===d.id){
    if(!d.moved&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<5)return;
    d.moved=true;collectionClickAfter=chapterTime+.35;
-   if(d.kind==='cap')carryKeepsake();else carryKeepsakeBox();
+   if(d.kind==='cap'){if(d.toBox)takeCapFromMilo();else carryKeepsake();}else carryKeepsakeBox();
  }
- if(chapter==='collection-carry')capAt=pointAtHeight(e.clientX+18,e.clientY-18,160);
+ if(['collection-carry','collection-put-carry'].includes(chapter))capAt=pointAtHeight(e.clientX+18,e.clientY-18,160);
  if(chapter==='collection-box-carry'&&d?.kind==='box')boxAt=pointAtHeight(e.clientX,e.clientY,30);
 });
 function releaseCollectionDrag(e,cancelled=false){
  const d=collectionDrag;if(!d||(e.pointerId!==undefined&&e.pointerId!==d.id))return;
  try{d.el.releasePointerCapture?.(d.id);}catch{}collectionDrag=null;
  if(!d.moved)return;collectionClickAfter=chapterTime+.35;
- const target=d.kind==='cap'?handScreen(lastPose,'right'):screenPoint(-135,4,80);
+ const target=d.kind==='cap'&&!d.toBox?handScreen(lastPose,'right'):screenPoint(-135,7,80);
  const close=Math.hypot((e.clientX??-999)-target.x,(e.clientY??-999)-target.y)<85;
- if(!cancelled&&close){if(d.kind==='cap')giveKeepsake();else placeKeepsakeBox();}
- else if(d.kind==='cap'){
-   enter('collection-find');capAt={x:-235,y:5,z:100};$('collect-hand').hidden=true;objective('Find the blue glimmer');
+ if(!cancelled&&close){if(d.kind==='cap'){if(d.toBox)storeCapInBox();else giveKeepsake();}else placeKeepsakeBox();}
+ else if(d.toBox){
+   capHeld=true;enter('collection-offer');$('collect-place').hidden=true;objective('Put the cap in the box');
+ }else if(d.kind==='cap'){
+   enter('collection-find');capAt={x:-235,y:5,z:100};$('collect-hand').hidden=true;objective('Find what '+chosenName+' sees');
  }else{
    enter('collection-box-find');boxAt={x:-230,y:0,z:70};$('collect-place').hidden=true;objective('Find somewhere to keep it safe');
  }
@@ -120,8 +134,8 @@ function collectionPose(p){
    p.rightZ=55-45*g;p.elbowZ=75-185*g;p.rightX=-30*g;p.elbowY=0;
    p.headX=14;p.headY=8;
  }else if(capHeld){p.rightZ=55;p.elbowZ=75;p.rightX=0;p.elbowY=0;p.headY=12;p.headZ=5;}
- if(chapter==='collection-store'){
-   const g=ease(elapsed/2.3);p.rightZ=55*(1-g);p.elbowZ=75*(1-g);p.headX=18;p.headY=-12;
+ if(['collection-put-carry','collection-store'].includes(chapter)){
+   const g=ease(elapsed/.8);p.rightZ=55*(1-g);p.elbowZ=75*(1-g);p.headX=18;p.headY=-12;
  }
  const happy=chapterTime-collectionHappyAt;
  if(happy>=0&&happy<2.8){const g=pulse(happy,0,.3,1.8,2.7);p.headZ+=Math.sin(happy*4)*4*g;p.leftZ-=18*g;}

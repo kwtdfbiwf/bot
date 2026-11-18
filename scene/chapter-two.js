@@ -1,9 +1,10 @@
 // Naming, physical play, watering, and the moth share the opening's clock/rig.
-let chosenName='Milo',yaw=0,yawTarget=0,lastPose=null,twoLastFrame=0;
+const frontYaw=25.1;
+let chosenName='Milo',yaw=frontYaw,yawTarget=frontYaw,lastPose=null,twoLastFrame=0;
 let armDrag=null,turnDrag=null,suppressArmClickUntil=-1,armDialogueAt=-100,armTouches=0;
 const arms={left:{angle:0,releaseAt:-100,releaseFrom:0},right:{angle:0,releaseAt:-100,releaseFrom:0}};
 let standAt=-100,happyAt=-100,nameConfirmed=false;
-let moth=null,mothLeft=null,mothRight=null,mothOffered=false,mothWarmth=0,mothPinned=false,mothAt={x:145,y:85,z:75},mothFlightFrom=null;
+let moth=null,mothLeft=null,mothRight=null,mothOffered=false,mothWarmth=0,mothPinned=false,mothAt={x:145,y:68,z:86},mothFlightFrom=null;
 let mothReady=false,twoReady=false,mothOfferAt=0;
 try{chosenName=localStorage.getItem('milo-chosen-name')||'Milo';}catch{}
 const freeArms=()=>['play','end','named-play','garden-end'].includes(chapter)||(chapter==='collection-end'&&collectionSettled);
@@ -121,7 +122,7 @@ function releaseTurn(e){
 window.addEventListener('pointerup',releaseTurn);window.addEventListener('pointercancel',releaseTurn);
 $('back-name').onclick=()=>{
  if(chapter!=='name-search'||Math.cos((yaw-25.1)*Math.PI/180)>-.6)return;
- enter('name-found');objective('');yawTarget=Math.round(yaw/360)*360;turnDrag=null;$('turn-milo').hidden=true;$('back-name').hidden=true;
+ enter('name-found');objective('');yawTarget=Math.round((yaw-frontYaw)/360)*360+frontYaw;turnDrag=null;$('turn-milo').hidden=true;$('back-name').hidden=true;
  speak('Milo.',()=>speak('Does that sound like me?',()=>answers([
    ['Yes. You’re Milo.',()=>giveName('Milo')],['Choose a name',()=>{
      enter('nickname');$('dialogue').hidden=true;$('nickname-form').hidden=false;$('robot-name').value='';$('robot-name').focus({preventScroll:true});
@@ -148,8 +149,8 @@ let wateringCan=null,waterDrops=null,gardenFlower=null,waterReady=false,waterBoo
 let canMeshes=[],dropParts=[],flowerPetals=[],canDrag=null,canCarry=false,canHeld=false;
 let waterAngle=40,waterTarget=40,waterFill=0,waterPouring=false,waterAligned=false,waterGuided=false,bloomAt=-100,canHome={x:431,y:20,z:-150},canAt={...canHome};
 // The original rig labels +X as right; Milo's anatomical right is the -X arm.
-const wateringSide='left',waterTurn=103.3;
-let waterFacing=0;
+const wateringSide='left',waterTurn=103.3-frontYaw;
+let waterFacing=frontYaw;
 const waterProgress=angle=>clamp((40-angle)/30);
 const waterYaw=angle=>waterFacing+waterTurn*waterProgress(angle);
 function aimWater(angle){waterGuided=true;waterTarget=bounded(angle,-10,65);yawTarget=waterYaw(waterTarget);$('choice').hidden=true;}
@@ -202,26 +203,26 @@ function guideCan(x,y,drag){
 async function startWatering(){
  if(chapter!=='named-play')return;await waterBoot;
  if(!waterReady){speak('Could you help me with the plant?',()=>choice('Try again',()=>location.reload()));return;}
- layoutCanHome();waterFacing=Math.round(yaw/360)*360;
+ layoutCanHome();waterFacing=Math.round((yaw-frontYaw)/360)*360+frontYaw;
  enter('water-intro');reaction='';$('pet').hidden=true;$('five').hidden=true;$('choice').hidden=true;
- speak('You helped me.',()=>speak('Can I help it?',()=>{
+ speak('You helped me.',()=>speak('Can I help this plant?',()=>{
    enter('water-find');canAt={...canHome};revealWateringCan();$('water-can').hidden=false;$('spark').hidden=false;
-   objective('Give him the watering can');
+   objective('Find something to help the plant grow');
  }));
 }
 function carryCan(){
  if(!['water-find','water-carry'].includes(chapter))return;
- restoreFoundObject(wateringCan,canMeshes);canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Place the can in his right hand');
+ restoreFoundObject(wateringCan,canMeshes);canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Water the plant');
 }
 function revealWateringCan(){revealFoundObject('can',wateringCan,canMeshes,screenPoint(canAt.x+10,canAt.y,canAt.z));}
 $('water-can').onfocus=()=>{if(chapter==='water-find'){revealFocus='can';revealWateringCan();}};
 function giveCan(){
  if(!['water-find','water-carry'].includes(chapter)||!lastPose)return;
  restoreFoundObject(wateringCan,canMeshes);
- waterFacing=Math.round(yaw/360)*360;yawTarget=waterFacing;
+ waterFacing=Math.round((yaw-frontYaw)/360)*360+frontYaw;yawTarget=waterFacing;
  canCarry=false;canHeld=true;canDrag=null;waterAngle=40;waterTarget=40;waterGuided=false;waterPouring=false;
  $('water-hand').hidden=true;$('water-can').hidden=false;$('spark').hidden=true;enter('water-aim');
- objective('Help him water the plant');speak('Can you help me?');
+ speak('Can you help me?');
  $('choice').hidden=true;
 }
 $('water-hand').onclick=giveCan;
@@ -256,7 +257,7 @@ function releaseCan(e){
    if(chapter==='water-carry'){
      const h=handScreen(lastPose,wateringSide);
      if(e.type!=='pointercancel'&&Math.hypot((e.clientX??-999)-h.x,(e.clientY??-999)-h.y)<62)giveCan();
-     else{canAt={...canHome};canCarry=false;enter('water-find');$('water-hand').hidden=true;objective('Give him the watering can');}
+     else{canAt={...canHome};canCarry=false;enter('water-find');$('water-hand').hidden=true;objective('Find something to help the plant grow');}
    }
  }
 }
@@ -332,8 +333,8 @@ async function startMoth(){
  enter('moth-arrival');mothOffered=false;mothWarmth=0;mothPinned=false;
  $('spark').hidden=false;await update(moth.id,{visible:true});
  speak('Oh! What’s that?',()=>speak('It’s so small.',()=>{
-   enter('moth-coax');objective('Bring the moth closer');
-   after(3,()=>{if(chapter==='moth-coax'){mothOffered=true;mothOfferAt=chapterTime;$('moth-guide').hidden=false;speak('Okay. Slowly.');objective('Keep your light near his hand');}});
+   enter('moth-coax');objective('Bring the moth to '+chosenName);
+   after(3,()=>{if(chapter==='moth-coax'){mothOffered=true;mothOfferAt=chapterTime;$('moth-guide').hidden=false;speak('Okay. Slowly.');objective('Bring the moth to '+chosenName);}});
  }));
 }
 $('moth-guide').onclick=()=>{
@@ -356,7 +357,7 @@ function chapterTwoTick(now){
  const dt=twoLastFrame?Math.min(.05,(now-twoLastFrame)/1000):0;twoLastFrame=now;
  if(document.hidden)return;
  yaw+=(yawTarget-yaw)*(1-Math.exp(-dt*(wateringStates()?3.5:9)));
- if(Math.abs(yaw)<.001)yaw=0;
+ if(Math.abs(yaw-yawTarget)<.001)yaw=yawTarget;
  update(parts.Robot.id,{rotation:{y:yaw}});
  wateringTick(dt);collectionTick();
  if(chapter==='name-search'){
@@ -380,8 +381,8 @@ function chapterTwoTick(now){
    }else if(['moth-landed','moth-stay'].includes(chapter)){
      const h=projectedHand(lastPose,'right');goal={x:h.x,y:h.y+14*size,z:h.z};flap=3;
    }else if(chapter==='moth-return'){
-     const g=ease(t/3.5),a=mothFlightFrom;goal={x:a.x+(145-a.x)*g,y:a.y+(82-a.y)*g+Math.sin(g*Math.PI)*25,z:a.z+(75-a.z)*g};
-   }else{goal={x:145,y:82,z:75};flap=2;}
+     const g=ease(t/3.5),a=mothFlightFrom;goal={x:a.x+(145-a.x)*g,y:a.y+(68-a.y)*g+Math.sin(g*Math.PI)*25,z:a.z+(86-a.z)*g};
+   }else{goal={x:145,y:68,z:86};flap=2;}
    mothAt=goal;update(moth.id,{position:goal,scale:{x:size,y:size,z:size},rotation:{y:25,z:Math.sin(chapterTime*1.4)*(flap>5?5:1)}});
    const flutter=Math.sin(chapterTime*(flap>5?24:2))*flap;
    update(mothLeft.id,{rotation:{y:-(25+flutter)}});update(mothRight.id,{rotation:{y:25+flutter}});

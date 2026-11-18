@@ -107,7 +107,7 @@ function lookAround(){
  if(chapter!=='play')return;enter('looking');$('choice').hidden=true;
  $('pet').hidden=true;$('five').hidden=true;
  speak('Oh. There really isn’t much here, is there?',()=>speak('Can you help me find something?',()=>{
-   enter('finding');objective('Find the little glimmer');
+   enter('finding');objective('Use the light to find the object');
    $('seed').hidden=false;$('seed').style.opacity='0';placeSeed();revealSeed();
  }));
 }
@@ -115,7 +115,7 @@ function pickSeed(){
  if(chapter!=='finding')return;
  enter('carrying');document.body.dataset.carrying='true';$('seed').setAttribute('aria-label','Seed collected');$('seed').tabIndex=-1;
  place($('seed'),{x:pointerX+14,y:pointerY-12});restoreFoundObject(seedModel,[seedShell]);placeSeed();
- objective('Plant it beside Milo');$('soil').hidden=false;layoutChapter();
+ objective('Plant the seed');$('soil').hidden=false;layoutChapter();
  speak('A seed? What does it do?');
 }
 $('seed').onclick=pickSeed;
@@ -127,7 +127,7 @@ async function plantSeed(){
  if(!plantReady){$('soil').disabled=false;enter('carrying');speak('Something went wrong. Let’s try again.');choice('Try again',()=>location.reload());return;}
  await update(plant.id,{visible:true,scale:{x:.18,y:.015,z:.18}});
  speak('Maybe it needs your light.',()=>{
-   enter('growing');objective('Help it grow');
+   enter('growing');objective('');
    $('soil').disabled=false;$('soil').setAttribute('aria-label','Shine light on the planted seed');$('soil').setAttribute('aria-pressed','false');
    $('growth').hidden=false;$('soil').blur();
  });
@@ -201,10 +201,6 @@ function rotateVector(v,x,y,z){
 function placeHighFive(p){place($('five'),handScreen(p,'right'));}
 function chapterPose(p){
  const elapsed=chapterTime-reactionAt,r=pulse(elapsed,0,.3,1.2,2);
- if(chapter==='play'&&!(reaction==='five'&&elapsed<2.8)){
-   const h=screenPoint(0,310,80),near=clamp(1-Math.hypot(pointerX-h.x,pointerY-h.y)/130);
-   p.headZ+=near*7;p.rightZ+=near*28;
- }
  if(reaction==='pet'){p.headX+=r*8;p.headZ+=r*9;}
  let open=0;
  if(reaction==='five'&&elapsed<2.8){

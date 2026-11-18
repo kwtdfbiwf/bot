@@ -9,8 +9,8 @@
     "The player supports Milo's choices; he gradually acts without asking permission."
   ],
   "chapters": [
-    {"id":"opening","status":"implemented","beats":["Wake him","Find light","Grow plant","Discover his name","Help him water","Meet the moth"]},
-    {"id":"first-keepsake","status":"implemented","find":"blue bottle cap","actions":["Find it with light","Give it to his hand","Notice his disposal reflex stop","Encourage him to keep it","Find and place a box","Watch him put the cap safely inside"],"lastingChange":"An open keepsake box and his first blue cap beside the garden.","dialogue":["Item collected.","It’s blue.","Can I keep it?","I’d like to keep this one.","One thing.","I’d like to find another."]},
+    {"id":"opening","status":"implemented","beats":["Wake him","Find and pull the hanging light","Grow plant","Discover his name","Help him water","Meet the moth"]},
+    {"id":"first-keepsake","status":"implemented","find":"blue bottle cap","actions":["Find it with light","Give it to his hand","Notice his disposal reflex stop","Encourage him to keep it","Find and place a box","Take the cap from his hand and put it in the box"],"lastingChange":"An open keepsake box and his first blue cap beside the garden.","dialogue":["Item collected.","It’s blue.","Can I keep it?","I’d like to keep this one.","One thing.","I’d like to find another."]},
     {"id":"a-use-for-it","status":"planned","find":"chipped cup","action":"Turn it together, discover the intact side, plant a second seed inside.","lastingChange":"A cup planter, with the chip still visible."},
     {"id":"little-sounds","status":"planned","find":"bent spoon","action":"Guide his arm to tap the can, cup and box. Each contact makes a distinct sound and visible reaction. No drawing or imitation puzzle.","lastingChange":"A spoon kept next to the watering can."},
     {"id":"putting-things-in-order","status":"planned","find":"loose button","action":"Let Milo arrange the button and cap; the player helps move a box into place.","lastingChange":"His first arrangement of things he likes."},

@@ -15,6 +15,7 @@ be lifted by dragging. Pointer, touch, and keyboard interactions are supported.
 - `scene/opening.html`: complete Spline HTML overlay, story, and animation loop.
 - `scene/chapter-one.js`, `scene/chapter-two.js`, `scene/chapter-three.js`, and their `.css` files: chapter authoring sources,
   inlined into `opening.html` so the Spline export is self contained.
+- `scene/hanging-light.js` and `.css`: discoverable pendant lamp with a pull cord and native keyboard activation, inlined into the opening.
 - `scene/search-light.js`: per-surface cursor beam for hidden collectibles; matte clay stays opaque and dark outside the soft beam.
 - `scene/level-camera.js`: camera roll correction for level ground; the overlay uses matching projections.
 - `scene/circular-blue-eyes.js`: eye changes applied in the Spline editor.

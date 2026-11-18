@@ -1,0 +1,13 @@
+#hanging-light{position:fixed;z-index:5;left:82%;top:0;width:140px;height:310px;transform:translateX(-50%);pointer-events:none;opacity:0;--pull:0px}
+#hanging-light svg{display:block;width:140px;height:190px;overflow:visible}
+#switch{position:absolute;left:104px;top:171px;width:44px;height:120px;padding:0;transform:translateX(-50%);border:0;border-radius:0;background:transparent;box-shadow:none;opacity:1;touch-action:none;pointer-events:auto;cursor:grab}
+#switch:before,#switch:after{content:none}
+#switch span{position:absolute;left:21px;top:0;width:2px;height:calc(70px + var(--pull));border:0;border-radius:0;background:repeating-linear-gradient(#b5a388 0 3px,#70675b 3px 5px);box-shadow:none;transition:height .25s ease-out}
+#switch span:after{content:'';position:absolute;left:-5px;bottom:-14px;width:12px;height:19px;border-radius:6px;background:linear-gradient(90deg,#8a7460,#d3b495 48%,#9d8168);box-shadow:inset 0 -2px 2px #0005}
+#switch:active{cursor:grabbing}
+#hanging-light[data-pulling=true] #switch span{transition:none}
+#switch[aria-pressed=true] span{transform:none}
+#switch:disabled{cursor:default;pointer-events:none}
+body[data-phase=lit] #hanging-light{opacity:1!important;mask-image:none!important}
+body[data-phase=lit] #lamp-bulb{fill:#fff0bf;filter:drop-shadow(0 5px 10px #fbe3a580)}
+@media(max-width:600px){#hanging-light{left:80%;transform:translateX(-50%) scale(.78);transform-origin:top center}#switch{left:104px;top:171px;width:44px;height:120px}}

@@ -1,5 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
 const html=fs.readFileSync('scene/opening.html','utf8');
+assert(!/body\[data-phase=appear\] #wake/.test(html),'Both wake buttons must use the same placement');
 const {three}=require('./shader-runtime.cjs');const shaderMaterials=new Map();
 let now=0,rafs=[],queue=[],timerId=0,focused=null;
 const elements=new Map(),objects=new Map(),writes=new Map(),events={},savedNames=new Map();
@@ -46,15 +47,25 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  $('wake').onclick();await advance(2);$('wake').onclick();await advance(2);
  assert.equal(body.dataset.phase,'name');$('visitor-name').value='Alex';$('name-form').onsubmit({preventDefault(){}});
  await until(()=>body.dataset.phase==='search');assert.equal($('objective').hidden,false);
- const beforeLight=updateCount;$('switch').onclick();assert.equal(updateCount,beforeLight,'The switch must not trigger first-render scene updates');assert.equal(writes.get('Robot').visible,true);
- await until(()=>body.dataset.chapter==='play');assert.equal($('pet').hidden,false);
+ $('switch').onclick({detail:1});assert.equal(body.dataset.phase,'search','A click must not substitute for pulling the cord');
+ $('switch').onpointerdown({pointerId:40,button:0,clientY:250,currentTarget:$('switch')});
+ for(const fn of events.pointermove)fn({pointerId:40,clientX:1050,clientY:300});
+ for(const fn of events.pointercancel)fn({pointerId:40});
+ assert.equal(body.dataset.phase,'search','Cancelled cord pull must not turn on the lamp');
+ $('switch').onpointerdown({pointerId:41,button:0,clientY:250,currentTarget:$('switch')});
+ for(const fn of events.pointermove)fn({pointerId:41,clientX:1050,clientY:290});
+ const beforeLight=updateCount;for(const fn of events.pointerup)fn({pointerId:41});assert.equal(updateCount,beforeLight,'The switch must not trigger first-render scene updates');assert.equal(writes.get('Robot').visible,true);
+ await until(()=>body.dataset.chapter==='play');assert.equal($('pet').hidden,false);assert.equal(writes.get('Robot').rotation.y,25.1,'The whole robot must face the viewer');
  await advance(4);
+ const headTarget=project(0,310,80);for(const fn of events.pointermove)fn({clientX:headTarget.x,clientY:headTarget.y});await advance(.4);
+ assert(Math.abs(writes.get('Robot Arm Pivot 1').rotation.z)<2,'Hovering near his head must not raise an arm');
+ assert(Math.abs(writes.get('Robot Head Pivot').rotation.z)<2,'Hovering must not add the old head tilt');
  for(const fn of events.pointermove)fn({clientX:1280,clientY:260});await advance(.7);
  assert(Math.abs(writes.get('Robot Head Pivot').rotation.y)<5,'Idle gaze should not follow the cursor outside object searches');
  $('pet').onclick();
  for(const fn of events.pointermove)fn({clientX:0,clientY:0});await advance(.6);
  const speakingHead={...writes.get('Robot Head Pivot').rotation};
- assert(Math.abs(speakingHead.y-25.1)<2,'Milo must face the user while speaking');
+ assert(Math.abs(speakingHead.y)<2,'Milo must face the user while speaking');
  for(const fn of events.pointermove)fn({clientX:1280,clientY:720});await advance(.5);
  const stillSpeakingHead=writes.get('Robot Head Pivot').rotation;
  assert(Math.abs(stillSpeakingHead.y-speakingHead.y)<2,'Mouse motion must not turn his head during speech');
@@ -161,7 +172,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  }else{
    $('water-can').onclick();assert.equal(body.dataset.chapter,'water-carry');$('water-hand').onclick();
  }
- assert.equal(body.dataset.chapter,'water-aim');
+ assert.equal(body.dataset.chapter,'water-aim');assert.equal($('objective').children.at(-1),'Water the plant','The same watering objective must continue through hand guidance');
  assert.equal($('choice').hidden,true,'Watering must not require an aim button');
  await advance(6);
  traceHead=false;
@@ -190,7 +201,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
    for(const fn of events.pointerup)fn({pointerId:14,clientX:plant.x,clientY:plant.y,type:'pointerup'});
  }else for(let i=0;i<3;i++)$('water-can').onkeydown({key:'ArrowDown',preventDefault(){}});
  await advance(2);
- assert(writes.get('Robot').rotation.y-beforeTurn>90,'Guiding the right hand must visibly turn Milo’s body toward the plant');
+ assert(writes.get('Robot').rotation.y-beforeTurn>70,'Guiding the right hand must visibly turn Milo’s body toward the plant');
  const headBefore={...writes.get('Robot Head Pivot').rotation};
  for(const fn of events.pointermove)fn({clientX:0,clientY:0});await advance(.5);
  assert(Math.abs(writes.get('Robot Head Pivot').rotation.y-headBefore.y)<2,'Watering gaze should stay on the plant rather than the cursor');
@@ -200,7 +211,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  assert.equal(writes.get('Water Drops').visible,false);assert.equal(writes.get('Garden Flower').visible,true);
  await until(()=>body.dataset.chapter==='water-done');
  assert(writes.get('Flower Petal 0').scale.x>.95,'Petals must visibly open after watering');
- await until(()=>body.dataset.chapter==='moth-coax');await until(()=>!$('moth-guide').hidden);
+ await until(()=>body.dataset.chapter==='moth-coax');await until(()=>!$('moth-guide').hidden);assert.equal($('objective').children.at(-1),'Bring the moth to '+(nickname?'Pip':'Milo'));
  $('moth-guide').onclick();await until(()=>body.dataset.chapter==='moth-landed');
  assert(writes.get('Robot Arm Pivot 1').rotation.z>50,'The offered hand must stay raised as the moth lands');
  await until(()=>!$('answers').hidden);
@@ -211,10 +222,11 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
    await until(()=>!$('choice').hidden&&$('choice').textContent==='Let it rest on the plant');$('choice').onclick();
  }
  await until(()=>body.dataset.chapter==='garden-end');await advance(.2);
- assert.equal(writes.get('Garden Moth').visible,true);assert.equal(writes.get('Garden Moth').position.y,82);
- assert.equal(writes.get('Chapter One Plant').visible,true);
+ assert.equal(writes.get('Garden Moth').visible,true);assert.equal(writes.get('Garden Moth').position.y,68);
+ assert.equal(writes.get('Chapter One Plant').visible,true);assert.equal(writes.get('Garden Moth').position.z,86,'The perched moth must sit in front of the blossom');
  await until(()=>!$('choice').hidden&&$('choice').textContent==='Look a little further');
  $('choice').onclick();await until(()=>body.dataset.chapter==='collection-find');
+ assert.equal($('objective').children.at(-1),'Find what '+(nickname?'Pip':'Milo')+' sees');
  await checkLightFind('collect-cap','Blue Bottle Cap');assert.equal(writes.get('Keepsake Box').visible,false);
  $('collect-cap').onpointerdown({pointerId:20,button:0,currentTarget:$('collect-cap'),clientX:300,clientY:480});
  for(const fn of events.pointermove)fn({pointerId:20,clientX:420,clientY:400});
@@ -244,6 +256,22 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
    for(const fn of events.pointermove)fn({pointerId:23,clientX:x,clientY:y});
    for(const fn of events.pointerup)fn({pointerId:23,clientX:x,clientY:y});
  }else $('collect-place').onclick();
+ await until(()=>body.dataset.chapter==='collection-offer');await advance(8);
+ assert.equal(body.dataset.chapter,'collection-offer','Milo must hold the cap until the user takes it');
+ assert.equal($('collect-cap').hidden,false);
+ assert.notEqual(writes.get('Blue Bottle Cap').position.x,-135,'The cap must not automatically enter the box');
+ // Cancelled retrieval must return the cap to his hand, not the dark floor.
+ $('collect-cap').onpointerdown({pointerId:24,button:0,currentTarget:$('collect-cap'),clientX:600,clientY:450});
+ for(const fn of events.pointermove)fn({pointerId:24,clientX:400,clientY:500});
+ for(const fn of events.pointercancel)fn({pointerId:24});await advance(.5);
+ assert.equal(body.dataset.chapter,'collection-offer');
+ if(nickname||direct){
+   $('collect-cap').onpointerdown({pointerId:25,button:0,currentTarget:$('collect-cap'),clientX:600,clientY:450});
+   const target=project(-135,7,80);
+   for(const fn of events.pointermove)fn({pointerId:25,clientX:target.x,clientY:target.y});
+   assert.equal(body.dataset.chapter,'collection-put-carry');
+   for(const fn of events.pointerup)fn({pointerId:25,clientX:target.x,clientY:target.y});
+ }else{$('collect-cap').onclick();assert.equal(body.dataset.chapter,'collection-put-carry');$('collect-place').onclick();}
  await until(()=>body.dataset.chapter==='collection-end');await advance(.1);
  assert.equal(writes.get('Keepsake Box').position.x,-135);assert.equal(writes.get('Blue Bottle Cap').position.x,-135);
  assert.equal(writes.get('Collection Hatch Lid Pivot').rotation.x,0);assert.equal(writes.get('Garden Flower').visible,true);assert.equal(writes.get('Garden Moth').visible,true);

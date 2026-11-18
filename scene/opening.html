@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,interactive-widget=resizes-content"><style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400&display=swap');
-:root{--mx:50vw;--my:50vh;--ink:#e9e4d9;--font:'Space Mono',ui-monospace,monospace}*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;font-family:var(--font);color:var(--ink)}[hidden]{display:none!important}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid #d1bca0;outline-offset:5px}#air{position:fixed;inset:0;z-index:1;touch-action:none}#darkness{position:fixed;inset:0;z-index:4;background:#000000;pointer-events:none;transition:background 1.4s,opacity 1.5s}body[data-phase=appear] #darkness,body[data-phase=waking] #darkness,body[data-phase=name] #darkness,body[data-phase=greeting] #darkness{background:#000000}body[data-phase=search] #darkness{background:#000000;transition:none}body[data-phase=lit] #darkness{opacity:0}#wake{position:fixed;z-index:8;left:50%;top:51%;transform:translate(-50%,-50%);padding:15px 34px;min-height:48px;background:transparent;border:1px solid #c9c5b57a;border-radius:2px;color:#e9e4d9;font:13px var(--font);letter-spacing:.4px;opacity:0;transition:opacity 1s,background .3s;pointer-events:none}#wake.ready{opacity:1;pointer-events:auto}#wake:hover{background:#ddd4b710}body[data-phase=appear] #wake{top:auto;bottom:max(9vh,76px);transform:translateX(-50%)}#name-form{position:fixed;z-index:8;left:50%;bottom:max(8vh,76px);transform:translateX(-50%);width:min(360px,calc(100% - 44px));animation:arrive .8s both}label{display:block;text-align:center;font:20px/1.5 var(--font);margin-bottom:20px}.name-row{display:flex;border-bottom:1px solid #e9e4d970;gap:12px;padding-bottom:8px}input{min-width:0;flex:1;background:transparent;border:0;color:#e9e4d9;padding:12px 4px;font-size:16px;border-radius:0}input::placeholder{color:#a7a4a0}#name-form button{background:transparent;border:0;color:#d6c6af;padding:10px;min-height:44px;font-size:12px;white-space:nowrap}#dialogue{position:fixed;z-index:7;left:50%;bottom:max(8vh,80px);transform:translateX(-50%);width:min(440px,calc(100% - 48px));margin:0;text-align:center;color:#e9e4d9;font:clamp(16px,1.7vw,18px)/1.65 var(--font);white-space:pre-line;text-wrap:balance;pointer-events:none;text-shadow:0 2px 16px #0008}body[data-phase=lit] #dialogue{color:#e9e4d9;text-shadow:0 2px 16px #000;transition:color 1s}#switch{position:fixed;z-index:5;opacity:0;left:82%;top:39%;width:44px;height:68px;padding:8px;background:#dad3bd;border:1px solid #756e60;border-radius:4px;box-shadow:inset 0 0 0 3px #c6c0ae,0 2px 7px #0005;transform:translate(-50%,-50%)}#switch:before,#switch:after{content:'';position:absolute;left:20px;width:3px;height:3px;border-radius:50%;background:#756f60}#switch:before{top:5px}#switch:after{bottom:5px}#switch span{display:block;width:100%;height:38px;background:linear-gradient(#a8a18e 0,#ddd6c4 50%,#eee8d7 50%);border:1px solid #756f60;border-radius:2px;box-shadow:0 2px 3px #0005;transition:transform .15s}#switch[aria-pressed=true] span{transform:rotate(180deg)}#switch:disabled{cursor:default}#spark{position:fixed;z-index:5;left:var(--mx);top:var(--my);width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,239,201,.23),rgba(255,239,201,.10) 32%,rgba(255,239,201,.025) 54%,transparent 72%);transform:translate(-50%,-50%);pointer-events:none}#spark:after{content:"";position:absolute;left:128px;top:128px;width:4px;height:4px;border-radius:50%;background:#fff6d4;box-shadow:0 0 18px 5px #fce6ad80}#objective{position:fixed;z-index:7;left:24px;top:max(24px,env(safe-area-inset-top));margin:0;color:#e9e4d9;font-size:13px;line-height:1.7;letter-spacing:.2px;pointer-events:none;animation:arrive 1s both}#objective span{display:block;margin-bottom:3px;color:#999892;font-size:9px;letter-spacing:1.5px}#error{position:fixed;z-index:9;inset:0;background:#000000;display:grid;place-content:center;text-align:center;color:#c9c2b6;font:16px/1.6 var(--font);padding:35px}#error button{background:transparent;border:1px solid #777;color:inherit;padding:12px;margin-top:15px}body[data-phase=search]{cursor:none}body[data-phase=search] button{cursor:none}@keyframes arrive{from{opacity:0}to{opacity:1}}@media(max-width:600px){#switch{left:85%;top:30%;width:42px;height:64px}#name-form{bottom:80px}#dialogue{bottom:82px;font-size:16px}body[data-phase=appear] #wake{bottom:82px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+:root{--mx:50vw;--my:50vh;--ink:#e9e4d9;--font:'Space Mono',ui-monospace,monospace}*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;font-family:var(--font);color:var(--ink)}[hidden]{display:none!important}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid #d1bca0;outline-offset:5px}#air{position:fixed;inset:0;z-index:1;touch-action:none}#darkness{position:fixed;inset:0;z-index:4;background:#000000;pointer-events:none;transition:background 1.4s,opacity 1.5s}body[data-phase=appear] #darkness,body[data-phase=waking] #darkness,body[data-phase=name] #darkness,body[data-phase=greeting] #darkness{background:#000000}body[data-phase=search] #darkness{background:#000000;transition:none}body[data-phase=lit] #darkness{opacity:0}#wake{position:fixed;z-index:8;left:50%;top:51%;transform:translate(-50%,-50%);padding:15px 34px;min-height:48px;background:transparent;border:1px solid #c9c5b57a;border-radius:2px;color:#e9e4d9;font:13px var(--font);letter-spacing:.4px;opacity:0;transition:opacity 1s,background .3s;pointer-events:none}#wake.ready{opacity:1;pointer-events:auto}#wake:hover{background:#ddd4b710}#name-form{position:fixed;z-index:8;left:50%;bottom:max(8vh,76px);transform:translateX(-50%);width:min(360px,calc(100% - 44px));animation:arrive .8s both}label{display:block;text-align:center;font:20px/1.5 var(--font);margin-bottom:20px}.name-row{display:flex;border-bottom:1px solid #e9e4d970;gap:12px;padding-bottom:8px}input{min-width:0;flex:1;background:transparent;border:0;color:#e9e4d9;padding:12px 4px;font-size:16px;border-radius:0}input::placeholder{color:#a7a4a0}#name-form button{background:transparent;border:0;color:#d6c6af;padding:10px;min-height:44px;font-size:12px;white-space:nowrap}#dialogue{position:fixed;z-index:7;left:50%;bottom:max(8vh,80px);transform:translateX(-50%);width:min(440px,calc(100% - 48px));margin:0;text-align:center;color:#e9e4d9;font:clamp(16px,1.7vw,18px)/1.65 var(--font);white-space:pre-line;text-wrap:balance;pointer-events:none;text-shadow:0 2px 16px #0008}body[data-phase=lit] #dialogue{color:#e9e4d9;text-shadow:0 2px 16px #000;transition:color 1s}#spark{position:fixed;z-index:5;left:var(--mx);top:var(--my);width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,239,201,.23),rgba(255,239,201,.10) 32%,rgba(255,239,201,.025) 54%,transparent 72%);transform:translate(-50%,-50%);pointer-events:none}#spark:after{content:"";position:absolute;left:128px;top:128px;width:4px;height:4px;border-radius:50%;background:#fff6d4;box-shadow:0 0 18px 5px #fce6ad80}#objective{position:fixed;z-index:7;left:24px;top:max(24px,env(safe-area-inset-top));margin:0;color:#e9e4d9;font-size:13px;line-height:1.7;letter-spacing:.2px;pointer-events:none;animation:arrive 1s both}#objective span{display:block;margin-bottom:3px;color:#999892;font-size:9px;letter-spacing:1.5px}#error{position:fixed;z-index:9;inset:0;background:#000000;display:grid;place-content:center;text-align:center;color:#c9c2b6;font:16px/1.6 var(--font);padding:35px}#error button{background:transparent;border:1px solid #777;color:inherit;padding:12px;margin-top:15px}body[data-phase=search]{cursor:none}body[data-phase=search] button{cursor:none}@keyframes arrive{from{opacity:0}to{opacity:1}}@media(max-width:600px){#name-form{bottom:80px}#dialogue{bottom:82px;font-size:16px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 
 #seed,#soil,#pet,#five{position:fixed;z-index:6;padding:0;touch-action:none;background:none;border:0;transform:translate(-50%,-50%)}
 #seed{left:19%;top:72%;width:56px;height:56px;opacity:.12;transition:opacity .3s}
@@ -55,8 +55,25 @@ body[data-chapter^=water-] #dialogue{top:max(10vh,65px);bottom:auto}
 body[data-chapter^=collection-] #dialogue{top:max(11vh,70px);bottom:auto}
 @media(max-width:600px){body[data-chapter^=collection-] #dialogue{top:12vh}}
 
+#hanging-light{position:fixed;z-index:5;left:82%;top:0;width:140px;height:310px;transform:translateX(-50%);pointer-events:none;opacity:0;--pull:0px}
+#hanging-light svg{display:block;width:140px;height:190px;overflow:visible}
+#switch{position:absolute;left:104px;top:171px;width:44px;height:120px;padding:0;transform:translateX(-50%);border:0;border-radius:0;background:transparent;box-shadow:none;opacity:1;touch-action:none;pointer-events:auto;cursor:grab}
+#switch:before,#switch:after{content:none}
+#switch span{position:absolute;left:21px;top:0;width:2px;height:calc(70px + var(--pull));border:0;border-radius:0;background:repeating-linear-gradient(#b5a388 0 3px,#70675b 3px 5px);box-shadow:none;transition:height .25s ease-out}
+#switch span:after{content:'';position:absolute;left:-5px;bottom:-14px;width:12px;height:19px;border-radius:6px;background:linear-gradient(90deg,#8a7460,#d3b495 48%,#9d8168);box-shadow:inset 0 -2px 2px #0005}
+#switch:active{cursor:grabbing}
+#hanging-light[data-pulling=true] #switch span{transition:none}
+#switch[aria-pressed=true] span{transform:none}
+#switch:disabled{cursor:default;pointer-events:none}
+body[data-phase=lit] #hanging-light{opacity:1!important;mask-image:none!important}
+body[data-phase=lit] #lamp-bulb{fill:#fff0bf;filter:drop-shadow(0 5px 10px #fbe3a580)}
+@media(max-width:600px){#hanging-light{left:80%;transform:translateX(-50%) scale(.78);transform-origin:top center}#switch{left:104px;top:171px;width:44px;height:120px}}
+
 </style></head><body data-phase="boot">
-<div id="air" aria-hidden="true"></div><button id="switch" type="button" aria-label="Turn on the light" aria-pressed="false" disabled hidden><span aria-hidden="true"></span></button><div id="darkness"></div><div id="spark" hidden></div><button id="wake" type="button" disabled>Wake up</button>
+<div id="air" aria-hidden="true"></div><div id="hanging-light" aria-hidden="false" hidden>
+<svg viewBox="0 0 140 190" aria-hidden="true"><defs><linearGradient id="shade" x2="1"><stop stop-color="#677d72"/><stop offset=".5" stop-color="#a0b4a2"/><stop offset="1" stop-color="#596e65"/></linearGradient></defs><path d="M70 -10V135" stroke="#5c5b51" stroke-width="3"/><rect x="61" y="131" width="18" height="13" rx="5" fill="#7b8c7c"/><path d="M26 175Q35 141 70 140Q105 141 114 175Z" fill="url(#shade)"/><ellipse cx="70" cy="175" rx="44" ry="7" fill="#47584f"/><ellipse id="lamp-bulb" cx="70" cy="176" rx="15" ry="5" fill="#c2b695"/></svg>
+<button id="switch" type="button" aria-label="Pull the hanging light cord" aria-pressed="false" hidden><span></span></button>
+</div><div id="darkness"></div><div id="spark" hidden></div><button id="wake" type="button" disabled>Wake up</button>
 <button id="seed" type="button" aria-label="Pick up the glimmering seed" hidden></button>
 <button id="soil" type="button" aria-label="Plant the seed beside Milo" hidden></button>
 <button id="pet" type="button" aria-label="Pat Milo’s head" hidden></button>
@@ -119,13 +136,44 @@ function speak(text,done){
  next();
 }
 function askName(){setPhase('name');$('name-form').hidden=false;$('visitor-name').focus({preventScroll:true});}
-function search(){setPhase('search');$('objective').hidden=false;$('switch').hidden=false;$('spark').hidden=false;}
+function search(){setPhase('search');$('objective').hidden=false;$('switch').hidden=false;$('hanging-light').hidden=false;$('spark').hidden=false;}
 $('wake').onclick=()=>{if(phase==='boot'){hideWake();setPhase('appear');setTimeout(wakeButton,1500);}else if(phase==='appear'){hideWake();setPhase('waking');}};
 $('name-form').onsubmit=e=>{e.preventDefault();visitor=$('visitor-name').value.trim();if(!visitor){$('visitor-name').value='';$('visitor-name').focus();return;}visitor=visitor.slice(0,32);$('name-form').hidden=true;setPhase('greeting');speak('Hello, '+visitor+'.',()=>{speak('Finally, I’ve been alone here for a while.\nIt’s kind of dark.',search);});};
-function pointer(x,y){document.documentElement.style.setProperty('--mx',x+'px');document.documentElement.style.setProperty('--my',y+'px');if(phase==='search'){const r=$('switch').getBoundingClientRect();$('switch').style.opacity='1';$('switch').style.maskImage=`radial-gradient(circle at ${x-r.left}px ${y-r.top}px,#000 16px,#0009 65px,transparent 130px)`;}}
+function pointer(x,y){document.documentElement.style.setProperty('--mx',x+'px');document.documentElement.style.setProperty('--my',y+'px');if(phase==='search'){const r=$('hanging-light').getBoundingClientRect();$('hanging-light').style.opacity='1';$('hanging-light').style.maskImage=`radial-gradient(circle at ${x-r.left}px ${y-r.top}px,#000 16px,#0009 65px,transparent 130px)`;}}
 window.addEventListener('pointermove',e=>{if(e.pointerType!=='touch'){gazeActive=true;gazeX=e.clientX;gazeY=e.clientY;}pointer(e.clientX,e.clientY);});window.addEventListener('pointerdown',e=>pointer(e.clientX,e.clientY));
 $('switch').onfocus=()=>{if(phase==='search'){const r=$('switch').getBoundingClientRect();pointer(r.left+r.width/2,r.top+r.height/2);}};
-$('switch').onclick=()=>{if(phase!=='search')return;setPhase('lit');$('switch').setAttribute('aria-pressed','true');$('switch').setAttribute('aria-label','Light is on');$('switch').disabled=true;$('switch').hidden=true;$('spark').hidden=true;$('objective').hidden=true;speak('That’s better.',()=>{if(chapter==='intro')speak('...');});startChapter();};
+// A deliberate downward tug turns on the hanging lamp. Enter/Space retain
+// the button's native accessible activation; a mouse click alone is not a tug.
+let lampPull=null;
+function turnOnLamp(){
+ if(phase!=='search')return;
+ lampPull=null;$('hanging-light').dataset.pulling='false';$('hanging-light').style.setProperty('--pull','0px');
+ setPhase('lit');$('switch').setAttribute('aria-pressed','true');$('switch').setAttribute('aria-label','Hanging light is on');$('switch').disabled=true;
+ $('spark').hidden=true;$('objective').hidden=true;
+ speak('That’s better.',()=>{if(chapter==='intro')speak('...');});startChapter();
+}
+$('switch').onclick=e=>{if(!e||e.detail===0)turnOnLamp();};
+$('switch').onpointerdown=e=>{
+ if(phase!=='search'||e.button>0)return;
+ lampPull={id:e.pointerId,y:e.clientY,distance:0,el:e.currentTarget};
+ $('hanging-light').dataset.pulling='true';e.currentTarget.setPointerCapture?.(e.pointerId);
+};
+window.addEventListener('pointermove',e=>{
+ if(!lampPull||lampPull.id!==e.pointerId)return;
+ lampPull.distance=Math.max(0,Math.min(70,e.clientY-lampPull.y));
+ $('hanging-light').style.setProperty('--pull',lampPull.distance+'px');
+});
+function releaseLamp(e,cancelled=false){
+ if(!lampPull||(e.pointerId!==undefined&&e.pointerId!==lampPull.id))return;
+ const pull=lampPull;lampPull=null;
+ try{pull.el.releasePointerCapture?.(pull.id);}catch{}
+ $('hanging-light').dataset.pulling='false';$('hanging-light').style.setProperty('--pull','0px');
+ if(!cancelled&&pull.distance>=28)turnOnLamp();
+}
+window.addEventListener('pointerup',e=>releaseLamp(e));
+window.addEventListener('pointercancel',e=>releaseLamp(e,true));
+window.addEventListener('blur',()=>releaseLamp({},true));
+
 // Per-fragment cursor light for finds. Black stays opaque: objects never turn
 // into transparent ghosts, and a handle can emerge before the rest of the can.
 const searchLights=new Map();
@@ -301,7 +349,7 @@ function lookAround(){
  if(chapter!=='play')return;enter('looking');$('choice').hidden=true;
  $('pet').hidden=true;$('five').hidden=true;
  speak('Oh. There really isn’t much here, is there?',()=>speak('Can you help me find something?',()=>{
-   enter('finding');objective('Find the little glimmer');
+   enter('finding');objective('Use the light to find the object');
    $('seed').hidden=false;$('seed').style.opacity='0';placeSeed();revealSeed();
  }));
 }
@@ -309,7 +357,7 @@ function pickSeed(){
  if(chapter!=='finding')return;
  enter('carrying');document.body.dataset.carrying='true';$('seed').setAttribute('aria-label','Seed collected');$('seed').tabIndex=-1;
  place($('seed'),{x:pointerX+14,y:pointerY-12});restoreFoundObject(seedModel,[seedShell]);placeSeed();
- objective('Plant it beside Milo');$('soil').hidden=false;layoutChapter();
+ objective('Plant the seed');$('soil').hidden=false;layoutChapter();
  speak('A seed? What does it do?');
 }
 $('seed').onclick=pickSeed;
@@ -321,7 +369,7 @@ async function plantSeed(){
  if(!plantReady){$('soil').disabled=false;enter('carrying');speak('Something went wrong. Let’s try again.');choice('Try again',()=>location.reload());return;}
  await update(plant.id,{visible:true,scale:{x:.18,y:.015,z:.18}});
  speak('Maybe it needs your light.',()=>{
-   enter('growing');objective('Help it grow');
+   enter('growing');objective('');
    $('soil').disabled=false;$('soil').setAttribute('aria-label','Shine light on the planted seed');$('soil').setAttribute('aria-pressed','false');
    $('growth').hidden=false;$('soil').blur();
  });
@@ -395,10 +443,6 @@ function rotateVector(v,x,y,z){
 function placeHighFive(p){place($('five'),handScreen(p,'right'));}
 function chapterPose(p){
  const elapsed=chapterTime-reactionAt,r=pulse(elapsed,0,.3,1.2,2);
- if(chapter==='play'&&!(reaction==='five'&&elapsed<2.8)){
-   const h=screenPoint(0,310,80),near=clamp(1-Math.hypot(pointerX-h.x,pointerY-h.y)/130);
-   p.headZ+=near*7;p.rightZ+=near*28;
- }
  if(reaction==='pet'){p.headX+=r*8;p.headZ+=r*9;}
  let open=0;
  if(reaction==='five'&&elapsed<2.8){
@@ -426,11 +470,12 @@ function chapterPose(p){
 layoutChapter();
 
 // Naming, physical play, watering, and the moth share the opening's clock/rig.
-let chosenName='Milo',yaw=0,yawTarget=0,lastPose=null,twoLastFrame=0;
+const frontYaw=25.1;
+let chosenName='Milo',yaw=frontYaw,yawTarget=frontYaw,lastPose=null,twoLastFrame=0;
 let armDrag=null,turnDrag=null,suppressArmClickUntil=-1,armDialogueAt=-100,armTouches=0;
 const arms={left:{angle:0,releaseAt:-100,releaseFrom:0},right:{angle:0,releaseAt:-100,releaseFrom:0}};
 let standAt=-100,happyAt=-100,nameConfirmed=false;
-let moth=null,mothLeft=null,mothRight=null,mothOffered=false,mothWarmth=0,mothPinned=false,mothAt={x:145,y:85,z:75},mothFlightFrom=null;
+let moth=null,mothLeft=null,mothRight=null,mothOffered=false,mothWarmth=0,mothPinned=false,mothAt={x:145,y:68,z:86},mothFlightFrom=null;
 let mothReady=false,twoReady=false,mothOfferAt=0;
 try{chosenName=localStorage.getItem('milo-chosen-name')||'Milo';}catch{}
 const freeArms=()=>['play','end','named-play','garden-end'].includes(chapter)||(chapter==='collection-end'&&collectionSettled);
@@ -548,7 +593,7 @@ function releaseTurn(e){
 window.addEventListener('pointerup',releaseTurn);window.addEventListener('pointercancel',releaseTurn);
 $('back-name').onclick=()=>{
  if(chapter!=='name-search'||Math.cos((yaw-25.1)*Math.PI/180)>-.6)return;
- enter('name-found');objective('');yawTarget=Math.round(yaw/360)*360;turnDrag=null;$('turn-milo').hidden=true;$('back-name').hidden=true;
+ enter('name-found');objective('');yawTarget=Math.round((yaw-frontYaw)/360)*360+frontYaw;turnDrag=null;$('turn-milo').hidden=true;$('back-name').hidden=true;
  speak('Milo.',()=>speak('Does that sound like me?',()=>answers([
    ['Yes. You’re Milo.',()=>giveName('Milo')],['Choose a name',()=>{
      enter('nickname');$('dialogue').hidden=true;$('nickname-form').hidden=false;$('robot-name').value='';$('robot-name').focus({preventScroll:true});
@@ -575,8 +620,8 @@ let wateringCan=null,waterDrops=null,gardenFlower=null,waterReady=false,waterBoo
 let canMeshes=[],dropParts=[],flowerPetals=[],canDrag=null,canCarry=false,canHeld=false;
 let waterAngle=40,waterTarget=40,waterFill=0,waterPouring=false,waterAligned=false,waterGuided=false,bloomAt=-100,canHome={x:431,y:20,z:-150},canAt={...canHome};
 // The original rig labels +X as right; Milo's anatomical right is the -X arm.
-const wateringSide='left',waterTurn=103.3;
-let waterFacing=0;
+const wateringSide='left',waterTurn=103.3-frontYaw;
+let waterFacing=frontYaw;
 const waterProgress=angle=>clamp((40-angle)/30);
 const waterYaw=angle=>waterFacing+waterTurn*waterProgress(angle);
 function aimWater(angle){waterGuided=true;waterTarget=bounded(angle,-10,65);yawTarget=waterYaw(waterTarget);$('choice').hidden=true;}
@@ -629,26 +674,26 @@ function guideCan(x,y,drag){
 async function startWatering(){
  if(chapter!=='named-play')return;await waterBoot;
  if(!waterReady){speak('Could you help me with the plant?',()=>choice('Try again',()=>location.reload()));return;}
- layoutCanHome();waterFacing=Math.round(yaw/360)*360;
+ layoutCanHome();waterFacing=Math.round((yaw-frontYaw)/360)*360+frontYaw;
  enter('water-intro');reaction='';$('pet').hidden=true;$('five').hidden=true;$('choice').hidden=true;
- speak('You helped me.',()=>speak('Can I help it?',()=>{
+ speak('You helped me.',()=>speak('Can I help this plant?',()=>{
    enter('water-find');canAt={...canHome};revealWateringCan();$('water-can').hidden=false;$('spark').hidden=false;
-   objective('Give him the watering can');
+   objective('Find something to help the plant grow');
  }));
 }
 function carryCan(){
  if(!['water-find','water-carry'].includes(chapter))return;
- restoreFoundObject(wateringCan,canMeshes);canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Place the can in his right hand');
+ restoreFoundObject(wateringCan,canMeshes);canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Water the plant');
 }
 function revealWateringCan(){revealFoundObject('can',wateringCan,canMeshes,screenPoint(canAt.x+10,canAt.y,canAt.z));}
 $('water-can').onfocus=()=>{if(chapter==='water-find'){revealFocus='can';revealWateringCan();}};
 function giveCan(){
  if(!['water-find','water-carry'].includes(chapter)||!lastPose)return;
  restoreFoundObject(wateringCan,canMeshes);
- waterFacing=Math.round(yaw/360)*360;yawTarget=waterFacing;
+ waterFacing=Math.round((yaw-frontYaw)/360)*360+frontYaw;yawTarget=waterFacing;
  canCarry=false;canHeld=true;canDrag=null;waterAngle=40;waterTarget=40;waterGuided=false;waterPouring=false;
  $('water-hand').hidden=true;$('water-can').hidden=false;$('spark').hidden=true;enter('water-aim');
- objective('Help him water the plant');speak('Can you help me?');
+ speak('Can you help me?');
  $('choice').hidden=true;
 }
 $('water-hand').onclick=giveCan;
@@ -683,7 +728,7 @@ function releaseCan(e){
    if(chapter==='water-carry'){
      const h=handScreen(lastPose,wateringSide);
      if(e.type!=='pointercancel'&&Math.hypot((e.clientX??-999)-h.x,(e.clientY??-999)-h.y)<62)giveCan();
-     else{canAt={...canHome};canCarry=false;enter('water-find');$('water-hand').hidden=true;objective('Give him the watering can');}
+     else{canAt={...canHome};canCarry=false;enter('water-find');$('water-hand').hidden=true;objective('Find something to help the plant grow');}
    }
  }
 }
@@ -759,8 +804,8 @@ async function startMoth(){
  enter('moth-arrival');mothOffered=false;mothWarmth=0;mothPinned=false;
  $('spark').hidden=false;await update(moth.id,{visible:true});
  speak('Oh! What’s that?',()=>speak('It’s so small.',()=>{
-   enter('moth-coax');objective('Bring the moth closer');
-   after(3,()=>{if(chapter==='moth-coax'){mothOffered=true;mothOfferAt=chapterTime;$('moth-guide').hidden=false;speak('Okay. Slowly.');objective('Keep your light near his hand');}});
+   enter('moth-coax');objective('Bring the moth to '+chosenName);
+   after(3,()=>{if(chapter==='moth-coax'){mothOffered=true;mothOfferAt=chapterTime;$('moth-guide').hidden=false;speak('Okay. Slowly.');objective('Bring the moth to '+chosenName);}});
  }));
 }
 $('moth-guide').onclick=()=>{
@@ -783,7 +828,7 @@ function chapterTwoTick(now){
  const dt=twoLastFrame?Math.min(.05,(now-twoLastFrame)/1000):0;twoLastFrame=now;
  if(document.hidden)return;
  yaw+=(yawTarget-yaw)*(1-Math.exp(-dt*(wateringStates()?3.5:9)));
- if(Math.abs(yaw)<.001)yaw=0;
+ if(Math.abs(yaw-yawTarget)<.001)yaw=yawTarget;
  update(parts.Robot.id,{rotation:{y:yaw}});
  wateringTick(dt);collectionTick();
  if(chapter==='name-search'){
@@ -807,8 +852,8 @@ function chapterTwoTick(now){
    }else if(['moth-landed','moth-stay'].includes(chapter)){
      const h=projectedHand(lastPose,'right');goal={x:h.x,y:h.y+14*size,z:h.z};flap=3;
    }else if(chapter==='moth-return'){
-     const g=ease(t/3.5),a=mothFlightFrom;goal={x:a.x+(145-a.x)*g,y:a.y+(82-a.y)*g+Math.sin(g*Math.PI)*25,z:a.z+(75-a.z)*g};
-   }else{goal={x:145,y:82,z:75};flap=2;}
+     const g=ease(t/3.5),a=mothFlightFrom;goal={x:a.x+(145-a.x)*g,y:a.y+(68-a.y)*g+Math.sin(g*Math.PI)*25,z:a.z+(86-a.z)*g};
+   }else{goal={x:145,y:68,z:86};flap=2;}
    mothAt=goal;update(moth.id,{position:goal,scale:{x:size,y:size,z:size},rotation:{y:25,z:Math.sin(chapterTime*1.4)*(flap>5?5:1)}});
    const flutter=Math.sin(chapterTime*(flap>5?24:2))*flap;
    update(mothLeft.id,{rotation:{y:-(25+flutter)}});update(mothRight.id,{rotation:{y:25+flutter}});
@@ -867,7 +912,7 @@ async function beginCollection(){
  enter('collection-find');reaction='';$('pet').hidden=true;$('five').hidden=true;$('choice').hidden=true;
  $('spark').hidden=false;$('collect-cap').hidden=false;capAt={x:-235,y:5,z:100};
  revealFoundObject('cap',blueCap,[capEnamel],screenPoint(capAt.x,capAt.y,capAt.z));
- objective('Find the blue glimmer');
+ objective('Find what '+chosenName+' sees');
  speak('Something over there.');
 }
 function carryKeepsake(){
@@ -905,28 +950,40 @@ function placeKeepsakeBox(){
  $('collect-box').hidden=true;$('collect-place').hidden=true;$('spark').hidden=true;objective('');
  after(1.1,()=>{
    if(chapter!=='collection-box-settle')return;
-   enter('collection-store');capFrom={...capAt};capHeld=false;
-   speak('This can be its place.');
-   after(2.6,()=>{
-     if(chapter!=='collection-store')return;capInBox=true;enter('collection-end');$('collect-cap').setAttribute('aria-label','Look at his first keepsake');
-     speak('One thing.',()=>speak('I’d like to find another.',()=>{collectionSettled=true;$('collect-cap').hidden=false;$('pet').hidden=false;$('choice').hidden=true;after(4,()=>{$('dialogue').hidden=true;});}));
-   });
+   enter('collection-offer');$('collect-cap').hidden=false;
+   $('collect-cap').setAttribute('aria-label','Take the cap from '+chosenName);
+   objective('Put the cap in the box');speak('This can be its place.');
+ });
+}
+function takeCapFromMilo(){
+ if(chapter!=='collection-offer')return;
+ enter('collection-put-carry');capHeld=false;$('collect-place').hidden=false;
+ $('collect-place').setAttribute('aria-label','Put the cap in the box');
+}
+function storeCapInBox(){
+ if(chapter!=='collection-put-carry')return;
+ enter('collection-store');collectionDrag=null;capFrom={...capAt};
+ $('collect-cap').hidden=true;$('collect-place').hidden=true;objective('');
+ after(2.6,()=>{
+   if(chapter!=='collection-store')return;capInBox=true;enter('collection-end');$('collect-cap').setAttribute('aria-label','Look at his first keepsake');
+   speak('One thing.',()=>speak('I’d like to find another.',()=>{collectionSettled=true;$('collect-cap').hidden=false;$('pet').hidden=false;$('choice').hidden=true;after(4,()=>{$('dialogue').hidden=true;});}));
  });
 }
 $('collect-cap').onclick=()=>{
  if(chapterTime<collectionClickAfter)return;
  if(chapter==='collection-find')carryKeepsake();
+ else if(chapter==='collection-offer')takeCapFromMilo();
  else if(collectionSettled&&capInBox&&chapter==='collection-end')speak('The blue one. My first one.');
 };
 $('collect-cap').onfocus=()=>{if(chapter==='collection-find'){revealFocus='cap';revealFoundObject('cap',blueCap,[capEnamel],screenPoint(capAt.x,capAt.y,capAt.z));}};
 $('collect-box').onfocus=()=>{if(chapter==='collection-box-find'){revealFocus='box';revealFoundObject('box',keepsakeBox,boxMeshes,screenPoint(boxAt.x,boxAt.y+14,boxAt.z));}};
 $('collect-hand').onclick=giveKeepsake;
 $('collect-box').onclick=()=>{if(chapterTime>=collectionClickAfter)carryKeepsakeBox();};
-$('collect-place').onclick=placeKeepsakeBox;
+$('collect-place').onclick=()=>{if(chapter==='collection-put-carry')storeCapInBox();else placeKeepsakeBox();};
 function startCollectionDrag(e,kind){
- const available=kind==='cap'?['collection-find','collection-carry']:['collection-box-find','collection-box-carry'];
+ const available=kind==='cap'?['collection-find','collection-carry','collection-offer','collection-put-carry']:['collection-box-find','collection-box-carry'];
  if(e.button>0||!available.includes(chapter))return;
- collectionDrag={kind,id:e.pointerId,x:e.clientX,y:e.clientY,moved:false,el:e.currentTarget};e.currentTarget.setPointerCapture?.(e.pointerId);
+ collectionDrag={kind,toBox:kind==='cap'&&['collection-offer','collection-put-carry'].includes(chapter),id:e.pointerId,x:e.clientX,y:e.clientY,moved:false,el:e.currentTarget};e.currentTarget.setPointerCapture?.(e.pointerId);
 }
 $('collect-cap').onpointerdown=e=>startCollectionDrag(e,'cap');
 $('collect-box').onpointerdown=e=>startCollectionDrag(e,'box');
@@ -935,20 +992,22 @@ window.addEventListener('pointermove',e=>{
  if(d&&e.pointerId===d.id){
    if(!d.moved&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<5)return;
    d.moved=true;collectionClickAfter=chapterTime+.35;
-   if(d.kind==='cap')carryKeepsake();else carryKeepsakeBox();
+   if(d.kind==='cap'){if(d.toBox)takeCapFromMilo();else carryKeepsake();}else carryKeepsakeBox();
  }
- if(chapter==='collection-carry')capAt=pointAtHeight(e.clientX+18,e.clientY-18,160);
+ if(['collection-carry','collection-put-carry'].includes(chapter))capAt=pointAtHeight(e.clientX+18,e.clientY-18,160);
  if(chapter==='collection-box-carry'&&d?.kind==='box')boxAt=pointAtHeight(e.clientX,e.clientY,30);
 });
 function releaseCollectionDrag(e,cancelled=false){
  const d=collectionDrag;if(!d||(e.pointerId!==undefined&&e.pointerId!==d.id))return;
  try{d.el.releasePointerCapture?.(d.id);}catch{}collectionDrag=null;
  if(!d.moved)return;collectionClickAfter=chapterTime+.35;
- const target=d.kind==='cap'?handScreen(lastPose,'right'):screenPoint(-135,4,80);
+ const target=d.kind==='cap'&&!d.toBox?handScreen(lastPose,'right'):screenPoint(-135,7,80);
  const close=Math.hypot((e.clientX??-999)-target.x,(e.clientY??-999)-target.y)<85;
- if(!cancelled&&close){if(d.kind==='cap')giveKeepsake();else placeKeepsakeBox();}
- else if(d.kind==='cap'){
-   enter('collection-find');capAt={x:-235,y:5,z:100};$('collect-hand').hidden=true;objective('Find the blue glimmer');
+ if(!cancelled&&close){if(d.kind==='cap'){if(d.toBox)storeCapInBox();else giveKeepsake();}else placeKeepsakeBox();}
+ else if(d.toBox){
+   capHeld=true;enter('collection-offer');$('collect-place').hidden=true;objective('Put the cap in the box');
+ }else if(d.kind==='cap'){
+   enter('collection-find');capAt={x:-235,y:5,z:100};$('collect-hand').hidden=true;objective('Find what '+chosenName+' sees');
  }else{
    enter('collection-box-find');boxAt={x:-230,y:0,z:70};$('collect-place').hidden=true;objective('Find somewhere to keep it safe');
  }
@@ -965,8 +1024,8 @@ function collectionPose(p){
    p.rightZ=55-45*g;p.elbowZ=75-185*g;p.rightX=-30*g;p.elbowY=0;
    p.headX=14;p.headY=8;
  }else if(capHeld){p.rightZ=55;p.elbowZ=75;p.rightX=0;p.elbowY=0;p.headY=12;p.headZ=5;}
- if(chapter==='collection-store'){
-   const g=ease(elapsed/2.3);p.rightZ=55*(1-g);p.elbowZ=75*(1-g);p.headX=18;p.headY=-12;
+ if(['collection-put-carry','collection-store'].includes(chapter)){
+   const g=ease(elapsed/.8);p.rightZ=55*(1-g);p.elbowZ=75*(1-g);p.headX=18;p.headY=-12;
  }
  const happy=chapterTime-collectionHappyAt;
  if(happy>=0&&happy<2.8){const g=pulse(happy,0,.3,1.8,2.7);p.headZ+=Math.sin(happy*4)*4*g;p.leftZ-=18*g;}
