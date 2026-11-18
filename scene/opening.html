@@ -675,12 +675,12 @@ async function startWatering(){
  enter('water-intro');reaction='';$('pet').hidden=true;$('five').hidden=true;$('choice').hidden=true;
  speak('You helped me.',()=>speak('Can I help this plant?',()=>{
    enter('water-find');canAt={...canHome};revealWateringCan();$('water-can').hidden=false;$('spark').hidden=false;
-   objective('Find something to help the plant grow');
+   objective('Give the watering can to '+chosenName);
  }));
 }
 function carryCan(){
  if(!['water-find','water-carry'].includes(chapter))return;
- restoreFoundObject(wateringCan,canMeshes);canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Water the plant');
+ restoreFoundObject(wateringCan,canMeshes);canCarry=true;enter('water-carry');$('water-hand').hidden=false;objective('Give the watering can to '+chosenName);
 }
 function revealWateringCan(){revealFoundObject('can',wateringCan,canMeshes,screenPoint(canAt.x+10,canAt.y,canAt.z));}
 $('water-can').onfocus=()=>{if(chapter==='water-find'){revealFocus='can';revealWateringCan();}};
@@ -690,7 +690,7 @@ function giveCan(){
  waterFacing=Math.round((yaw-frontYaw)/360)*360+frontYaw;yawTarget=waterFacing;
  canCarry=false;canHeld=true;canDrag=null;waterAngle=40;waterTarget=40;waterGuided=false;waterPouring=false;
  $('water-hand').hidden=true;$('water-can').hidden=false;$('spark').hidden=true;enter('water-aim');
- speak('Can you help me?');
+ objective('Water the plant');speak('Can you help me?');
  $('choice').hidden=true;
 }
 $('water-hand').onclick=giveCan;
@@ -725,7 +725,7 @@ function releaseCan(e){
    if(chapter==='water-carry'){
      const h=handScreen(lastPose,wateringSide);
      if(e.type!=='pointercancel'&&Math.hypot((e.clientX??-999)-h.x,(e.clientY??-999)-h.y)<62)giveCan();
-     else{canAt={...canHome};canCarry=false;enter('water-find');$('water-hand').hidden=true;objective('Find something to help the plant grow');}
+     else{canAt={...canHome};canCarry=false;enter('water-find');$('water-hand').hidden=true;objective('Give the watering can to '+chosenName);}
    }
  }
 }
