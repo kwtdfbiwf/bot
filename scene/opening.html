@@ -56,22 +56,19 @@ body[data-chapter^=collection-] #dialogue{top:max(11vh,70px);bottom:auto}
 @media(max-width:600px){body[data-chapter^=collection-] #dialogue{top:12vh}}
 
 #hanging-light{position:fixed;z-index:5;left:82%;top:0;width:140px;height:310px;transform:translateX(-50%);pointer-events:none;opacity:0;--pull:0px}
-#hanging-light svg{display:block;width:140px;height:190px;overflow:visible}
-#switch{position:absolute;left:104px;top:171px;width:44px;height:120px;padding:0;transform:translateX(-50%);border:0;border-radius:0;background:transparent;box-shadow:none;opacity:1;touch-action:none;pointer-events:auto;cursor:grab}
+#switch{position:absolute;left:104px;top:0;width:44px;height:291px;padding:0;transform:translateX(-50%);border:0;border-radius:0;background:transparent;box-shadow:none;opacity:1;touch-action:none;pointer-events:auto;cursor:grab}
 #switch:before,#switch:after{content:none}
-#switch span{position:absolute;left:21px;top:0;width:2px;height:calc(70px + var(--pull));border:0;border-radius:0;background:repeating-linear-gradient(#b5a388 0 3px,#70675b 3px 5px);box-shadow:none;transition:height .25s ease-out}
+#switch span{position:absolute;left:21px;top:0;width:2px;height:calc(241px + var(--pull));border:0;border-radius:0;background:repeating-linear-gradient(#b5a388 0 3px,#70675b 3px 5px);box-shadow:none;transition:height .25s ease-out}
 #switch span:after{content:'';position:absolute;left:-5px;bottom:-14px;width:12px;height:19px;border-radius:6px;background:linear-gradient(90deg,#8a7460,#d3b495 48%,#9d8168);box-shadow:inset 0 -2px 2px #0005}
 #switch:active{cursor:grabbing}
 #hanging-light[data-pulling=true] #switch span{transition:none}
 #switch[aria-pressed=true] span{transform:none}
 #switch:disabled{cursor:default;pointer-events:none}
 body[data-phase=lit] #hanging-light{opacity:1!important;mask-image:none!important}
-body[data-phase=lit] #lamp-bulb{fill:#fff0bf;filter:drop-shadow(0 5px 10px #fbe3a580)}
-@media(max-width:600px){#hanging-light{left:80%;transform:translateX(-50%) scale(.78);transform-origin:top center}#switch{left:104px;top:171px;width:44px;height:120px}}
+@media(max-width:600px){#hanging-light{left:80%;transform:translateX(-50%) scale(.78);transform-origin:top center}#switch{left:104px;top:0;width:44px;height:291px}}
 
 </style></head><body data-phase="boot">
 <div id="air" aria-hidden="true"></div><div id="hanging-light" aria-hidden="false" hidden>
-<svg viewBox="0 0 140 190" aria-hidden="true"><defs><linearGradient id="shade" x2="1"><stop stop-color="#677d72"/><stop offset=".5" stop-color="#a0b4a2"/><stop offset="1" stop-color="#596e65"/></linearGradient></defs><path d="M70 -10V135" stroke="#5c5b51" stroke-width="3"/><rect x="61" y="131" width="18" height="13" rx="5" fill="#7b8c7c"/><path d="M26 175Q35 141 70 140Q105 141 114 175Z" fill="url(#shade)"/><ellipse cx="70" cy="175" rx="44" ry="7" fill="#47584f"/><ellipse id="lamp-bulb" cx="70" cy="176" rx="15" ry="5" fill="#c2b695"/></svg>
 <button id="switch" type="button" aria-label="Pull the hanging light cord" aria-pressed="false" hidden><span></span></button>
 </div><div id="darkness"></div><div id="spark" hidden></div><button id="wake" type="button" disabled>Wake up</button>
 <button id="seed" type="button" aria-label="Pick up the glimmering seed" hidden></button>
