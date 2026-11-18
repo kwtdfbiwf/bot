@@ -1,0 +1,11 @@
+#shelf-find,#shelf-clean,#shelf-place,#shelf-book{position:fixed;z-index:8;padding:0;border:0;background:transparent;transform:translate(-50%,-50%);touch-action:none}
+#shelf-find{width:130px;height:160px;cursor:grab}
+#shelf-clean{cursor:grab;border-radius:4px}
+body[data-chapter=shelf-cleaning] #shelf-clean{cursor:crosshair}
+body[data-shelf-wiping=true]{user-select:none;-webkit-user-select:none}
+#shelf-place{width:110px;height:90px;cursor:pointer}
+#shelf-book{width:64px;height:34px;cursor:pointer}
+#shelf-clean:active{cursor:grabbing}
+body[data-chapter=shelf-cleaning] #shelf-clean:active{cursor:crosshair}
+#shelf-find:focus-visible,#shelf-clean:focus-visible,#shelf-place:focus-visible,#shelf-book:focus-visible{outline:1px solid #c3aa7580;outline-offset:4px}
+body[data-chapter^=shelf-] #dialogue{top:max(11vh,70px);bottom:auto}

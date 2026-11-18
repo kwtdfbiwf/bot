@@ -7,13 +7,14 @@ const findClay={
  'Can Loop Handle':['#d3a095',.74],'Can Dark Opening':['#596c5b',.9],'Can Spout Opening':['#596c5b',.9],
  'Blue Cap Enamel':['#789bb5',.76],'Box Folded Tape':['#d3a095',.74]
 };
-async function prepareSearchLight(root,meshes){
+async function prepareSearchLight(root,meshes,options={}){
  const state={active:null,pointer:null,viewport:null,ready:false};searchLights.set(root.id,state);
  try{
    if(!spline.createCustomMaterial||!spline.setMaterial)throw new Error('Surface shaders unavailable');
    // Shared by this find's pieces; changing these values never sends mesh edits.
    for(const mesh of meshes){
-     const [color]=findClay[mesh.name]||['#c29f7c',.86];
+     const [color]=options.colors?.[mesh.name]||findClay[mesh.name]||['#c29f7c',.86];
+     const surface=options.textured?.includes(mesh.name)&&spline.getTexture?await spline.getTexture(mesh.id):null;
      const material=await spline.createCustomMaterial(three=>{
        const {tsl}=three;
        if(!state.active){
@@ -42,7 +43,8 @@ async function prepareSearchLight(root,meshes){
        // Pass numeric linear RGB: the runtime's vec3(Color) conversion
        // renders black on this backend.
        const rgb=[1,3,5].map(i=>{const s=parseInt(color.slice(i,i+2),16)/255;return s<=.04045?s/12.92:Math.pow((s+.055)/1.055,2.4);});
-       m.colorNode=tsl.vec3(...rgb).mul(diffuse).mul(illumination);
+       const albedo=surface?.texture?tsl.texture(surface.texture,tsl.uv()).rgb:tsl.vec3(...rgb);
+       m.colorNode=albedo.mul(diffuse).mul(illumination);
        m.side=three.DoubleSide;m.transparent=false;
        return m;
      });

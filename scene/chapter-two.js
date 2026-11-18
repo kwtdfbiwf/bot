@@ -7,8 +7,8 @@ let standAt=-100,happyAt=-100,nameConfirmed=false;
 let moth=null,mothLeft=null,mothRight=null,mothOffered=false,mothWarmth=0,mothPinned=false,mothAt={x:145,y:68,z:86},mothFlightFrom=null;
 let mothReady=false,twoReady=false,mothOfferAt=0;
 try{chosenName=localStorage.getItem('milo-chosen-name')||'Milo';}catch{}
-const freeArms=()=>['play','end','named-play','garden-end'].includes(chapter)||(chapter==='collection-end'&&collectionSettled);
-const namingStates=()=>['name-intro','name-search','name-found','nickname','name-happy','named-play','water-intro','water-find','water-carry','water-aim','water-bloom','water-done','moth-arrival','moth-coax','moth-landed','moth-stay','moth-return','garden-end'].includes(chapter)||chapter.startsWith('collection-');
+const freeArms=()=>['play','end','named-play','garden-end','shelf-home'].includes(chapter)||(chapter==='collection-end'&&collectionSettled);
+const namingStates=()=>['name-intro','name-search','name-found','nickname','name-happy','named-play','water-intro','water-find','water-carry','water-aim','water-bloom','water-done','moth-arrival','moth-coax','moth-landed','moth-stay','moth-return','garden-end'].includes(chapter)||chapter.startsWith('collection-')||shelfStates();
 const bounded=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 function worldPoint(p){return rotateVector(p,0,yaw,0);}
 function bodyScreen(x,y,z){const p=worldPoint({x,y,z});return screenPoint(p.x,p.y,p.z);}
@@ -359,7 +359,7 @@ function chapterTwoTick(now){
  yaw+=(yawTarget-yaw)*(1-Math.exp(-dt*(wateringStates()?3.5:9)));
  if(Math.abs(yaw-yawTarget)<.001)yaw=yawTarget;
  update(parts.Robot.id,{rotation:{y:yaw}});
- wateringTick(dt);collectionTick();
+ wateringTick(dt);collectionTick();shelfTick(dt);
  if(chapter==='name-search'){
    const rear=Math.cos((yaw-25.1)*Math.PI/180)<-.6;
    $('back-name').hidden=!rear;place($('back-name'),bodyScreen(0,318,-81));
@@ -414,6 +414,6 @@ function chapterTwoPose(p){
      if(side==='right'){p.elbowZ*=1-weight;p.elbowY*=1-weight;}
    }
  }
- p=wateringPose(p);p=collectionPose(p);
+ p=wateringPose(p);p=collectionPose(p);p=shelfPose(p);
  lastPose={...p};refreshArmTargets(p);return p;
 }

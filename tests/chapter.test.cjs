@@ -16,7 +16,7 @@ for(const m of html.matchAll(/id="([^"]+)"/g))elements.set(m[1],new Element(m[1]
 const body=new Element('body'),root=new Element('root');
 const spline={ready:Promise.resolve(),async createCustomMaterial(factory){return factory(three)},async setMaterial(id,m){shaderMaterials.set(id,m);return m},async findObjectByName(name){if(!objects.has(name))objects.set(name,{id:name,name,position:{x:0,y:name.startsWith('Robot Leg')?100:102,z:0}});return objects.get(name)},async updateObject(id,props){updateCount++;if(traceHead&&id==='Robot Head Pivot'&&Number.isFinite(props.rotation?.y))pickupHead.push(props.rotation.y);writes.set(id,merge(writes.get(id)||{},props));return true},async createObject(type,props){const o={id:props.name,...props};objects.set(o.id,o);writes.set(o.id,props);return o}};
 const context={console,spline,Math,Promise,Error,localStorage:{getItem:k=>savedNames.get(k),setItem:(k,v)=>savedNames.set(k,v)},document:{body,documentElement:root,hidden:false,getElementById:id=>elements.get(id),createElement:()=>new Element('span'),createTextNode:text=>text},innerWidth:1280,innerHeight:720,performance:{now:()=>now},matchMedia:()=>({matches:false}),location:{reload(){}},requestAnimationFrame:fn=>{rafs.push(fn)},setTimeout:(fn,delay=0)=>{const id=++timerId;queue.push({id,at:now+delay,fn});return id},clearTimeout:id=>{queue=queue.filter(t=>t.id!==id)},window:{addEventListener:(name,fn)=>{(events[name]??=[]).push(fn)}}};
-vm.createContext(context);vm.runInContext(html.split('<script>')[1].split('</script>')[0].replace('function screenPoint(', 'window.testProject=screenPoint;window.testPointAtHeight=pointAtHeight;function screenPoint('),context);
+vm.createContext(context);vm.runInContext(html.split('<script>')[1].split('</script>')[0].replace('function screenPoint(', 'window.testProject=screenPoint;window.testPointAtHeight=pointAtHeight;window.testShelfPoint=shelfPoint;window.testDustLayout=()=>shelfDustLayout;function screenPoint('),context);
 const $=id=>elements.get(id);
 const project=(x,y,z)=>context.window.testProject(x,y,z);
 async function advance(seconds){for(let i=0;i<Math.ceil(seconds*60);i++){now+=1000/60;for(let j=0;j<8;j++)await Promise.resolve();const due=queue.filter(t=>t.at<=now);queue=queue.filter(t=>t.at>now);due.forEach(t=>t.fn());const frames=rafs;rafs=[];frames.forEach(fn=>fn(now));}for(let j=0;j<12;j++)await Promise.resolve();}
@@ -277,11 +277,58 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  assert.equal(writes.get('Collection Hatch Lid Pivot').rotation.x,0);assert.equal(writes.get('Garden Flower').visible,true);assert.equal(writes.get('Garden Moth').visible,true);
  await until(()=>!$('pet').hidden);await advance(5);
  assert.equal(body.dataset.chapter,'collection-end');
- assert.equal($('choice').hidden,true,'The second sitting choice must not appear');
+ assert.equal($('choice').textContent,'Look a little further','The next find must replace the removed second sitting choice');
  assert.equal($('dialogue').hidden,true,'The closing dialogue should clear without another sit');
  for(const side of [-1,1])assert.equal(writes.get('Robot Leg Pivot '+side).position.y,100,'Milo must remain standing after storing his first keepsake');
  $('collect-cap').onclick();await advance(2);assert.match($('dialogue').textContent,/My first one/);
  assert.equal(writes.get('Blue Bottle Cap').visible,true,'Inspecting the keepsake must preserve it');
- await advance(20);assert.equal(body.dataset.chapter,'collection-end','The story should end quietly with the first keepsake');assert.equal($('choice').hidden,true,'The removed fan chapter must not be offered');
- console.log('PASS: arm dragging, high five, planting, '+(nickname?'nickname':'Milo name')+', turning, watering, flower, moth, blue cap, keepsake box and collection ending');
+ await advance(20);assert.equal(body.dataset.chapter,'collection-end','The story should end quietly with the first keepsake');assert.equal($('choice').textContent,'Look a little further','The shelf should be the next chapter');
+ // The first piece of furniture is discovered, cleaned locally and placed.
+ $('choice').onclick();await until(()=>body.dataset.chapter==='shelf-find');await advance(.2);
+ await checkLightFind('shelf-find','Cozy Shelf');
+ assert.equal(writes.get('Cozy Shelf Dust').visible,false,'Dust must not glow outside the cursor beam during the search');
+ $('shelf-find').onclick();await until(()=>body.dataset.chapter==='shelf-cleaning');await advance(3);
+ assert.equal(writes.get('Cozy Shelf Dust').visible,true);
+ const shelfProject=context.window.testShelfPoint,dustLayout=context.window.testDustLayout();
+ const first=shelfProject(dustLayout[0].x,dustLayout[0].y,dustLayout[0].z);
+ for(const fn of events.pointermove)fn({pointerId:30,clientX:first.x,clientY:first.y});await advance(.3);
+ assert.equal(writes.get('Shelf Dust 0')?.material,undefined,'Hovering alone must not clean the shelf');
+ $('shelf-clean').onpointerdown({pointerId:30,button:0,currentTarget:$('shelf-clean'),clientX:first.x-22,clientY:first.y});
+ for(const fn of events.pointermove)fn({pointerId:30,clientX:first.x+22,clientY:first.y});
+ for(const fn of events.pointercancel)fn({pointerId:30});
+ assert(writes.get('Shelf Dust 0').material.layers[0].alpha<85,'A stroke must expose wood only where it passes');
+ assert.equal(writes.get('Shelf Dust 25')?.material,undefined,'An untouched upright must retain its dust');
+ await advance(10);assert.equal(body.dataset.chapter,'shelf-cleaning','Dust must not fade away on a timer');
+ context.innerHeight=648;for(const fn of events.resize)fn();await advance(.1);
+ if(nickname||direct){
+   $('shelf-clean').onpointerdown({pointerId:31,button:0,currentTarget:$('shelf-clean'),clientX:first.x-20,clientY:first.y});
+   for(const d of dustLayout){const p=shelfProject(d.x,d.y,d.z);for(const x of [p.x-22,p.x+22])for(const fn of events.pointermove)fn({pointerId:31,clientX:x,clientY:p.y});}
+   for(const fn of events.pointerup)fn({pointerId:31});
+ }else for(let i=0;i<52&&body.dataset.chapter==='shelf-cleaning';i++)$('shelf-clean').onkeydown({key:'ArrowRight',preventDefault(){}});
+ assert.equal(body.dataset.chapter,'shelf-ready','Both scrubbing and keyboard strokes must clean every region');
+ assert.equal(writes.get('Cozy Shelf Dust').visible,false);
+ for(let i=0;i<dustLayout.length;i++)assert.equal(writes.get('Shelf Dust '+i).visible,false,'Cleaned dust must stay gone');
+ // A cancelled move preserves the cleaning work; narrow screens keep it usable.
+ $('shelf-clean').onpointerdown({pointerId:32,button:0,currentTarget:$('shelf-clean'),clientX:300,clientY:450});
+ for(const fn of events.pointermove)fn({pointerId:32,clientX:400,clientY:450});
+ for(const fn of events.pointercancel)fn({pointerId:32});assert.equal(body.dataset.chapter,'shelf-ready');
+ context.innerWidth=390;for(const fn of events.resize)fn();await advance(.1);
+ assert(shelfProject(-55,60,0).x>0&&shelfProject(55,60,0).x<390,'The cleaning surface must fit a narrow screen');
+ context.innerWidth=1280;for(const fn of events.resize)fn();await advance(.1);
+ if(nickname||direct){
+   const target=project(-235,35,-30);
+   $('shelf-clean').onpointerdown({pointerId:33,button:0,currentTarget:$('shelf-clean'),clientX:300,clientY:450});
+   for(const fn of events.pointermove)fn({pointerId:33,clientX:target.x,clientY:target.y});
+   for(const fn of events.pointerup)fn({pointerId:33,clientX:target.x,clientY:target.y});
+ }else{await until(()=>!$('choice').hidden&&$('choice').textContent==='Put it beside us');$('choice').onclick();}
+ await until(()=>body.dataset.chapter==='shelf-home');await advance(.3);
+ assert.equal(writes.get('Cozy Shelf').position.x,-235);assert.equal(writes.get('Cozy Shelf').position.y,0);assert.equal(writes.get('Cozy Shelf').scale.x,1);
+ assert.equal(writes.get('Cozy Shelf Dust').visible,false);assert.equal(writes.get('Blue Bottle Cap').visible,true);assert.equal(writes.get('Garden Moth').visible,true);
+ assert.equal([...objects.keys()].filter(name=>name==='Cozy Shelf Book').length,1,'The shelf must already contain exactly one book');
+ context.innerWidth=390;for(const fn of events.resize)fn();await advance(.2);
+ assert(shelfProject(-55,60,0).x>0&&shelfProject(55,60,0).x<390,'The placed shelf must remain fully on-screen on mobile');
+ context.innerWidth=1280;for(const fn of events.resize)fn();await advance(.2);
+ await until(()=>!$('pet').hidden);$('shelf-book').onclick();await advance(2);assert.match($('dialogue').textContent,/read it together/);
+ await advance(20);assert.equal(body.dataset.chapter,'shelf-home');assert.equal($('choice').hidden,true);
+ console.log('PASS: arm dragging, high five, planting, '+(nickname?'nickname':'Milo name')+', turning, watering, flower, moth, blue cap, keepsake box, local dust wiping and shelf home');
 })().catch(error=>{console.error(error);process.exitCode=1});

@@ -1,22 +1,96 @@
 {
-  "premise": "Milo was built to collect rubbish. He now chooses what to keep and learns to care for it. His collection slowly becomes a home.",
+  "premise": "Milo and the player slowly build a cosy place to stay from things they find, clean, repair and look after together.",
   "principles": [
-    "Reveal his former work through habits before explaining it.",
-    "Every chapter leaves a tangible object or visible change in the space.",
+    "The home grows one meaningful object at a time; each chapter leaves something usable behind.",
+    "Use the warm wooden room reference for the small furniture, worn books and gentle light.",
+    "Begin in the endless dark space; a sheltered home gradually takes shape through play.",
     "Keep the plant and visiting moth central; living visitors are never possessions.",
-    "Make reactions visibly match player actions. Use simple objectives, no inventory dashboard.",
-    "Shelter emerges from found materials and his care for the collection. Milo also stays dry.",
-    "The player supports Milo's choices; he gradually acts without asking permission."
+    "Make reactions visibly match player actions. Use simple objectives, no inventory dashboard or instructional footer.",
+    "Milo develops preferences and contributes ideas. The player is making a place with him.",
+    "Shelter protects Milo and his belongings while leaving the plant a place to enjoy the rain."
   ],
   "chapters": [
-    {"id":"opening","status":"implemented","beats":["Wake him","Find and pull the hanging light","Grow plant","Discover his name","Help him water","Meet the moth"]},
-    {"id":"first-keepsake","status":"implemented","find":"blue bottle cap","actions":["Find it with light","Give it to his hand","Notice his disposal reflex stop","Encourage him to keep it","Find and place a box","Take the cap from his hand and put it in the box"],"lastingChange":"An open keepsake box and his first blue cap beside the garden.","dialogue":["Item collected.","It’s blue.","Can I keep it?","I’d like to keep this one.","One thing.","I’d like to find another."]},
-    {"id":"a-use-for-it","status":"planned","find":"chipped cup","action":"Turn it together, discover the intact side, plant a second seed inside.","lastingChange":"A cup planter, with the chip still visible."},
-    {"id":"little-sounds","status":"planned","find":"bent spoon","action":"Guide his arm to tap the can, cup and box. Each contact makes a distinct sound and visible reaction. No drawing or imitation puzzle.","lastingChange":"A spoon kept next to the watering can."},
-    {"id":"putting-things-in-order","status":"planned","find":"loose button","action":"Let Milo arrange the button and cap; the player helps move a box into place.","lastingChange":"His first arrangement of things he likes."},
-    {"id":"room-for-more","status":"planned","find":"old shelf pieces","action":"Hold and fit pieces while he assembles a small shelf. Items move onto it one at a time.","lastingChange":"Shelves and boxes forming a lived-in corner."},
-    {"id":"still-worth-keeping","status":"planned","find":"a damaged favourite","action":"Help repair it; keep the repair visible.","lastingChange":"An object with an obvious, affectionate repair."},
-    {"id":"somewhere-to-stay","status":"planned","find":"a large panel","action":"Make a roof above Milo and his shelves. Leave the plant where it can enjoy the rain, with a dry spot for the moth.","lastingChange":"Shelter for Milo and the objects he cares for."},
-    {"id":"his-choice","status":"planned","find":"old disposal instructions","action":"Connect the instructions to the collection reflex seen earlier. Milo decides to care for his finds instead.","dialogue":"But I’m looking after these.","ending":"A quiet home to return to: tend plants, inspect finds, tap objects, move his arms or sit together."}
+    {
+      "id": "opening",
+      "status": "implemented",
+      "beats": [
+        "Wake him",
+        "Find and pull the hanging light",
+        "Grow plant",
+        "Discover his name",
+        "Help him water",
+        "Meet the moth"
+      ]
+    },
+    {
+      "id": "first-keepsake",
+      "status": "implemented",
+      "find": "blue bottle cap",
+      "actions": [
+        "Find it with light",
+        "Give it to his hand",
+        "Notice his disposal reflex stop",
+        "Encourage him to keep it",
+        "Find and place a box",
+        "Take the cap from his hand and put it in the box"
+      ],
+      "lastingChange": "An open keepsake box and his first blue cap beside the garden.",
+      "dialogue": [
+        "Item collected.",
+        "It’s blue.",
+        "Can I keep it?",
+        "I’d like to keep this one.",
+        "One thing.",
+        "I’d like to find another."
+      ]
+    },
+    {
+      "id": "first-shelf",
+      "status": "implemented",
+      "find": "small open wooden shelf, with one worn green book already on the bottom level",
+      "actions": [
+        "Discover it with the cursor light",
+        "Bring it closer",
+        "Wipe local patches of dust from the boards, book and uprights",
+        "Place the clean shelf beside the growing home",
+        "Inspect the book afterward"
+      ],
+      "lastingChange": "A warm wooden shelf with its original book and empty space for future finds.",
+      "dialogue": [
+        "A little shelf.",
+        "It’s a bit dusty.",
+        "There’s a book already.",
+        "And room for more.",
+        "Our little corner."
+      ]
+    },
+    {
+      "id": "a-seat-for-you",
+      "status": "planned",
+      "find": "a broken little stool and its missing parts",
+      "action": "Hold pieces while Milo fits them together. He offers the finished stool to the player.",
+      "lastingChange": "A place for the player to return to."
+    },
+    {
+      "id": "a-roof-for-the-rain",
+      "status": "planned",
+      "find": "a roof panel, supports and a patch",
+      "action": "Build enough shelter for Milo and the collected belongings. Leave the plant just outside.",
+      "lastingChange": "A dry corner, with rain audible on the roof."
+    },
+    {
+      "id": "making-it-ours",
+      "status": "planned",
+      "find": "a chipped cup, a soft floor covering and a hanging ornament, found over separate visits",
+      "action": "Choose small arrangements together; repair useful finds and turn the cup into a planter.",
+      "lastingChange": "A gradually furnished home inspired by the warm wooden room."
+    },
+    {
+      "id": "an-ordinary-evening",
+      "status": "planned",
+      "action": "Return to the place you built together. Milo tends the plant and straightens the player’s stool without prompting.",
+      "dialogue": "I saved your spot.",
+      "ending": "A small playable home, with familiar objects, rain on the roof and the visiting moth."
+    }
   ]
 }

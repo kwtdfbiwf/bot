@@ -76,14 +76,14 @@ function storeCapInBox(){
  $('collect-cap').hidden=true;$('collect-place').hidden=true;objective('');
  after(2.6,()=>{
    if(chapter!=='collection-store')return;capInBox=true;enter('collection-end');$('collect-cap').setAttribute('aria-label','Look at his first keepsake');
-   speak('One thing.',()=>speak('I’d like to find another.',()=>{collectionSettled=true;$('collect-cap').hidden=false;$('pet').hidden=false;$('choice').hidden=true;after(4,()=>{$('dialogue').hidden=true;});}));
+   speak('One thing.',()=>speak('I’d like to find another.',()=>{collectionSettled=true;$('collect-cap').hidden=false;$('pet').hidden=false;$('choice').hidden=true;after(4,()=>{$('dialogue').hidden=true;offerShelf();});}));
  });
 }
 $('collect-cap').onclick=()=>{
  if(chapterTime<collectionClickAfter)return;
  if(chapter==='collection-find')carryKeepsake();
  else if(chapter==='collection-offer')takeCapFromMilo();
- else if(collectionSettled&&capInBox&&chapter==='collection-end')speak('The blue one. My first one.');
+ else if(collectionSettled&&capInBox&&['collection-end','shelf-home'].includes(chapter))speak('The blue one. My first one.');
 };
 $('collect-cap').onfocus=()=>{if(chapter==='collection-find'){revealFocus='cap';revealFoundObject('cap',blueCap,[capEnamel],screenPoint(capAt.x,capAt.y,capAt.z));}};
 $('collect-box').onfocus=()=>{if(chapter==='collection-box-find'){revealFocus='box';revealFoundObject('box',keepsakeBox,boxMeshes,screenPoint(boxAt.x,boxAt.y+14,boxAt.z));}};
