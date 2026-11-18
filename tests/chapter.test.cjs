@@ -15,7 +15,9 @@ class Element{
 for(const m of html.matchAll(/id="([^"]+)"/g))elements.set(m[1],new Element(m[1]));
 const body=new Element('body'),root=new Element('root');
 const spline={ready:Promise.resolve(),async createCustomMaterial(factory){return factory(three)},async setMaterial(id,m){shaderMaterials.set(id,m);return m},async findObjectByName(name){if(!objects.has(name))objects.set(name,{id:name,name,position:{x:0,y:name.startsWith('Robot Leg')?100:102,z:0}});return objects.get(name)},async updateObject(id,props){updateCount++;if(traceHead&&id==='Robot Head Pivot'&&Number.isFinite(props.rotation?.y))pickupHead.push(props.rotation.y);writes.set(id,merge(writes.get(id)||{},props));return true},async createObject(type,props){const o={id:props.name,...props};objects.set(o.id,o);writes.set(o.id,props);return o}};
-const context={console,spline,Math,Promise,Error,localStorage:{getItem:k=>savedNames.get(k),setItem:(k,v)=>savedNames.set(k,v)},document:{body,documentElement:root,hidden:false,getElementById:id=>elements.get(id),createElement:()=>new Element('span'),createTextNode:text=>text},innerWidth:1280,innerHeight:720,performance:{now:()=>now},matchMedia:()=>({matches:false}),location:{reload(){}},requestAnimationFrame:fn=>{rafs.push(fn)},setTimeout:(fn,delay=0)=>{const id=++timerId;queue.push({id,at:now+delay,fn});return id},clearTimeout:id=>{queue=queue.filter(t=>t.id!==id)},window:{addEventListener:(name,fn)=>{(events[name]??=[]).push(fn)}}};
+const previewMode=(process.argv[2]||'').startsWith('preview:')?process.argv[2].slice(8):'';
+let reloads=0;
+const context={console,spline,Math,Promise,Error,localStorage:{getItem:k=>savedNames.get(k),setItem:(k,v)=>savedNames.set(k,v)},document:{body,documentElement:root,hidden:false,getElementById:id=>elements.get(id),createElement:()=>new Element('span'),createTextNode:text=>text},innerWidth:1280,innerHeight:720,performance:{now:()=>now},matchMedia:()=>({matches:false}),location:{reload(){reloads++}},requestAnimationFrame:fn=>{rafs.push(fn)},setTimeout:(fn,delay=0)=>{const id=++timerId;queue.push({id,at:now+delay,fn});return id},clearTimeout:id=>{queue=queue.filter(t=>t.id!==id)},window:{addEventListener:(name,fn)=>{(events[name]??=[]).push(fn)}}};
 vm.createContext(context);vm.runInContext(html.split('<script>')[1].split('</script>')[0].replace('function screenPoint(', 'window.testProject=screenPoint;window.testPointAtHeight=pointAtHeight;window.testShelfPoint=shelfPoint;window.testDustLayout=()=>shelfDustLayout;function screenPoint('),context);
 const $=id=>elements.get(id);
 const project=(x,y,z)=>context.window.testProject(x,y,z);
@@ -36,6 +38,38 @@ async function checkLightFind(controlId,objectId){
 async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(predicate())return;await advance(.1)}throw Error('Timed out at phase '+body.dataset.phase+' / '+body.dataset.chapter)}
 (async()=>{
  await advance(2);
+ if(previewMode){
+   await $('preview-'+previewMode).onclick();
+   if(previewMode==='dust')await until(()=>body.dataset.chapter==='shelf-cleaning');
+   await advance(.1);
+   const expected={play:'play',seed:'finding',name:'name-search',water:'water-find',moth:'moth-coax',cap:'collection-find',shelf:'shelf-find',dust:'shelf-cleaning',home:'shelf-home'};
+   assert.equal(body.dataset.phase,'lit');assert.equal(body.dataset.chapter,expected[previewMode]);
+   assert.equal($('wake').hidden,true,'Preview must never show the wake button');
+   if(['dust','home'].includes(previewMode))assert.equal(writes.get('Cozy Shelf').visible,true);
+   if(previewMode==='home'){
+     assert.equal(writes.get('Cozy Shelf Dust').visible,false);assert.equal($('shelf-book').hidden,false);
+     assert.equal(writes.get('Keepsake Box').position.x,-135);assert.equal(writes.get('Blue Bottle Cap').position.y,7);
+   }
+   for(const fn of events.keydown)fn({key:'P',shiftKey:true,target:$('visitor-name'),preventDefault(){}});
+   assert.equal($('preview-menu').hidden,false);
+   for(const fn of events.keydown)fn({key:'Escape',preventDefault(){}});
+   assert.equal($('preview-menu').hidden,true);
+   for(const fn of events.keydown)fn({key:'P',shiftKey:true,target:{tagName:'INPUT'},preventDefault(){}});
+   assert.equal($('preview-menu').hidden,true,'Typing a name must not open preview');
+   await $('preview-dust').onclick();await until(()=>body.dataset.chapter==='shelf-cleaning');
+   assert.equal(writes.get('Cozy Shelf Dust').visible,true,'Repeated jump restores dust');
+   await $('preview-home').onclick();await advance(.2);
+   assert.equal(writes.get('Cozy Shelf Dust').visible,false);
+   assert.equal(body.dataset.chapter,'shelf-home');
+   await $('preview-water').onclick();await advance(.2);
+   assert.equal(body.dataset.chapter,'water-find');assert.equal(writes.get('Cozy Shelf').visible,false);
+   assert.equal(writes.get('Blue Bottle Cap').visible,false);assert.equal(writes.get('Keepsake Box').visible,false);
+   await advance(10);assert.equal(body.dataset.chapter,'water-find','Old chapter dialogue must not continue after a jump');
+   await $('preview-restart').onclick();await advance(.1);
+   assert.equal(body.dataset.phase,'boot');assert.equal(body.dataset.chapter,'waiting');assert.equal($('wake').hidden,false);
+   assert.equal(reloads,0,'Embedded play frame must stay configured');
+   console.log('PASS: preview '+previewMode+', shortcut, repeated jumps, cleanup and restart');return;
+ }
  const verticalVanishingPoint=project(0,1e9,0);
  assert(Math.abs(verticalVanishingPoint.x-640)<1,'Camera roll must center the vertical vanishing point');
  for(const [x,y,z] of [[145,4,75],[-135,20,95],[0,120,0]]){

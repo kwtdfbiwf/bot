@@ -11,6 +11,12 @@ be lifted by dragging. Pointer, touch, and keyboard interactions are supported.
 
 ## Source
 
+For checking updates, click inside the game and press **Shift + P** to open
+the hidden chapter preview menu. Choose any checkpoint, including finding,
+cleaning, or placing the shelf. **Escape** closes the menu; **Restart story**
+returns to the black opening. Jumps reset scene state without reloading the
+Spline frame. Refreshing the site always starts the ordinary story.
+
 - `dist/`: fullscreen website shell deployed on GitHub Pages.
 - `scene/opening.html`: complete Spline HTML overlay, story, and animation loop.
 - `scene/chapter-one.js`, `scene/chapter-two.js`, `scene/chapter-three.js`, `scene/chapter-four.js`, and their `.css` files: chapter authoring sources,
@@ -18,6 +24,7 @@ be lifted by dragging. Pointer, touch, and keyboard interactions are supported.
 - `scene/hanging-light.js` and `.css`: discoverable hanging pull cord and native keyboard activation, inlined into the opening.
 - `scene/search-light.js`: per-surface cursor beam for hidden collectibles; matte clay stays opaque and dark outside the soft beam.
 - `scene/level-camera.js`: camera roll correction for level ground; the overlay uses matching projections.
+- `scene/preview-navigation.js` and `.css`: hidden chapter selector and scene reset, inlined into the opening.
 - `scene/circular-blue-eyes.js`: eye changes applied in the Spline editor.
 - `scene/botanical-models.js`: authored Spline seed and folded-leaf plant meshes.
   The story references these named assets and animates their growth.
@@ -58,6 +65,7 @@ node tests/chapter.test.cjs
 node tests/chapter.test.cjs nickname
 node tests/chapter.test.cjs direct
 node tests/search-light.test.cjs
+node tests/chapter.test.cjs preview:dust
 ```
 
 This exercises the story and controls with a mock Spline bridge. Verify model
