@@ -1,5 +1,5 @@
 // Naming, physical play, watering, and the moth share the opening's clock/rig.
-const frontYaw=25.1;
+const frontYaw=11;
 let chosenName='Milo',yaw=frontYaw,yawTarget=frontYaw,lastPose=null,twoLastFrame=0;
 let armDrag=null,turnDrag=null,suppressArmClickUntil=-1,armDialogueAt=-100,armTouches=0;
 const arms={left:{angle:0,releaseAt:-100,releaseFrom:0},right:{angle:0,releaseAt:-100,releaseFrom:0}};
@@ -121,7 +121,7 @@ function releaseTurn(e){
 }
 window.addEventListener('pointerup',releaseTurn);window.addEventListener('pointercancel',releaseTurn);
 $('back-name').onclick=()=>{
- if(chapter!=='name-search'||Math.cos((yaw-25.1)*Math.PI/180)>-.6)return;
+ if(chapter!=='name-search'||Math.cos((yaw-frontYaw)*Math.PI/180)>-.6)return;
  enter('name-found');objective('');yawTarget=Math.round((yaw-frontYaw)/360)*360+frontYaw;turnDrag=null;$('turn-milo').hidden=true;$('back-name').hidden=true;
  speak('Milo.',()=>speak('Does that sound like me?',()=>answers([
    ['Yes. You’re Milo.',()=>giveName('Milo')],['Choose a name',()=>{
@@ -167,14 +167,14 @@ async function prepareWatering(){
 }
 waterBoot=prepareWatering();
 function pointAtHeight(x,y,height){
- const r=cameraRay(x,y),depth=bounded((height-360)/r.y,120,1700);
- return{x:370+depth*r.x,y:360+depth*r.y,z:790+depth*r.z};
+ const r=cameraRay(x,y),depth=bounded((height-420)/r.y,120,1700);
+ return{x:200+depth*r.x,y:420+depth*r.y,z:1100+depth*r.z};
 }
 // Keep the find on the right and beyond the floor's existing pool of light.
 // On narrow screens it sits deeper in the void, rather than beside the plant.
 function layoutCanHome(){
  const wide=clamp((innerWidth-600)/680);
- canHome=pointAtHeight(innerWidth*.86,innerHeight*(.68+.10*wide),20);
+ canHome=pointAtHeight(innerWidth*.86,innerHeight*(.62+.12*wide),20);
  canHome.x-=10;
  if(chapter==='water-find')canAt={...canHome};
 }
@@ -323,7 +323,7 @@ function wateringTick(dt){
      const g=ease((t-i*.16)/2.5);
      update(flowerPetals[i].id,{rotation:{x:75*(1-g),y:0,z:i*72},scale:{x:.2+.8*g,y:.4+.6*g,z:1}});
    }
-   update(gardenFlower.id,{rotation:{y:25.1,z:Math.sin(chapterTime*1.3)*1.2},scale:{x:1,y:1,z:1}});
+   update(gardenFlower.id,{rotation:{y:frontYaw,z:Math.sin(chapterTime*1.3)*1.2},scale:{x:1,y:1,z:1}});
  }
 }
 
@@ -361,7 +361,7 @@ function chapterTwoTick(now){
  update(parts.Robot.id,{rotation:{y:yaw}});
  wateringTick(dt);collectionTick();shelfTick(dt);
  if(chapter==='name-search'){
-   const rear=Math.cos((yaw-25.1)*Math.PI/180)<-.6;
+   const rear=Math.cos((yaw-frontYaw)*Math.PI/180)<-.6;
    $('back-name').hidden=!rear;place($('back-name'),bodyScreen(0,318,-81));
    place($('turn-milo'),bodyScreen(0,235,0));
  }

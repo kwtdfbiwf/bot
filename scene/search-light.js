@@ -24,8 +24,8 @@ async function prepareSearchLight(root,meshes,options={}){
        }
        // The same fixed camera projection as screenPoint, evaluated at EVERY
        // surface fragment, not at the object's centre. Independent of DPR.
-       const a=25.1*Math.PI/180,b=-10.4*Math.PI/180,c=4.442*Math.PI/180;
-       const d=tsl.positionWorld.sub(tsl.vec3(370,360,790));
+       const a=11*Math.PI/180,b=-11*Math.PI/180,c=2.12409883794*Math.PI/180;
+       const d=tsl.positionWorld.sub(tsl.vec3(200,420,1100));
        const yy=d.y.mul(Math.cos(b)).add(d.z.mul(Math.sin(b)));
        const zz=d.y.mul(-Math.sin(b)).add(d.z.mul(Math.cos(b)));
        const xx=d.x.mul(Math.cos(a)).sub(zz.mul(Math.sin(a)));

@@ -45,7 +45,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
    const expected={play:'play',seed:'finding',name:'name-search',water:'water-find',moth:'moth-coax',cap:'collection-find',shelf:'shelf-find',dust:'shelf-cleaning',home:'shelf-home',room:'shelf-home'};
    assert.equal(body.dataset.phase,'lit');assert.equal(body.dataset.chapter,expected[previewMode]);
    assert.equal($('wake').hidden,true,'Preview must never show the wake button');
-   assert.equal(writes.get('Home Room').visible,previewMode==='room','Only the explicit room preview may reveal the shell');
+   assert.equal(writes.get('Interior Home').visible,previewMode==='room','Only the explicit room preview may reveal the shell');
    if(['dust','home'].includes(previewMode))assert.equal(writes.get('Cozy Shelf').visible,true);
    if(['home','room'].includes(previewMode)){
      assert.equal(writes.get('Cozy Shelf Dust').visible,false);assert.equal($('shelf-book').hidden,false);
@@ -62,10 +62,10 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
    await $('preview-home').onclick();await advance(.2);
    assert.equal(writes.get('Cozy Shelf Dust').visible,false);
    assert.equal(body.dataset.chapter,'shelf-home');
-   await $('preview-room').onclick();assert.equal(writes.get('Home Room').visible,true);
+   await $('preview-room').onclick();assert.equal(writes.get('Interior Home').visible,true);
    await $('preview-water').onclick();await advance(.2);
-   assert.equal(writes.get('Home Room').visible,false,'A new task must hide the room shell again');
-   assert.equal(writes.get('Robot Portrait Camera').position.x,370,'A story task must restore the camera used by cursor lighting');
+   assert.equal(writes.get('Interior Home').visible,false,'A new task must hide the room shell again');
+   assert.equal(writes.get('Robot Portrait Camera').position.x,200,'A story task must restore the camera used by cursor lighting');
    assert.equal(body.dataset.chapter,'water-find');assert.equal(writes.get('Cozy Shelf').visible,false);
    assert.equal(writes.get('Blue Bottle Cap').visible,false);assert.equal(writes.get('Keepsake Box').visible,false);
    await advance(10);assert.equal(body.dataset.chapter,'water-find','Old chapter dialogue must not continue after a jump');
@@ -93,7 +93,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  $('switch').onpointerdown({pointerId:41,button:0,clientY:250,currentTarget:$('switch')});
  for(const fn of events.pointermove)fn({pointerId:41,clientX:1050,clientY:290});
  const beforeLight=updateCount;for(const fn of events.pointerup)fn({pointerId:41});assert.equal(updateCount,beforeLight,'The switch must not trigger first-render scene updates');assert.equal(writes.get('Robot').visible,true);
- await until(()=>body.dataset.chapter==='play');assert.equal($('pet').hidden,false);assert.equal(writes.get('Robot').rotation.y,25.1,'The whole robot must face the viewer');
+ await until(()=>body.dataset.chapter==='play');assert.equal($('pet').hidden,false);assert.equal(writes.get('Robot').rotation.y,11,'The whole robot must face the viewer');
  await advance(4);
  const headTarget=project(0,310,80);for(const fn of events.pointermove)fn({clientX:headTarget.x,clientY:headTarget.y});await advance(.4);
  assert(Math.abs(writes.get('Robot Arm Pivot 1').rotation.z)<2,'Hovering near his head must not raise an arm');
@@ -326,7 +326,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  await checkLightFind('shelf-find','Cozy Shelf');
  assert.equal(writes.get('Cozy Shelf Dust').visible,false,'Dust must not glow outside the cursor beam during the search');
  const fixedShelfPosition={...writes.get('Cozy Shelf').position},fixedShelfScale={...writes.get('Cozy Shelf').scale};
- assert.equal(writes.get('Home Room').visible,false,'Cursor searches must never expose the room');
+ assert.equal(writes.get('Interior Home').visible,false,'Cursor searches must never expose the room');
  $('shelf-find').onclick();await until(()=>body.dataset.chapter==='shelf-cleaning');await advance(3);
  assert.equal(writes.get('Cozy Shelf Dust').visible,true);
  assert.deepEqual(writes.get('Cozy Shelf').position,fixedShelfPosition,'Discovering must not move the shelf');
@@ -355,7 +355,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  await until(()=>body.dataset.chapter==='shelf-home');await advance(.3);
  assert.deepEqual(writes.get('Cozy Shelf').position,fixedShelfPosition,'Cleaning must not slide the shelf across the room');
  assert.deepEqual(writes.get('Cozy Shelf').scale,fixedShelfScale);
- assert.equal(writes.get('Home Room').visible,false,'Completing a task must not reveal unearned room geometry');
+ assert.equal(writes.get('Interior Home').visible,false,'Completing a task must not reveal unearned room geometry');
  assert.equal(writes.get('Cozy Shelf').position.x,-235);assert.equal(writes.get('Cozy Shelf').position.y,0);assert.equal(writes.get('Cozy Shelf').scale.x,1.35);
  assert.equal(writes.get('Cozy Shelf Dust').visible,false);assert.equal(writes.get('Blue Bottle Cap').visible,true);assert.equal(writes.get('Garden Moth').visible,true);
  assert.equal([...objects.keys()].filter(name=>name==='Cozy Shelf Book').length,1,'The shelf must already contain exactly one book');

@@ -13,7 +13,7 @@ be lifted by dragging. Pointer, touch, and keyboard interactions are supported.
 
 For checking updates, click inside the game and press **Shift + P** to open
 the hidden chapter preview menu. Choose any checkpoint, including finding,
-cleaning, or inspecting the shelf. Choose **Room model** to inspect the timber floor, A-frame and roof together; this overview is only in the preview menu. **Escape** closes the menu; **Restart story**
+cleaning, or inspecting the shelf. Choose **Inside the home** to inspect the full furnished interior. The camera stays inside the room and fills the screen; it never pulls out to show a tiny house. This assembled view is only in the preview menu so story searches still reveal only the active find. **Escape** closes the menu; **Restart story**
 returns to the black opening. Jumps reset scene state without reloading the
 Spline frame. Refreshing the site always starts the ordinary story.
 
@@ -23,8 +23,9 @@ Spline frame. Refreshing the site always starts the ordinary story.
   inlined into `opening.html` so the Spline export is self contained.
 - `scene/hanging-light.js` and `.css`: discoverable hanging pull cord and native keyboard activation, inlined into the opening.
 - `scene/search-light.js`: per-surface cursor beam for hidden collectibles; matte clay stays opaque and dark outside the soft beam.
-- `scene/room-models.js`: native timber floor, A-frame and roof model, authored as separate named groups under `Home Room`. Kept hidden during normal play.
-- `scene/room-layout.js`: permanent furniture anchors, room visibility and author overview camera. Active searches illuminate only the current object, without revealing the hidden room structure.
+- `scene/room-models.js`: previous blockout, retained hidden under `Home Room`.
+- `scene/interior/`: the detailed furnished attic. Prefix each numbered authoring batch with `helpers.js`, then run 01–09 in order in Spline. Includes real wood planks and rafters, triangular glazing and trim, two beds with upholstery and stitching, writing desk and drawers, books, ceramic lamp, draped bulb cables, framed lantern, arched brass-bound chest, standing mirror with an authored warm reflection for the fixed camera, woven fringed rug, slippers, magnifier, satchel, boots and earthenware. One `Interior Home` root controls assembled-room visibility.
+- `scene/room-layout.js`: permanent furniture anchors, room visibility and the fixed interior camera at (200, 420, 1100). Uses the same projection as the cursor beam and hand targets. Active searches illuminate only the current object, without revealing the hidden room structure.
 - `scene/level-camera.js`: camera roll correction for level ground; the overlay uses matching projections.
 - `scene/preview-navigation.js` and `.css`: hidden chapter selector and scene reset, inlined into the opening.
 - `scene/circular-blue-eyes.js`: eye changes applied in the Spline editor.

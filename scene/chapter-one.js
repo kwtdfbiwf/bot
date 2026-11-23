@@ -11,11 +11,11 @@ function choice(text,fn){const b=$('choice');b.textContent=text;b.hidden=false;b
 // Project world positions through the existing portrait camera. UI follows the
 // same fixed framing at every aspect ratio, including narrow touch screens.
 function screenPoint(x,y,z){
- const a=25.1*Math.PI/180,b=-10.4*Math.PI/180,dx=x-370,dy=y-360,dz=z-790;
+ const a=11*Math.PI/180,b=-11*Math.PI/180,dx=x-200,dy=y-420,dz=z-1100;
  const yy=Math.cos(b)*dy+Math.sin(b)*dz,zz=-Math.sin(b)*dy+Math.cos(b)*dz;
  const xx=Math.cos(a)*dx-Math.sin(a)*zz,depth=-(Math.sin(a)*dx+Math.cos(a)*zz);
  const f=innerHeight/(2*Math.tan(45*Math.PI/360));
- const roll=4.442*Math.PI/180;
+ const roll=2.12409883794*Math.PI/180;
  return {x:innerWidth/2+(Math.cos(roll)*xx+Math.sin(roll)*yy)*f/depth,y:innerHeight/2-(-Math.sin(roll)*xx+Math.cos(roll)*yy)*f/depth};
 }
 function place(el,p){el.style.left=p.x+'px';el.style.top=p.y+'px';}
@@ -28,7 +28,7 @@ window.addEventListener('resize',layoutChapter);
 // The assets are authored meshes in the Spline file, not runtime primitives.
 // Inverse of screenPoint, including the roll correction that levels the floor.
 function cameraRay(x,y){
- const a=25.1*Math.PI/180,b=-10.4*Math.PI/180,c=4.442*Math.PI/180,tan=Math.tan(45*Math.PI/360);
+ const a=11*Math.PI/180,b=-11*Math.PI/180,c=2.12409883794*Math.PI/180,tan=Math.tan(45*Math.PI/360);
  const sx=(x-innerWidth/2)/(innerHeight/2)*tan,sy=-(y-innerHeight/2)/(innerHeight/2)*tan;
  const cx=Math.cos(c)*sx-Math.sin(c)*sy,cy=Math.sin(c)*sx+Math.cos(c)*sy;
  const zz=-Math.sin(a)*cx-Math.cos(a),rx=Math.cos(a)*cx-Math.sin(a);
@@ -36,9 +36,9 @@ function cameraRay(x,y){
 }
 function positionSeed(x,y,carrying=false){
  if(!seedModel)return;
- const r=cameraRay(x,y),depth=carrying?420:(7-360)/r.y;
+ const r=cameraRay(x,y),depth=carrying?420:(7-420)/r.y;
  const f=innerHeight/(2*Math.tan(45*Math.PI/360)),size=18*depth/(f*26);
- update(seedModel.id,{position:{x:370+depth*r.x,y:360+depth*r.y,z:790+depth*r.z},scale:{x:size,y:size,z:size}});
+ update(seedModel.id,{position:{x:200+depth*r.x,y:420+depth*r.y,z:1100+depth*r.z},scale:{x:size,y:size,z:size}});
 }
 function seedBrightness(amount){if(seedShell)update(seedShell.id,{material:{alpha:amount*100}});}
 let revealFocus='';
