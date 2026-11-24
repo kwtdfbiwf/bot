@@ -56,6 +56,28 @@ function distanceToStroke(p,a,b){
  const dx=b.x-a.x,dy=b.y-a.y,t=clamp(((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1));
  return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy);
 }
+let shelfDustPuffs=[],shelfPuffIndex=0,shelfPuffAt=-1000;
+function showShelfCloth(x,y){
+ const cloth=$('shelf-cloth');cloth.hidden=false;place(cloth,{x,y});
+}
+function clearShelfFeedback(){
+ $('shelf-cloth').hidden=true;
+ for(const puff of shelfDustPuffs)puff.animation?.cancel?.();
+}
+function puffShelfDust(x,y){
+ if(performance.now()-shelfPuffAt<55)return;shelfPuffAt=performance.now();
+ if(!shelfDustPuffs.length)for(let i=0;i<12;i++){
+   const element=document.createElement('i');$('shelf-dust-puffs').append(element);shelfDustPuffs.push({element});
+ }
+ for(let i=0;i<3;i++){
+   const puff=shelfDustPuffs[shelfPuffIndex++%shelfDustPuffs.length],sign=i%2?1:-1;
+   puff.animation?.cancel?.();puff.element.style.left=x+sign*(5+i*3)+'px';puff.element.style.top=y-3+'px';
+   puff.animation=puff.element.animate?.([
+     {opacity:.8,transform:'translate(0,0) scale(.7)'},
+     {opacity:0,transform:`translate(${reduced?0:sign*(14+i*7)}px,${reduced?0:-20-i*6}px) scale(1.5)`}
+   ],{duration:reduced?180:650,easing:'ease-out'});
+ }
+}
 function wipeShelf(a,b){
  if(chapter!=='shelf-cleaning'||Math.hypot(b.x-a.x,b.y-a.y)<2)return;
  let changed=false;
@@ -65,30 +87,36 @@ function wipeShelf(a,b){
    const p=shelfPoint(dust.point.x,dust.point.y,dust.point.z),near=distanceToStroke(p,a,b);
    if(near>=brush)continue;
    dust.clean=clamp(dust.clean+(1-near/brush)*Math.min(1,Math.hypot(b.x-a.x,b.y-a.y)/18));changed=true;
-   update(dust.object.id,{visible:dust.clean<.98,material:{layers:[{type:'texture',alpha:85*(1-dust.clean)}]}});
+   update(dust.object.id,{visible:dust.clean<.98,material:{layers:[{type:'texture',alpha:100*(1-dust.clean)}]}});
  }
+ if(changed)puffShelfDust(b.x,b.y);
  if(changed&&!shelfFirstWipe){shelfFirstWipe=true;speak('Oh. That’s the wood underneath.');}
  if(shelfDust.every(d=>d.clean>=.9))finishShelfCleaning();
 }
 function finishShelfCleaning(){
  if(chapter!=='shelf-cleaning')return;
- shelfWipe=null;document.body.dataset.shelfWiping='false';
+ shelfWipe=null;document.body.dataset.shelfWiping='false';clearShelfFeedback();
  for(const d of shelfDust){d.clean=1;update(d.object.id,{visible:false});}
  update(shelfDustRoot.id,{visible:false});enter('shelf-ready');objective('');$('shelf-clean').hidden=true;
  speak('There’s a book already.',()=>speak('And room for more.',()=>{if(chapter==='shelf-ready')placeShelf();}));
 }
 $('shelf-clean').onpointerdown=e=>{
  if(e.button>0||chapter!=='shelf-cleaning')return;
- e.currentTarget.setPointerCapture?.(e.pointerId);
+ e.currentTarget.setPointerCapture?.(e.pointerId);showShelfCloth(e.clientX,e.clientY);
  shelfWipe={id:e.pointerId,x:e.clientX,y:e.clientY,el:e.currentTarget};document.body.dataset.shelfWiping='true';
 };
 $('shelf-clean').onkeydown=e=>{
  if(chapter!=='shelf-cleaning'||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter',' '].includes(e.key))return;
  e.preventDefault();
  const remaining=shelfDust.filter(d=>d.clean<.9),dust=remaining[shelfKeyboardRow++%remaining.length];
- if(dust){const p=shelfPoint(dust.point.x,dust.point.y,dust.point.z);wipeShelf({x:p.x-24,y:p.y},{x:p.x+24,y:p.y});}
+ if(dust){const p=shelfPoint(dust.point.x,dust.point.y,dust.point.z);showShelfCloth(p.x,p.y);after(.5,()=>{if(!shelfWipe)$('shelf-cloth').hidden=true;});wipeShelf({x:p.x-24,y:p.y},{x:p.x+24,y:p.y});}
 };
 window.addEventListener('pointermove',e=>{
+ if(chapter==='shelf-cleaning'){
+   const top=shelfPoint(0,104,0),bottom=shelfPoint(0,0,0),left=shelfPoint(-60,48,0),right=shelfPoint(60,48,0);
+   const over=e.clientX>left.x-12&&e.clientX<right.x+12&&e.clientY>top.y-12&&e.clientY<bottom.y+12;
+   if(over||shelfWipe)showShelfCloth(e.clientX,e.clientY);else $('shelf-cloth').hidden=true;
+ }
  if(shelfWipe&&e.pointerId===shelfWipe.id){
    const a={x:shelfWipe.x,y:shelfWipe.y},b={x:e.clientX,y:e.clientY};wipeShelf(a,b);
    if(shelfWipe){shelfWipe.x=b.x;shelfWipe.y=b.y;}
@@ -96,7 +124,7 @@ window.addEventListener('pointermove',e=>{
 });
 function releaseShelf(e){
  if(shelfWipe&&(e.pointerId===undefined||e.pointerId===shelfWipe.id)){
-   try{shelfWipe.el.releasePointerCapture?.(shelfWipe.id);}catch{}shelfWipe=null;document.body.dataset.shelfWiping='false';
+   try{shelfWipe.el.releasePointerCapture?.(shelfWipe.id);}catch{}shelfWipe=null;document.body.dataset.shelfWiping='false';clearShelfFeedback();
  }
 }
 window.addEventListener('pointerup',releaseShelf);

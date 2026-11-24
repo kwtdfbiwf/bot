@@ -348,7 +348,9 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  for(const fn of events.pointermove)fn({pointerId:30,clientX:first.x,clientY:first.y});await advance(.3);
  assert.equal(writes.get('Shelf Dust 0')?.material,undefined,'Hovering alone must not clean the shelf');
  $('shelf-clean').onpointerdown({pointerId:30,button:0,currentTarget:$('shelf-clean'),clientX:first.x-22,clientY:first.y});
+ assert.equal($('shelf-cloth').hidden,false,'Dragging must show the cloth under the pointer');
  for(const fn of events.pointermove)fn({pointerId:30,clientX:first.x+22,clientY:first.y});
+ assert($('shelf-dust-puffs').children.length>0,'Removing dust must produce visible dust feedback');
  for(const fn of events.pointercancel)fn({pointerId:30});
  assert(writes.get('Shelf Dust 0').material.layers[0].alpha<85,'A stroke must expose wood only where it passes');
  assert.equal(writes.get('Shelf Dust 25')?.material,undefined,'An untouched upright must retain its dust');
@@ -361,6 +363,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  }else for(let i=0;i<52&&body.dataset.chapter==='shelf-cleaning';i++)$('shelf-clean').onkeydown({key:'ArrowRight',preventDefault(){}});
  assert.equal(body.dataset.chapter,'shelf-ready','Both scrubbing and keyboard strokes must clean every region');
  assert.equal(writes.get('Cozy Shelf Dust').visible,false);
+ assert.equal($('shelf-cloth').hidden,true,'Completing the cleaning must clear the cloth');
  for(let i=0;i<dustLayout.length;i++)assert.equal(writes.get('Shelf Dust '+i).visible,false,'Cleaned dust must stay gone');
  // The shelf is cleaned where it stands, without a carry/place stage.
  assert.equal($('shelf-clean').hidden,true);

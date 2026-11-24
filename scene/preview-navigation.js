@@ -21,7 +21,7 @@ async function resetPreview(){
  await Promise.all([plantBoot,twoBoot,waterBoot,collectionBoot,shelfBoot,roomBoot]);
  if(!plantReady||!twoReady||!waterReady||!collectionReady||!shelfReady)throw new Error('Preview assets are not ready');
  clearTimeout(typing);tasks.length=0;speechTyping=false;speechUntil=0;
- releaseArm({});releaseTurn({});releaseCan({type:'pointercancel'});releaseCollectionDrag({},true);releaseShelf({},true);
+ releaseArm({});releaseTurn({});releaseCan({type:'pointercancel'});releaseCollectionDrag({},true);releaseShelf({},true);clearShelfFeedback();
  // Release handlers may schedule a return gesture; discard those too.
  tasks.length=0;enter('waiting');setPhase('boot');armDrag=null;turnDrag=null;canDrag=null;collectionDrag=null;shelfWipe=null;
  reaction='';reactionAt=-100;happyAt=-100;collectionHappyAt=-100;armDialogueAt=-100;
@@ -48,7 +48,7 @@ async function resetPreview(){
  await update(wateringCan.id,{rotation:{x:0,y:0,z:0}});
  await update(blueCap.id,{rotation:{x:0,y:0,z:0}});
  await update(collectionLid.id,{rotation:{x:0,y:0,z:0}});
- for(const d of shelfDust){d.clean=0;await update(d.object.id,{visible:true,material:{layers:[{type:'texture',alpha:85}]}});}
+ for(const d of shelfDust){d.clean=0;await update(d.object.id,{visible:true,material:{layers:[{type:'texture',alpha:100}]}});}
  for(const side of [-1,1])write('Robot Leg Pivot '+side,{position:{y:100},rotation:{x:0,y:0,z:0}});
  await showRoomModel(false);enter('waiting');setPhase('boot');
 }

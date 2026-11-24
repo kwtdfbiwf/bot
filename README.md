@@ -6,7 +6,7 @@ Live website: https://kwtdfbiwf.github.io/bot/
 
 The opening leads into cursor play, finding a seed, planting it beside Milo,
 growing a plant with your light, and a quiet seated ending. Continue by finding the name stamped on Milo’s
-back, choosing his name, helping him water the plant, and meeting a moth drawn to its new flower. After the moth settles, find a blue bottle cap and help Milo keep it in his first box. The next find is a small wooden shelf with one green book already on it: scrub away local dust where it stands in the room. The shelf stays in its permanent position through discovery, cleaning and the ending. Hidden finds are revealed by the cursor light. Give the can to Milo’s right hand, then drag that hand toward the plant. His body turns with the guided reach; he pours only over the soil. Cursor gaze is active during object searches, with eye contact during dialogue. His arms can
+back, choosing his name, helping him water the plant, and meeting a moth drawn to its new flower. After the moth settles, find a blue bottle cap and help Milo keep it in his first box. The next find is a small wooden shelf with one green book already on it: scrub away a pale dust coating where it stands in the room. A cloth cursor and small dust puffs respond to each stroke, exposing the warm wood beneath. The shelf stays in its permanent position through discovery, cleaning and the ending. Hidden finds are revealed by the cursor light. Give the can to Milo’s right hand, then drag that hand toward the plant. His body turns with the guided reach; he pours only over the soil. Cursor gaze is active during object searches, with eye contact during dialogue. His arms can
 be lifted by dragging. Pointer, touch, and keyboard interactions are supported.
 
 ## Source
@@ -36,6 +36,7 @@ Spline frame. Refreshing the site always starts the ordinary story.
 - `scene/collection-models.js`: blue crimped cap, keepsake box, and hinged collection hatch.
 - `scene/shelf-models.js`: one-time Spline shelf and single-book builder, including a locally drawn wood-grain texture.
 - `scene/shelf-refinement.js`: run after the shelf builder, before the dust builder, to give the existing frame its compact proportions, rounded overhanging top, gently splayed legs, sculpted edges and directional walnut grain with knots.
+- `scene/shelf-dust-clarity.js`: one-time upgrade for an existing original dust build; strengthens the coating and adds the front-lip decals. The current full dust builder already includes these changes.
 - `scene/shelf-dust-layout.js`: surface patch positions shared by the dust builder and cleaning interaction. Run it before `scene/shelf-dust-models.js` when authoring the feathered dust decals.
 - `scene/clay-props.js`: final prop remodeling pass; apply after the base model scripts. Preserves object names and interaction anchors while adding rounded clay forms and muted pastel materials.
 - `scene/story-outline.json`: accepted story direction and implemented/planned chapter beats.
