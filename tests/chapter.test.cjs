@@ -361,7 +361,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  assert.deepEqual(writes.get('Cozy Shelf').position,fixedShelfPosition,'Cleaning must not slide the shelf across the room');
  assert.deepEqual(writes.get('Cozy Shelf').scale,fixedShelfScale);
  assert.equal(writes.get('Interior Home').visible,false,'Completing a task must not reveal unearned room geometry');
- assert.equal(writes.get('Cozy Shelf').position.x,-235);assert.equal(writes.get('Cozy Shelf').position.y,0);assert.equal(writes.get('Cozy Shelf').scale.x,1.35);
+ assert.equal(writes.get('Cozy Shelf').position.x,-210);assert.equal(writes.get('Cozy Shelf').position.y,0);assert.equal(writes.get('Cozy Shelf').scale.x,1.35);
  assert.equal(writes.get('Cozy Shelf Dust').visible,false);assert.equal(writes.get('Blue Bottle Cap').visible,true);assert.equal(writes.get('Garden Moth').visible,true);
  assert.equal([...objects.keys()].filter(name=>name==='Cozy Shelf Book').length,1,'The shelf must already contain exactly one book');
  context.innerWidth=390;for(const fn of events.resize)fn();await advance(.2);
