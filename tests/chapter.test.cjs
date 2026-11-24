@@ -43,6 +43,13 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
    assert.equal(material.transparent,false);assert.equal(material.opacity,1);
    assert.equal(material.depthWrite,true);assert.equal(material.depthTest,true);
  }
+ // These writes must override an older cached native furniture layout.
+ assert.equal(writes.get('Interior Rust Bed').position.x,215);
+ assert.equal(writes.get('Interior Travel Chest').position.x,35);
+ assert.equal(writes.get('Interior Standing Mirror').position.x,420);
+ assert.equal(writes.get('Interior Standing Mirror').scale.x,.74);
+ assert.equal(writes.get('Interior Tipped Cup').position.y,53.6);
+ assert.equal(writes.get('Interior Folded Blanket').position.z,318);
  if(previewMode){
    await $('preview-'+previewMode).onclick();
    if(previewMode==='dust')await until(()=>body.dataset.chapter==='shelf-cleaning');
