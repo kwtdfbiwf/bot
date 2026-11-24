@@ -1109,6 +1109,22 @@ async function prepareRoom(){
  const oldShell=await spline.findObjectByName('Home Room');
  if(!homeRoom||!roomCamera||!roomGround)throw new Error('Missing furnished interior');
  if(oldShell)await update(oldShell.id,{visible:false});
+ // The layered contour pass leaks room edges across Milo. Give the three
+ // closed head meshes opaque depth-writing surfaces instead.
+ for(const [name,color] of [['Head Shell','#eee5d5'],['Head Bezel','#343d50'],['Head Screen','#7793b5']]){
+   const head=await spline.findObjectByName(name);
+   if(!head)continue;
+   try{
+     await spline.setMaterial(head.id,three=>{
+       const material=new three.MeshStandardNodeMaterial();
+       material.color=new three.Color(color);material.roughness=.7;material.metalness=0;
+       material.transparent=false;material.opacity=1;material.depthWrite=true;material.depthTest=true;
+       return material;
+     });
+   }catch{
+     await update(head.id,{material:{alpha:100,layers:[{type:'color',alpha:100},{type:'light',alpha:100}]}});
+   }
+ }
  // HDR filaments give the reference's small bulbs a genuine soft bloom,
  // without increasing ambient exposure over the entire room.
  if(spline.createCustomMaterial&&spline.setMaterial){

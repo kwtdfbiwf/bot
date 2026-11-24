@@ -14,7 +14,7 @@ class Element{
 }
 for(const m of html.matchAll(/id="([^"]+)"/g))elements.set(m[1],new Element(m[1]));
 const body=new Element('body'),root=new Element('root');
-const spline={ready:Promise.resolve(),async createCustomMaterial(factory){return factory(three)},async setMaterial(id,m){shaderMaterials.set(id,m);return m},async findObjectByName(name){if(!objects.has(name))objects.set(name,{id:name,name,position:{x:0,y:name.startsWith('Robot Leg')?100:102,z:0}});return objects.get(name)},async updateObject(id,props){updateCount++;if(traceHead&&id==='Robot Head Pivot'&&Number.isFinite(props.rotation?.y))pickupHead.push(props.rotation.y);writes.set(id,merge(writes.get(id)||{},props));return true},async createObject(type,props){const o={id:props.name,...props};objects.set(o.id,o);writes.set(o.id,props);return o}};
+const spline={ready:Promise.resolve(),async createCustomMaterial(factory){return factory(three)},async setMaterial(id,m){if(typeof m==="function")m=m(three);shaderMaterials.set(id,m);return m},async findObjectByName(name){if(!objects.has(name))objects.set(name,{id:name,name,position:{x:0,y:name.startsWith('Robot Leg')?100:102,z:0}});return objects.get(name)},async updateObject(id,props){updateCount++;if(traceHead&&id==='Robot Head Pivot'&&Number.isFinite(props.rotation?.y))pickupHead.push(props.rotation.y);writes.set(id,merge(writes.get(id)||{},props));return true},async createObject(type,props){const o={id:props.name,...props};objects.set(o.id,o);writes.set(o.id,props);return o}};
 const previewMode=(process.argv[2]||'').startsWith('preview:')?process.argv[2].slice(8):'';
 let reloads=0;
 const context={console,spline,Math,Promise,Error,localStorage:{getItem:k=>savedNames.get(k),setItem:(k,v)=>savedNames.set(k,v)},document:{body,documentElement:root,hidden:false,getElementById:id=>elements.get(id),createElement:()=>new Element('span'),createTextNode:text=>text},innerWidth:1280,innerHeight:720,performance:{now:()=>now},matchMedia:()=>({matches:false}),location:{reload(){reloads++}},requestAnimationFrame:fn=>{rafs.push(fn)},setTimeout:(fn,delay=0)=>{const id=++timerId;queue.push({id,at:now+delay,fn});return id},clearTimeout:id=>{queue=queue.filter(t=>t.id!==id)},window:{addEventListener:(name,fn)=>{(events[name]??=[]).push(fn)}}};
@@ -38,6 +38,11 @@ async function checkLightFind(controlId,objectId){
 async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(predicate())return;await advance(.1)}throw Error('Timed out at phase '+body.dataset.phase+' / '+body.dataset.chapter)}
 (async()=>{
  await advance(2);
+ for(const name of ["Head Shell","Head Bezel","Head Screen"]){
+   const material=shaderMaterials.get(name);assert(material,name+" must have an opaque surface");
+   assert.equal(material.transparent,false);assert.equal(material.opacity,1);
+   assert.equal(material.depthWrite,true);assert.equal(material.depthTest,true);
+ }
  if(previewMode){
    await $('preview-'+previewMode).onclick();
    if(previewMode==='dust')await until(()=>body.dataset.chapter==='shelf-cleaning');

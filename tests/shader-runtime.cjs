@@ -19,4 +19,4 @@ const tsl={vec2:vector,vec3:vector,float:v=>new Node(()=>v),positionWorld:new No
  smoothstep(lo,hi,x){return new Node(()=>{const t=Math.max(0,Math.min(1,(raw(x)-lo)/(hi-lo)));return t*t*(3-2*t)})},
  mix(a,b,t){return a.add(b.sub(a).mul(t))}};
 
-module.exports={sample,three:{tsl,Vector2,Color,MeshBasicNodeMaterial:class{},DoubleSide:2}};
+module.exports={sample,three:{tsl,Vector2,Color,MeshBasicNodeMaterial:class{},MeshStandardNodeMaterial:class{},DoubleSide:2}};
