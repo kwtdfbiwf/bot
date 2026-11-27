@@ -82,7 +82,7 @@ async function prepareRoom(){
 }
 const roomBoot=prepareRoom();
 async function showRoomModel(visible){
- await roomBoot;roomPreview=visible;document.body.dataset.roomPreview=String(visible);
+ await roomBoot;if(visible)await revealCompleteHome();roomPreview=visible;document.body.dataset.roomPreview=String(visible);
  await update(homeRoom.id,{visible});
  await update(roomGround.id,{visible:!visible});
  // Opening the full model reveals the furnishings, never an outside camera.

@@ -1,4 +1,5 @@
 // Chapter one runs inside the opening's async function, using its cached rig.
+const storyCamera={x:200,y:420,z:1100};
 let chapter='waiting',chapterTime=0,chapterAt=0,lastFrame=0,playCount=0;
 let pointerX=innerWidth/2,pointerY=innerHeight/2,lastPointerAt=0,reactionAt=-100,reaction='';
 let growth=0,lightPinned=false,plant=null,leafLeft=null,leafRight=null,newLeaf=null,stem=null,seedModel=null,seedShell=null;
@@ -11,7 +12,7 @@ function choice(text,fn){const b=$('choice');b.textContent=text;b.hidden=false;b
 // Project world positions through the existing portrait camera. UI follows the
 // same fixed framing at every aspect ratio, including narrow touch screens.
 function screenPoint(x,y,z){
- const a=11*Math.PI/180,b=-11*Math.PI/180,dx=x-200,dy=y-420,dz=z-1100;
+ const a=11*Math.PI/180,b=-11*Math.PI/180,dx=x-storyCamera.x,dy=y-storyCamera.y,dz=z-storyCamera.z;
  const yy=Math.cos(b)*dy+Math.sin(b)*dz,zz=-Math.sin(b)*dy+Math.cos(b)*dz;
  const xx=Math.cos(a)*dx-Math.sin(a)*zz,depth=-(Math.sin(a)*dx+Math.cos(a)*zz);
  const f=innerHeight/(2*Math.tan(45*Math.PI/360));

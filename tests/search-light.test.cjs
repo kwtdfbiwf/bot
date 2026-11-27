@@ -3,7 +3,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
 const {sample,three}=require('./shader-runtime.cjs');
 const applied=new Map();
-const context={console,Math,innerWidth:1280,innerHeight:720,pointerX:640,pointerY:360,
+const context={console,Math,storyCamera:{x:200,y:420,z:1100},innerWidth:1280,innerHeight:720,pointerX:640,pointerY:360,
  spline:{async createCustomMaterial(factory){return factory(three)},async setMaterial(id,m){applied.set(id,m)}}};
 vm.createContext(context);vm.runInContext(fs.readFileSync('scene/search-light.js','utf8')+'\nwindowTest={prepareSearchLight,driveSearchLight,releaseSearchLight};',context);
 (async()=>{

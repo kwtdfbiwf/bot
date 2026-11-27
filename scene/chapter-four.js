@@ -49,7 +49,8 @@ $('shelf-find').onclick=()=>{
  restoreFoundObject(cozyShelf,shelfMeshes);enter('shelf-arrive');
  $('shelf-find').hidden=true;$('spark').hidden=true;objective('');
  update(shelfDustRoot.id,{visible:true});
- speak('A little shelf.',()=>speak('It’s a bit dusty.'));
+ homeAfter(.95,()=>{if(chapter==='shelf-arrive')for(const i of [6,7]){shelfDust[i].clean=.3;update(shelfDust[i].object.id,{material:{layers:[{type:'texture',alpha:70}]}});}});
+ speak('Someone left a book.',()=>speak('And quite a lot of this.'));
  after(2,()=>{if(chapter==='shelf-arrive'){enter('shelf-cleaning');$('shelf-clean').hidden=false;$('shelf-clean').setAttribute('aria-label','Clean the dusty shelf');objective('Clean the shelf');}});
 };
 function distanceToStroke(p,a,b){
@@ -90,7 +91,7 @@ function wipeShelf(a,b){
    update(dust.object.id,{visible:dust.clean<.98,material:{layers:[{type:'texture',alpha:100*(1-dust.clean)}]}});
  }
  if(changed)puffShelfDust(b.x,b.y);
- if(changed&&!shelfFirstWipe){shelfFirstWipe=true;speak('Oh. That’s the wood underneath.');}
+ if(changed&&!shelfFirstWipe){shelfFirstWipe=true;speak('Oh. That’s the wood underneath.',()=>speak('Mine’s smaller.'));}
  if(shelfDust.every(d=>d.clean>=.9))finishShelfCleaning();
 }
 function finishShelfCleaning(){
@@ -133,13 +134,13 @@ window.addEventListener('blur',()=>releaseShelf({}));
 function placeShelf(){
  if(chapter!=='shelf-ready')return;
  enter('shelf-home');$('shelf-book').hidden=false;$('collect-cap').hidden=false;$('choice').hidden=true;
- speak('Our little corner.',()=>speak('We can put the next thing here.',()=>{$('pet').hidden=false;after(4,()=>{$('dialogue').hidden=true;});}));
+ speak('Our little corner.');homeAfter(4,()=>{if(chapter==='shelf-home')beginHomeStory();});
 }
-$('shelf-book').onclick=()=>{if(chapter==='shelf-home')speak('Maybe we can read it together.');};
+$('shelf-book').onclick=()=>{if(chapter==='shelf-home'||chapter==='home-quiet')speak('Maybe we can read it together.');};
 function shelfPose(p){
  if(!shelfStates())return p;
  p.headX=8;p.headY=-12;
- if(chapter==='shelf-arrive'){const g=pulse(chapterTime-chapterAt,0,.5,1.3,2);p.leftZ-=25*g;p.headZ-=3*g;}
+ if(chapter==='shelf-arrive'){const g=pulse(chapterTime-chapterAt,0,.5,1.3,2);p.leftZ-=35*g;p.leftX+=35*g;p.headZ-=3*g;}
  return p;
 }
 function shelfTick(dt){

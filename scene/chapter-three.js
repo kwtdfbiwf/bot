@@ -88,7 +88,7 @@ $('collect-cap').onclick=()=>{
 $('collect-cap').onfocus=()=>{if(chapter==='collection-find'){revealFocus='cap';revealFoundObject('cap',blueCap,[capEnamel],screenPoint(capAt.x,capAt.y,capAt.z));}};
 $('collect-box').onfocus=()=>{if(chapter==='collection-box-find'){revealFocus='box';revealFoundObject('box',keepsakeBox,boxMeshes,screenPoint(boxAt.x,boxAt.y+14,boxAt.z));}};
 $('collect-hand').onclick=giveKeepsake;
-$('collect-box').onclick=()=>{if(chapterTime>=collectionClickAfter)carryKeepsakeBox();};
+$('collect-box').onclick=()=>{if(chapter==='home-quiet'){homeComment('I like knowing where it is.');return;}if(chapterTime>=collectionClickAfter)carryKeepsakeBox();};
 $('collect-place').onclick=()=>{if(chapter==='collection-put-carry')storeCapInBox();else placeKeepsakeBox();};
 function startCollectionDrag(e,kind){
  const available=kind==='cap'?['collection-find','collection-carry','collection-offer','collection-put-carry']:['collection-box-find','collection-box-carry'];

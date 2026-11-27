@@ -52,7 +52,9 @@
         "Discover it at its permanent position in the room",
         "Wipe local patches of dust from the boards, book and uprights in place",
         "Keep the clean shelf where it stands",
-        "Inspect the book afterward"
+        "Inspect the book afterward",
+        "Milo leaves a small finger streak in the dust",
+        "Put the keepsake box on the clean middle shelf"
       ],
       "lastingChange": "A warm wooden shelf with its original book and empty space for future finds.",
       "dialogue": [
@@ -64,32 +66,46 @@
       ]
     },
     {
-      "id": "a-seat-for-you",
-      "status": "planned",
-      "find": "a broken little stool and its missing parts",
-      "action": "Hold pieces while Milo fits them together. He offers the finished stool to the player.",
-      "lastingChange": "A place for the player to return to."
+      "id": "something-underfoot",
+      "status": "implemented",
+      "find": "a rolled rug and loose thread",
+      "action": "Drag the rug open with Milo; straighten it or leave it crooked",
+      "lastingChange": "A rug and a softly revealed wooden floor"
     },
     {
-      "id": "a-roof-for-the-rain",
-      "status": "planned",
-      "find": "a roof panel, supports and a patch",
-      "action": "Build enough shelter for Milo and the collected belongings. Leave the plant just outside.",
-      "lastingChange": "A dry corner, with rain audible on the roof."
+      "id": "a-light-that-can-stay",
+      "status": "implemented",
+      "find": "a cable and lamp with a loose bulb",
+      "action": "Hold the lamp steady while Milo repairs it, then switch it on",
+      "lastingChange": "A warm lamp, cabinet and small patch of wall"
     },
     {
-      "id": "making-it-ours",
-      "status": "planned",
-      "find": "a chipped cup, a soft floor covering and a hanging ornament, found over separate visits",
-      "action": "Choose small arrangements together; repair useful finds and turn the cup into a planter.",
-      "lastingChange": "A gradually furnished home inspired by the warm wooden room."
+      "id": "somewhere-to-sit",
+      "status": "implemented",
+      "find": "a covered daybed",
+      "action": "Pull away the cover, wipe the seat, and replace the loose cushion",
+      "lastingChange": "Milo walks over and sits with independently bent knees"
     },
     {
-      "id": "an-ordinary-evening",
-      "status": "planned",
-      "action": "Return to the place you built together. Milo tends the plant and straightens the player’s stool without prompting.",
-      "dialogue": "I saved your spot.",
-      "ending": "A small playable home, with familiar objects, rain on the roof and the visiting moth."
+      "id": "make-it-comfortable",
+      "status": "implemented",
+      "find": "a folded blanket and slippers",
+      "action": "Choose the bed or Milo’s lap; both are welcome",
+      "lastingChange": "A comfortable corner with objects left where they were placed"
+    },
+    {
+      "id": "a-little-higher",
+      "status": "implemented",
+      "find": "a loose string-light connector",
+      "action": "Milo holds one end while you connect the plug and pull the cord",
+      "lastingChange": "Bulbs gradually reveal the timber ceiling and triangular window"
+    },
+    {
+      "id": "our-little-home",
+      "status": "implemented",
+      "find": "the things you found together",
+      "action": "Stay with Milo, inspect the book and box, move the blanket, or visit the plant",
+      "lastingChange": "An open quiet ending; unearned furniture stays hidden"
     }
   ]
 }

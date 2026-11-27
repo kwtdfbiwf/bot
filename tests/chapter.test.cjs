@@ -14,11 +14,13 @@ class Element{
 }
 for(const m of html.matchAll(/id="([^"]+)"/g))elements.set(m[1],new Element(m[1]));
 const body=new Element('body'),root=new Element('root');
-const spline={ready:Promise.resolve(),async createCustomMaterial(factory){return factory(three)},async setMaterial(id,m){if(typeof m==="function")m=m(three);shaderMaterials.set(id,m);return m},async findObjectByName(name){if(!objects.has(name))objects.set(name,{id:name,name,position:{x:0,y:name.startsWith('Robot Leg')?100:102,z:0}});return objects.get(name)},async updateObject(id,props){updateCount++;if(traceHead&&id==='Robot Head Pivot'&&Number.isFinite(props.rotation?.y))pickupHead.push(props.rotation.y);writes.set(id,merge(writes.get(id)||{},props));return true},async createObject(type,props){const o={id:props.name,...props};objects.set(o.id,o);writes.set(o.id,props);return o}};
+const homeFixtures=['Interior Home','Interior Floor Plank 0 0','Interior Back Wall Plank 8','Interior Roof Rafter -1 -230','Interior Sloped Ceiling -1 0','Interior Travel Chest','Interior Rust Bed','Interior Book Crate','Interior Practical Lamp','Interior Practical Near','Interior Table Lamp','Interior Lamp Foot','Interior Lamp Bulb','Interior Lamp Shade','Interior Bedside Cabinet','Interior Cabinet Body','Interior Daybed','Interior Cot Mattress','Interior Daybed Pillow','Interior Pillow Seam','Interior Fringed Rug','Interior Round Woven Rug','Interior Rug Fringe 0','Interior Window','Interior Window Sill','Interior Bulb Garlands','Interior Golden Bulb 0','Interior Golden Bulb 1','Interior Golden Bulb 2','Interior Draped Cable 0','Interior Slippers','Interior Slipper Sole -75','Home Story Props','Home Rolled Rug','Home Rug Roll Cloth','Home Loose Thread','Home Thread Loop','Home Lamp Cable','Home Cable Floor','Home Daybed Cover','Home Cover Fabric','Home Folded Blanket','Home Blanket Folded Cloth','Home Connector','Home Connector Socket','Home Loose Plug','Home Plug Body','Home Garland Pull','Home Pull Cord','Home Seat Dust',...Array.from({length:6},(_,i)=>'Home Seat Dust '+i)];
+const homeGroups=new Set(['Interior Home','Interior Travel Chest','Interior Rust Bed','Interior Book Crate','Interior Table Lamp','Interior Bedside Cabinet','Interior Daybed','Interior Fringed Rug','Interior Window','Interior Bulb Garlands','Interior Slippers','Home Story Props','Home Rolled Rug','Home Loose Thread','Home Lamp Cable','Home Daybed Cover','Home Folded Blanket','Home Connector','Home Loose Plug','Home Garland Pull','Home Seat Dust']);
+const spline={ready:Promise.resolve(),async getAllObjects(){for(const name of homeFixtures){const o=await spline.findObjectByName(name);o.type=homeGroups.has(name)?'Empty':'Mesh';}return [...objects.values()];},async createCustomMaterial(factory){return factory(three)},async setMaterial(id,m){if(typeof m==="function")m=m(three);shaderMaterials.set(id,m);return m},async findObjectByName(name){if(!objects.has(name))objects.set(name,{id:name,name,position:{x:0,y:name.startsWith('Robot Leg')?100:102,z:0}});return objects.get(name)},async updateObject(id,props){updateCount++;if(traceHead&&id==='Robot Head Pivot'&&Number.isFinite(props.rotation?.y))pickupHead.push(props.rotation.y);writes.set(id,merge(writes.get(id)||{},props));return true},async createObject(type,props){const o={id:props.name,...props};objects.set(o.id,o);writes.set(o.id,props);return o}};
 const previewMode=(process.argv[2]||'').startsWith('preview:')?process.argv[2].slice(8):'';
 let reloads=0;
 const context={console,spline,Math,Promise,Error,localStorage:{getItem:k=>savedNames.get(k),setItem:(k,v)=>savedNames.set(k,v)},document:{body,documentElement:root,hidden:false,getElementById:id=>elements.get(id),createElement:()=>new Element('span'),createTextNode:text=>text},innerWidth:1280,innerHeight:720,performance:{now:()=>now},matchMedia:()=>({matches:false}),location:{reload(){reloads++}},requestAnimationFrame:fn=>{rafs.push(fn)},setTimeout:(fn,delay=0)=>{const id=++timerId;queue.push({id,at:now+delay,fn});return id},clearTimeout:id=>{queue=queue.filter(t=>t.id!==id)},window:{addEventListener:(name,fn)=>{(events[name]??=[]).push(fn)}}};
-vm.createContext(context);vm.runInContext(html.split('<script>')[1].split('</script>')[0].replace('function screenPoint(', 'window.testProject=screenPoint;window.testPointAtHeight=pointAtHeight;window.testShelfPoint=shelfPoint;window.testDustLayout=()=>shelfDustLayout;function screenPoint('),context);
+vm.createContext(context);vm.runInContext(html.split('<script>')[1].split('</script>')[0].replace('function screenPoint(', 'window.testProject=screenPoint;window.testHomeHand=()=>projectedHand(lastPose,"right");window.testPointAtHeight=pointAtHeight;window.testShelfPoint=shelfPoint;window.testDustLayout=()=>shelfDustLayout;function screenPoint('),context);
 const $=id=>elements.get(id);
 const project=(x,y,z)=>context.window.testProject(x,y,z);
 async function advance(seconds){for(let i=0;i<Math.ceil(seconds*60);i++){now+=1000/60;for(let j=0;j<8;j++)await Promise.resolve();const due=queue.filter(t=>t.at<=now);queue=queue.filter(t=>t.at>now);due.forEach(t=>t.fn());const frames=rafs;rafs=[];frames.forEach(fn=>fn(now));}for(let j=0;j<12;j++)await Promise.resolve();}
@@ -50,14 +52,81 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  assert.equal(writes.get('Interior Standing Mirror').scale.x,.74);
  assert.equal(writes.get('Interior Tipped Cup').position.y,53.6);
  assert.equal(writes.get('Interior Folded Blanket').position.z,318);
+ if(['home','home-direct'].includes(process.argv[2])){
+   const dragMode=process.argv[2]==='home-direct';
+   async function homeDragTo(id,from,to){$('home-interact').onpointerdown({pointerId:id,button:0,currentTarget:$('home-interact'),clientX:from.x,clientY:from.y});for(const fn of events.pointermove)fn({pointerId:id,clientX:to.x,clientY:to.y});for(const fn of events.pointerup)fn({pointerId:id});await advance(.1);}
+   await $('preview-home').onclick();await advance(.2);$('choice').onclick();
+   await until(()=>body.dataset.chapter==='home-box'&&!$('home-interact').hidden);
+   // Moving a box to a shelf must take time; the cap travels inside it.
+   if(dragMode)await homeDragTo(110,project(-135,15,80),project(-180,80,-25));else{$('home-interact').onclick({detail:0});await advance(.4);assert(writes.get('Keepsake Box').position.y>0&&writes.get('Keepsake Box').position.y<80);}
+   await until(()=>body.dataset.chapter==='home-rug-find');
+   assert.equal(writes.get('Interior Travel Chest').visible,false,'Future furniture must stay hidden');
+   assert.equal(writes.get('Interior Roof Rafter -1 -230').visible,false);
+   await checkLightFind('home-find','Home Rolled Rug');$('home-find').onclick();await advance(.1);
+   assert.equal(body.dataset.chapter,'home-rug-unroll');
+   const rugStart=project(0,32,75);
+   $('home-interact').onpointerdown({pointerId:101,button:0,currentTarget:$('home-interact'),clientX:rugStart.x,clientY:rugStart.y});
+   for(const fn of events.pointermove)fn({pointerId:101,clientX:rugStart.x,clientY:rugStart.y+25});
+   for(const fn of events.pointercancel)fn({pointerId:101});
+   assert.equal(body.dataset.chapter,'home-rug-unroll','Cancelling a partial roll must not complete it');
+   if(dragMode)await homeDragTo(111,rugStart,project(0,32,555));else for(let i=0;i<6&&body.dataset.chapter==='home-rug-unroll';i++)$('home-interact').onclick({detail:0});
+   await until(()=>!$('home-choices').hidden);$(dragMode?'home-a':'home-b').onclick();
+   await until(()=>body.dataset.chapter==='home-cable-find');$('home-find').onclick();
+   await until(()=>body.dataset.chapter==='home-lamp-find');$('home-find').onclick();
+   await until(()=>body.dataset.chapter==='home-lamp-hold',30);
+   assert.equal(writes.get('Interior Cabinet Body').visible,false,'The cabinet is earned by repairing the lamp');
+   $('home-interact').onclick({detail:0});await advance(1);
+   assert.equal(body.dataset.chapter,'home-lamp-hold','Lamp repair must animate rather than complete on click');
+   await until(()=>body.dataset.chapter==='home-lamp-switch');$('home-interact').onclick({detail:0});
+   await until(()=>body.dataset.chapter==='home-bed-find',40);
+   assert.equal(writes.get('Interior Cabinet Body').visible,true);
+   assert.equal(writes.get('Interior Daybed').visible,false,'Only the cursor beam can reveal the next find');
+   $('home-find').onclick();await advance(5);
+   if(dragMode)await homeDragTo(112,project(-310,100,340),{x:project(-310,100,340).x-170,y:project(-310,100,340).y});else for(let i=0;i<5;i++)$('home-interact').onclick({detail:0});
+   assert.equal(body.dataset.chapter,'home-bed-clean');
+   if(dragMode){for(const x of [-510,-445,-380])for(const z of [90,260]){if(body.dataset.chapter!=='home-bed-clean')break;const q=project(x,109.4,z);await homeDragTo(113,{x:q.x-60,y:q.y},{x:q.x+60,y:q.y});}}else for(let i=0;i<16&&body.dataset.chapter==='home-bed-clean';i++)$('home-interact').onclick({detail:0});
+   assert.equal(body.dataset.chapter,'home-cushion');
+   if(dragMode)await homeDragTo(114,project(-280,40,235),project(-445,132,-5));else $('home-interact').onclick({detail:0});await advance(.4);
+   assert.equal(body.dataset.chapter,'home-cushion-settle','Replacing the cushion must animate');
+   await until(()=>body.dataset.chapter==='home-blanket-find',40);
+   assert(writes.get('Robot Leg Pivot 1').rotation.x<-60,'Milo must sit by bending his hips');
+   assert(writes.get('Leg 1 Shin').rotation.x>60,'His knees must bend independently of the hips');
+   assert.equal(writes.get('Interior Roof Rafter -1 -230').visible,false);
+   $('home-find').onclick();await until(()=>!$('home-choices').hidden);if(dragMode)await homeDragTo(115,project(-210,20,-431),project(-290,149,155));else $('home-b').onclick();
+   await until(()=>!$('home-choices').hidden);assert.equal(writes.get('Home Folded Blanket').position.y,149);
+   $('home-a').onclick();await until(()=>body.dataset.chapter==='home-connector-find');$('home-find').onclick();
+   await until(()=>body.dataset.chapter==='home-connect',60);
+   assert.equal(writes.get('Home Folded Blanket').position.y,113,'Milo must put a lap blanket down before standing');
+   if(dragMode){await advance(1);const h=context.window.testHomeHand();await homeDragTo(116,project(-280,185,-770),project(h.x,h.y,h.z));}else $('home-interact').onclick({detail:0});assert.equal(body.dataset.chapter,'home-pull');
+   const cord=project(-230,130,-770);
+   $('home-interact').onpointerdown({pointerId:102,button:0,currentTarget:$('home-interact'),clientX:cord.x,clientY:cord.y});
+   for(const fn of events.pointermove)fn({pointerId:102,clientX:cord.x,clientY:cord.y+20});
+   for(const fn of events.pointercancel)fn({pointerId:102});
+   assert.equal(body.dataset.chapter,'home-pull','A cancelled pull cannot light the room');
+   if(dragMode)await homeDragTo(117,cord,{x:cord.x,y:cord.y+50});else $('home-interact').onclick({detail:0});await advance(1);
+   assert.equal(writes.get('Interior Roof Rafter -1 -230').visible,true,'The structure should fade in with the bulbs');
+   await until(()=>body.dataset.chapter==='home-quiet',60);
+   assert.equal(writes.get('Interior Travel Chest').visible,false,'Unfound belongings remain hidden in the final home');
+   assert.equal(writes.get('Interior Daybed').visible,true);assert.equal(writes.get('Interior Slippers').visible,true);
+   assert.equal(writes.get('Robot').position.x,-335);assert.equal(writes.get('Robot Leg Pivot 1').position.y>120,true);
+   assert.equal($('objective').hidden,true);assert.equal($('home-choices').hidden,true);
+   assert.equal(writes.get('Keepsake Box').position.y,80);
+   context.innerWidth=390;context.innerHeight=844;for(const fn of events.resize)fn();await advance(.2);
+   const bedOnMobile=project(-445,109,155);assert(bedOnMobile.x>0&&bedOnMobile.x<390,'The daybed must remain reachable on a narrow screen');
+   context.innerWidth=1280;context.innerHeight=720;
+   await $('preview-water').onclick();await advance(8);
+   assert.equal(body.dataset.chapter,'water-find');assert.equal(writes.get('Robot').position.x,0);
+   assert.equal(writes.get('Interior Home').visible,false);assert.equal(writes.get('Leg 1 Shin').rotation.x,0,'Reset must straighten the knees');
+   console.log('PASS: full home sequence, gradual reveal, moving objects, knee rig, cancelled drags, quiet ending and reset');return;
+ }
  if(previewMode){
    await $('preview-'+previewMode).onclick();
    if(previewMode==='dust')await until(()=>body.dataset.chapter==='shelf-cleaning');
    await advance(.1);
-   const expected={play:'play',seed:'finding',name:'name-search',water:'water-find',moth:'moth-coax',cap:'collection-find',shelf:'shelf-find',dust:'shelf-cleaning',home:'shelf-home',room:'shelf-home'};
+   const expected={play:'play',seed:'finding',name:'name-search',water:'water-find',moth:'moth-coax',cap:'collection-find',shelf:'shelf-find',dust:'shelf-cleaning',home:'shelf-home',room:'shelf-home',rug:'home-rug-unroll',lamp:'home-lamp-approach',seat:'home-cover',blanket:'home-blanket-find',lights:'home-connect',cosy:'home-quiet'};
    assert.equal(body.dataset.phase,'lit');assert.equal(body.dataset.chapter,expected[previewMode]);
    assert.equal($('wake').hidden,true,'Preview must never show the wake button');
-   assert.equal(writes.get('Interior Home').visible,previewMode==='room','Only the explicit room preview may reveal the shell');
+   assert.equal(writes.get('Interior Home').visible,['room','rug','lamp','seat','blanket','lights','cosy'].includes(previewMode),'Only room checkpoints reveal the earned interior');
    if(['dust','home'].includes(previewMode))assert.equal(writes.get('Cozy Shelf').visible,true);
    if(['home','room'].includes(previewMode)){
      assert.equal(writes.get('Cozy Shelf Dust').visible,false);assert.equal($('shelf-book').hidden,false);
@@ -377,7 +446,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
  context.innerWidth=390;for(const fn of events.resize)fn();await advance(.2);
  assert(shelfProject(-55,60,0).x>0&&shelfProject(55,60,0).x<390,'The placed shelf must remain fully on-screen on mobile');
  context.innerWidth=1280;for(const fn of events.resize)fn();await advance(.2);
- await until(()=>!$('pet').hidden);$('shelf-book').onclick();await advance(2);assert.match($('dialogue').textContent,/read it together/);
- await advance(20);assert.equal(body.dataset.chapter,'shelf-home');assert.equal($('choice').hidden,true);
+ $('shelf-book').onclick();await advance(2);assert.match($('dialogue').textContent,/read it together/);
+ await advance(20);assert.equal(body.dataset.chapter,'home-box','The clean shelf must lead into building the home');
  console.log('PASS: arm dragging, high five, planting, '+(nickname?'nickname':'Milo name')+', turning, watering, flower, moth, blue cap, keepsake box, local dust wiping and shelf home');
 })().catch(error=>{console.error(error);process.exitCode=1});

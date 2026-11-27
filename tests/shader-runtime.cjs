@@ -12,11 +12,12 @@ class Node{
  dot(v){return new Node(()=>array(zip(this.eval(),raw(v),(a,b)=>a*b)).reduce((a,b)=>a+b,0))}
 }
 class Vector2{constructor(x,y){this.set(x,y)}set(x,y){this.x=x;this.y=y}}
+class Vector3{constructor(x,y,z){this.set(x,y,z)}set(x,y,z){this.x=x;this.y=y;this.z=z}}
 const vector=(...v)=>new Node(()=>v.flatMap(x=>{const a=raw(x);return a instanceof Color?a.rgb:array(a)}));
 class Color{constructor(hex){this.rgb=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255)}}
 const tsl={vec2:vector,vec3:vector,float:v=>new Node(()=>v),positionWorld:new Node(()=>sample.position),normalWorld:new Node(()=>sample.normal),
- uniform(value){const n=new Node(()=>n.value instanceof Vector2?[n.value.x,n.value.y]:n.value);n.value=value;return n},
+ uniform(value){const n=new Node(()=>n.value instanceof Vector3?[n.value.x,n.value.y,n.value.z]:n.value instanceof Vector2?[n.value.x,n.value.y]:n.value);n.value=value;return n},
  smoothstep(lo,hi,x){return new Node(()=>{const t=Math.max(0,Math.min(1,(raw(x)-lo)/(hi-lo)));return t*t*(3-2*t)})},
  mix(a,b,t){return a.add(b.sub(a).mul(t))}};
 
-module.exports={sample,three:{tsl,Vector2,Color,MeshBasicNodeMaterial:class{},MeshStandardNodeMaterial:class{},DoubleSide:2}};
+module.exports={sample,three:{tsl,Vector2,Vector3,Color,MeshBasicNodeMaterial:class{},MeshStandardNodeMaterial:class{},DoubleSide:2}};

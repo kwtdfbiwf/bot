@@ -10,16 +10,17 @@ try{chosenName=localStorage.getItem('milo-chosen-name')||'Milo';}catch{}
 const freeArms=()=>['play','end','named-play','garden-end','shelf-home'].includes(chapter)||(chapter==='collection-end'&&collectionSettled);
 const namingStates=()=>['name-intro','name-search','name-found','nickname','name-happy','named-play','water-intro','water-find','water-carry','water-aim','water-bloom','water-done','moth-arrival','moth-coax','moth-landed','moth-stay','moth-return','garden-end'].includes(chapter)||chapter.startsWith('collection-')||shelfStates();
 const bounded=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
-function worldPoint(p){return rotateVector(p,0,yaw,0);}
+function withHomeActor(p){const a=homeStates()?homeActor:{x:0,y:0,z:0};return{x:p.x+a.x,y:p.y+a.y,z:p.z+a.z};}
+function worldPoint(p){return withHomeActor(rotateVector(p,0,yaw,0));}
 function bodyScreen(x,y,z){const p=worldPoint({x,y,z});return screenPoint(p.x,p.y,p.z);}
 function projectedHand(p,side='right',orientation=yaw){
  if(side==='right'){
    const q=rotateVector({x:5,y:-57,z:7},0,p.elbowY,p.elbowZ);
    const r=rotateVector({x:8+q.x,y:-43+q.y,z:q.z},p.rightX,0,p.rightZ);
-   return rotateVector({x:66+r.x,y:204+p.bodyY+r.y,z:r.z},0,orientation,0);
+   return withHomeActor(rotateVector({x:66+r.x,y:204+p.bodyY+r.y,z:r.z},0,orientation,0));
  }
  const r=rotateVector({x:-13,y:-100,z:7},p.leftX,0,p.leftZ);
- return rotateVector({x:-66+r.x,y:204+p.bodyY+r.y,z:r.z},0,orientation,0);
+ return withHomeActor(rotateVector({x:-66+r.x,y:204+p.bodyY+r.y,z:r.z},0,orientation,0));
 }
 function handScreen(p,side){const h=projectedHand(p,side);return screenPoint(h.x,h.y,h.z);}
 function refreshArmTargets(p){
@@ -167,8 +168,8 @@ async function prepareWatering(){
 }
 waterBoot=prepareWatering();
 function pointAtHeight(x,y,height){
- const r=cameraRay(x,y),depth=bounded((height-420)/r.y,120,1700);
- return{x:200+depth*r.x,y:420+depth*r.y,z:1100+depth*r.z};
+ const r=cameraRay(x,y),depth=bounded((height-storyCamera.y)/r.y,120,1700*Math.max(1,storyCamera.z/1100));
+ return{x:storyCamera.x+depth*r.x,y:storyCamera.y+depth*r.y,z:storyCamera.z+depth*r.z};
 }
 // Keep the find on the right and beyond the floor's existing pool of light.
 // On narrow screens it sits deeper in the void, rather than beside the plant.
@@ -359,7 +360,7 @@ function chapterTwoTick(now){
  yaw+=(yawTarget-yaw)*(1-Math.exp(-dt*(wateringStates()?3.5:9)));
  if(Math.abs(yaw-yawTarget)<.001)yaw=yawTarget;
  update(parts.Robot.id,{rotation:{y:yaw}});
- wateringTick(dt);collectionTick();shelfTick(dt);
+ wateringTick(dt);collectionTick();shelfTick(dt);homeTick(dt);
  if(chapter==='name-search'){
    const rear=Math.cos((yaw-frontYaw)*Math.PI/180)<-.6;
    $('back-name').hidden=!rear;place($('back-name'),bodyScreen(0,318,-81));
@@ -414,6 +415,6 @@ function chapterTwoPose(p){
      if(side==='right'){p.elbowZ*=1-weight;p.elbowY*=1-weight;}
    }
  }
- p=wateringPose(p);p=collectionPose(p);p=shelfPose(p);
+ p=wateringPose(p);p=collectionPose(p);p=shelfPose(p);p=homePose(p);
  lastPose={...p};refreshArmTargets(p);return p;
 }

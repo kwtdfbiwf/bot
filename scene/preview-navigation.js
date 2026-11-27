@@ -1,6 +1,6 @@
 // Hidden author preview. Reset the existing runtime: Spline play frames
 // need their parent scene configuration and cannot reload themselves.
-const previewStops=['play','seed','name','water','moth','cap','shelf','dust','home','room'];
+const previewStops=['play','seed','name','water','moth','cap','shelf','dust','home','room','rug','lamp','seat','blanket','lights','cosy'];
 let previewReturnFocus=null;
 function closePreview(){
  $('preview-menu').hidden=true;previewReturnFocus?.focus?.({preventScroll:true});
@@ -18,10 +18,10 @@ window.addEventListener('keydown',e=>{
 $('preview-close').onclick=closePreview;
 let previewBusy=false;
 async function resetPreview(){
- await Promise.all([plantBoot,twoBoot,waterBoot,collectionBoot,shelfBoot,roomBoot]);
+ await Promise.all([plantBoot,twoBoot,waterBoot,collectionBoot,shelfBoot,roomBoot,homeBoot]);
  if(!plantReady||!twoReady||!waterReady||!collectionReady||!shelfReady)throw new Error('Preview assets are not ready');
  clearTimeout(typing);tasks.length=0;speechTyping=false;speechUntil=0;
- releaseArm({});releaseTurn({});releaseCan({type:'pointercancel'});releaseCollectionDrag({},true);releaseShelf({},true);clearShelfFeedback();
+ releaseArm({});releaseTurn({});releaseCan({type:'pointercancel'});releaseCollectionDrag({},true);releaseShelf({},true);clearShelfFeedback();releaseHomeDrag({},true);await resetHomeStory();
  // Release handlers may schedule a return gesture; discard those too.
  tasks.length=0;enter('waiting');setPhase('boot');armDrag=null;turnDrag=null;canDrag=null;collectionDrag=null;shelfWipe=null;
  reaction='';reactionAt=-100;happyAt=-100;collectionHappyAt=-100;armDialogueAt=-100;
@@ -64,7 +64,7 @@ async function requestPreview(stop){
 for(const stop of previewStops)$('preview-'+stop).onclick=()=>requestPreview(stop);
 $('preview-restart').onclick=()=>requestPreview('');
 async function startPreview(stop){
- await Promise.all([plantBoot,twoBoot,waterBoot,collectionBoot,shelfBoot,roomBoot]);
+ await Promise.all([plantBoot,twoBoot,waterBoot,collectionBoot,shelfBoot,roomBoot,homeBoot]);
  if(!plantReady||!twoReady||!waterReady||!collectionReady||!shelfReady)throw new Error('Preview assets are not ready');
  setPhase('lit');began=performance.now()-45000;visitor='friend';
  hideWake();$('name-form').hidden=true;$('switch').disabled=true;$('switch').setAttribute('aria-pressed','true');
@@ -101,12 +101,12 @@ async function startPreview(stop){
  await update(keepsakeBox.id,{position:boxAt});await update(blueCap.id,{position:capAt});
  enter('collection-end');await startShelf();
  if(stop==='dust'){$('shelf-find').onclick();return;}
- if(stop==='home'||stop==='room'){
+ if(['home','room','rug','lamp','seat','blanket','lights','cosy'].includes(stop)){
    clearTimeout(typing);speechTyping=false;speechUntil=0;$('dialogue').hidden=true;tasks.length=0;
    restoreFoundObject(cozyShelf,shelfMeshes);shelfAt=shelfHomePosition();shelfScale=homeLayout.shelf.scale;
    for(const d of shelfDust){d.clean=1;await update(d.object.id,{visible:false});}
    await update(shelfDustRoot.id,{visible:false});enter('shelf-home');
    $('shelf-find').hidden=true;$('spark').hidden=true;$('shelf-book').hidden=false;$('collect-cap').hidden=false;$('pet').hidden=false;
-   objective('');if(stop==='room')await showRoomModel(true);
+   objective('');if(['rug','lamp','seat','blanket','lights','cosy'].includes(stop)){await previewHomeChapter(stop);return;}if(stop==='room')await showRoomModel(true);else choice('Continue building',beginHomeStory);
  }
 }

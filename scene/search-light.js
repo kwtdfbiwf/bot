@@ -8,7 +8,7 @@ const findClay={
  'Blue Cap Enamel':['#789bb5',.76],'Box Folded Tape':['#d3a095',.74]
 };
 async function prepareSearchLight(root,meshes,options={}){
- const state={active:null,pointer:null,viewport:null,ready:false};searchLights.set(root.id,state);
+ const state={active:null,pointer:null,viewport:null,camera:null,warmth:null,ready:false};searchLights.set(root.id,state);
  try{
    if(!spline.createCustomMaterial||!spline.setMaterial)throw new Error('Surface shaders unavailable');
    // Shared by this find's pieces; changing these values never sends mesh edits.
@@ -18,14 +18,15 @@ async function prepareSearchLight(root,meshes,options={}){
      const material=await spline.createCustomMaterial(three=>{
        const {tsl}=three;
        if(!state.active){
-         state.active=tsl.uniform(0);
+         state.active=tsl.uniform(0);state.warmth=tsl.uniform(0);
          state.pointer=tsl.uniform(new three.Vector2(0,0));
          state.viewport=tsl.uniform(new three.Vector2(innerWidth,innerHeight));
+         state.camera=tsl.uniform(new three.Vector3(storyCamera.x,storyCamera.y,storyCamera.z));
        }
        // The same fixed camera projection as screenPoint, evaluated at EVERY
        // surface fragment, not at the object's centre. Independent of DPR.
        const a=11*Math.PI/180,b=-11*Math.PI/180,c=2.12409883794*Math.PI/180;
-       const d=tsl.positionWorld.sub(tsl.vec3(200,420,1100));
+       const d=tsl.positionWorld.sub(state.camera);
        const yy=d.y.mul(Math.cos(b)).add(d.z.mul(Math.sin(b)));
        const zz=d.y.mul(-Math.sin(b)).add(d.z.mul(Math.cos(b)));
        const xx=d.x.mul(Math.cos(a)).sub(zz.mul(Math.sin(a)));
@@ -45,6 +46,7 @@ async function prepareSearchLight(root,meshes,options={}){
        const rgb=[1,3,5].map(i=>{const s=parseInt(color.slice(i,i+2),16)/255;return s<=.04045?s/12.92:Math.pow((s+.055)/1.055,2.4);});
        const albedo=surface?.texture?tsl.texture(surface.texture,tsl.uv()).rgb:tsl.vec3(...rgb);
        m.colorNode=albedo.mul(diffuse).mul(illumination);
+       if(options.warm?.includes(mesh.name))m.colorNode=tsl.mix(m.colorNode,tsl.vec3(1.5,.88,.32).mul(diffuse).mul(illumination),state.warmth);
        m.side=three.DoubleSide;m.transparent=false;
        return m;
      });
@@ -59,6 +61,7 @@ function driveSearchLight(root,point,focused){
  state.active.value=focused?0:1;
  state.pointer.value.set(pointerX,pointerY);
  state.viewport.value.set(innerWidth,innerHeight);
+ state.camera.value.set(storyCamera.x,storyCamera.y,storyCamera.z);
  return true;
 }
 function releaseSearchLight(root){
