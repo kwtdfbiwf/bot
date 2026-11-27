@@ -1595,6 +1595,10 @@ function rollFound(){
  restoreFoundObject(homePacks.roll.root,homePacks.roll.meshes);homePack('rug',true);releaseSearchLight(homePacks.rug.root);
  homeStep('home-rug-unroll');homeTask('Unroll the rug together',{x:0,y:32,z:75});$('spark').hidden=true;
 }
+function startRugAuto(){
+ if(chapter!=='home-rug-unroll'||homeProgress<.5-1e-6)return;
+ releaseHomeDrag({},true);homeStep('home-rug-auto');homeProgress=.5;objective('');
+}
 function finishRug(){
  homeStep('home-rug-choice');homePack('roll',false);homePack('thread',false);showHomeStage(1);homeSound('cloth');
  homeSay('Is that straight?',()=>homeChoices(['Straighten it',()=>settleRug(0)],['It’s good like that',()=>settleRug(-7)]));
@@ -1716,7 +1720,7 @@ function activateHomeTask(){
    const d=homeSeatDust.find(d=>d.clean<.8);if(d){const p=screenPoint(d.point.x,d.point.y,d.point.z);showShelfCloth(p.x,p.y);cleanHomeSeat({x:p.x-50,y:p.y},{x:p.x+50,y:p.y});}return;
  }
  if(chapter==='home-rug-unroll'||chapter==='home-cover'){
-   homeProgress=clamp(homeProgress+.22);if(homeProgress>=1)(chapter==='home-cover'?coverRemoved:finishRug)();
+   homeProgress=clamp(homeProgress+.22);if(chapter==='home-rug-unroll')startRugAuto();else if(homeProgress>=1)coverRemoved();
  }
 }
 $('home-interact').onclick=e=>{if((e?.detail||0)>0&&performance.now()<homeSuppressUntil)return;activateHomeTask();};
@@ -1737,7 +1741,7 @@ window.addEventListener('pointermove',e=>{
    boxAt=pointAtHeight(p.x,p.y,80);capAt={x:boxAt.x,y:boxAt.y+7,z:boxAt.z};
    $('home-place').hidden=false;place($('home-place'),screenPoint(homeShelfBox.x,homeShelfBox.y,homeShelfBox.z));
  }else if(drag.kind==='home-rug-unroll'){
-   const a=screenPoint(0,32,75),b=screenPoint(0,32,555);homeProgress=clamp(drag.progress+(p.y-drag.start.y)/Math.max(70,b.y-a.y));
+   const a=screenPoint(0,32,75),b=screenPoint(0,32,555);homeProgress=Math.min(.5,clamp(drag.progress+(p.y-drag.start.y)/Math.max(70,b.y-a.y)));startRugAuto();
  }else if(drag.kind==='home-cover')homeProgress=clamp(drag.progress+Math.hypot(p.x-drag.start.x,p.y-drag.start.y)/150);
  else if(drag.kind==='home-bed-clean'){showShelfCloth(p.x,p.y);cleanHomeSeat(drag.last,p);}
  else if(drag.kind==='home-cushion'){
@@ -1760,7 +1764,7 @@ function releaseHomeDrag(e={},cancel=false){
  const end=drag.last;
  if(drag.kind==='home-box'){
    const target=screenPoint(homeShelfBox.x,homeShelfBox.y,homeShelfBox.z);if(Math.hypot(end.x-target.x,end.y-target.y)<80)boxOnShelf();else{boxAt=drag.boxFrom;capAt={x:boxAt.x,y:boxAt.y+7,z:boxAt.z};}
- }else if(drag.kind==='home-rug-unroll'&&homeProgress>=.98)finishRug();
+ }else if(drag.kind==='home-rug-unroll'&&homeProgress>=.5-1e-6)startRugAuto();
  else if(drag.kind==='home-cover'&&homeProgress>=.98)coverRemoved();
  else if(drag.kind==='home-cushion'){
    const target=screenPoint(-445,132,-5);if(Math.hypot(end.x-target.x,end.y-target.y)<90)cushionPlaced();else homeWrite('Interior Daybed Pillow',{position:{x:165,y:40,z:80}});
@@ -1790,7 +1794,7 @@ function homePose(p){
    for(const side of [-1,1])homeLegPose(side,-10*g+step*side*11*g,20*g,100);
  }else if(chapter==='home-thread'){p.rightZ=15;p.headX=20;homeLegPose(1,-22,35,104);}
  else if(chapter==='home-box'||chapter==='home-box-settle'){p.leftZ=-45;p.headY=-18;p.headX=12;}
- else if(chapter==='home-rug-unroll'){p.rightX=-55;p.leftX=-55;p.bodyY=-8;p.headX=22;for(const side of [-1,1])homeLegPose(side,-12,22,96);}
+ else if(chapter==='home-rug-unroll'||chapter==='home-rug-auto'){p.rightX=-55;p.leftX=-55;p.bodyY=-8;p.headX=22;for(const side of [-1,1])homeLegPose(side,-12,22,96);}
  else if(chapter==='home-lamp-hold'){p.rightX=-80;p.rightZ=25+Math.sin(chapterTime*4)*3;p.headX=12;p.bodyX=8;}
  else if(chapter==='home-cover'){p.leftX=-65;p.rightX=-20;p.bodyY=-8;p.headX=18;}
  else if(chapter==='home-connect'||chapter==='home-pull'){p.rightX=-55;p.rightZ=18;p.elbowZ=35;p.headX=16;}
@@ -1817,12 +1821,14 @@ function homeTick(dt){
    else boxAt={...homeShelfBox};capAt={x:boxAt.x,y:boxAt.y+7,z:boxAt.z};
  }
  update(keepsakeBox.id,{position:boxAt});update(blueCap.id,{position:capAt});
- if(chapter==='home-rug-unroll'){
+ if(chapter==='home-rug-auto')homeProgress=.5+.5*ease((chapterTime-chapterAt)/1.15);
+ if(chapter==='home-rug-unroll'||chapter==='home-rug-auto'){
    const g=Math.max(.006,homeProgress),a=homeRugAngle*Math.PI/180;homeWrite('Interior Fringed Rug',{scale:{x:1,y:1,z:g},position:{x:-315*g*Math.sin(a),y:0,z:75+240*g-315*g*Math.cos(a)},rotation:{y:homeRugAngle}});
    const radius=Math.sqrt(1-clamp(homeProgress))*.96+.04;
    const opacity=1-ease(homeProgress*2),fade=searchLights.get(homePacks.roll.root.id)?.opacity;if(fade)fade.value=opacity;
    homePoint={x:240*homeProgress*Math.sin(a),y:1+31*radius,z:75+240*homeProgress*(1+Math.cos(a))};
    homeWrite('Home Rolled Rug',{visible:opacity>0,position:homePoint,rotation:{x:homeProgress*540,y:homeRugAngle},scale:{x:1,y:radius,z:radius}});
+   if(chapter==='home-rug-auto'&&homeProgress>=1)finishRug();
  }else if(homeStage>=1){const a=homeRugAngle*Math.PI/180;homeWrite('Interior Fringed Rug',{scale:{x:1,y:1,z:1},position:{x:-315*Math.sin(a),y:0,z:315-315*Math.cos(a)},rotation:{y:homeRugAngle}});}
  if(chapter==='home-cover'){
    const g=homeProgress,s=1-.55*g;homeWrite('Home Daybed Cover',{scale:{x:s,y:1-.5*g,z:1-.7*g},position:{x:-445*(1-s)-180*g,y:65*g,z:155*.7*g+230*g}});

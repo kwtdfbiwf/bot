@@ -76,18 +76,21 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
    assert(Math.abs(rollMaterial.opacityNode.value-.5)<.001,'The roll must be fading at a quarter unrolled');
    for(const fn of events.pointercancel)fn({pointerId:101});
    assert.equal(body.dataset.chapter,'home-rug-unroll','Cancelling a partial roll must not complete it');
-   $('home-interact').onpointerdown({pointerId:102,button:0,currentTarget:$('home-interact'),clientX:rugStart.x,clientY:rugStart.y});
-   for(const fn of events.pointermove)fn({pointerId:102,clientX:rugStart.x,clientY:rugStart.y+rugTravel*.25});await advance(.1);
+   if(dragMode){
+     $('home-interact').onpointerdown({pointerId:102,button:0,currentTarget:$('home-interact'),clientX:rugStart.x,clientY:rugStart.y});
+     for(const fn of events.pointermove)fn({pointerId:102,clientX:rugStart.x,clientY:rugStart.y+rugTravel*.25});
+   }else for(let i=0;i<2;i++)$('home-interact').onclick({detail:0});
+   await advance(.1);
+   assert.equal(body.dataset.chapter,'home-rug-auto','Crossing halfway must start automatic unrolling');
    assert.equal(writes.get('Home Rolled Rug').visible,false,'The rolled section must disappear halfway through unrolling');
    assert.equal(rollMaterial.opacityNode.value,0);
-   assert(Math.abs(writes.get('Interior Fringed Rug').scale.z-.5)<.001,'The carpet must continue opening after its roll disappears');
+   const autoProgress=writes.get('Interior Fringed Rug').scale.z;
+   assert(autoProgress>.5&&autoProgress<1,'Automatic unrolling must animate the second half rather than snap open');
+   assert.equal($('home-interact').hidden,true,'The user should be able to let go once the rug takes over');
+   for(const fn of events.pointermove)fn({pointerId:102,clientX:rugStart.x,clientY:rugStart.y});
    for(const fn of events.pointercancel)fn({pointerId:102});
-   if(dragMode){
-     $('home-interact').onpointerdown({pointerId:111,button:0,currentTarget:$('home-interact'),clientX:rugStart.x,clientY:rugStart.y});
-     const end=project(0,32,555);for(const fn of events.pointermove)fn({pointerId:111,clientX:end.x,clientY:end.y});await advance(.1);
-     assert.equal(writes.get('Home Rolled Rug').visible,false,'The extra roll must disappear at full extension before releasing the pointer');
-     for(const fn of events.pointerup)fn({pointerId:111});
-   }else for(let i=0;i<6&&body.dataset.chapter==='home-rug-unroll';i++)$('home-interact').onclick({detail:0});
+   await advance(.35);
+   assert(writes.get('Interior Fringed Rug').scale.z>autoProgress,'Releasing or moving back must not interrupt automatic unrolling');
    await until(()=>!$('home-choices').hidden);
    assert.equal(writes.get('Home Rolled Rug').visible,false);
    assert.equal(writes.get('Home Rug Roll Cloth').visible,false,'No rolled cloth should remain after unrolling');
@@ -161,7 +164,12 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
    assert.equal($('preview-menu').hidden,true);
    for(const fn of events.keydown)fn({key:'P',shiftKey:true,target:{tagName:'INPUT'},preventDefault(){}});
    assert.equal($('preview-menu').hidden,true,'Typing a name must not open preview');
+   if(previewMode==='rug'){
+     for(let i=0;i<3;i++)$('home-interact').onclick({detail:0});await advance(.2);
+     assert.equal(body.dataset.chapter,'home-rug-auto');
+   }
    await $('preview-dust').onclick();await until(()=>body.dataset.chapter==='shelf-cleaning');
+   if(previewMode==='rug'){await advance(2);assert.equal(body.dataset.chapter,'shelf-cleaning','Jumping away must cancel automatic rug completion');}
    assert.equal(writes.get('Cozy Shelf Dust').visible,true,'Repeated jump restores dust');
    await $('preview-home').onclick();await advance(.2);
    assert.equal(writes.get('Cozy Shelf Dust').visible,false);
