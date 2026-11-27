@@ -65,13 +65,23 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
    await checkLightFind('home-find','Home Rolled Rug');$('home-find').onclick();await advance(.1);
    assert.equal(body.dataset.chapter,'home-rug-unroll');
    const rugStart=project(0,32,75);
+   const rugTravel=Math.max(70,project(0,32,555).y-rugStart.y);
    $('home-interact').onpointerdown({pointerId:101,button:0,currentTarget:$('home-interact'),clientX:rugStart.x,clientY:rugStart.y});
-   for(const fn of events.pointermove)fn({pointerId:101,clientX:rugStart.x,clientY:rugStart.y+25});
+   for(const fn of events.pointermove)fn({pointerId:101,clientX:rugStart.x,clientY:rugStart.y+rugTravel*.25});
    await advance(.1);
    assert(writes.get('Home Rolled Rug').scale.y<1&&writes.get('Home Rolled Rug').scale.y>0,'The roll must shrink as the carpet opens');
    assert(writes.get('Home Rolled Rug').position.y<32,'The shrinking roll must remain on the floor');
+   const rollMaterial=shaderMaterials.get('Home Rug Roll Cloth');
+   assert.equal(rollMaterial.transparent,true);
+   assert(Math.abs(rollMaterial.opacityNode.value-.5)<.001,'The roll must be fading at a quarter unrolled');
    for(const fn of events.pointercancel)fn({pointerId:101});
    assert.equal(body.dataset.chapter,'home-rug-unroll','Cancelling a partial roll must not complete it');
+   $('home-interact').onpointerdown({pointerId:102,button:0,currentTarget:$('home-interact'),clientX:rugStart.x,clientY:rugStart.y});
+   for(const fn of events.pointermove)fn({pointerId:102,clientX:rugStart.x,clientY:rugStart.y+rugTravel*.25});await advance(.1);
+   assert.equal(writes.get('Home Rolled Rug').visible,false,'The rolled section must disappear halfway through unrolling');
+   assert.equal(rollMaterial.opacityNode.value,0);
+   assert(Math.abs(writes.get('Interior Fringed Rug').scale.z-.5)<.001,'The carpet must continue opening after its roll disappears');
+   for(const fn of events.pointercancel)fn({pointerId:102});
    if(dragMode){
      $('home-interact').onpointerdown({pointerId:111,button:0,currentTarget:$('home-interact'),clientX:rugStart.x,clientY:rugStart.y});
      const end=project(0,32,555);for(const fn of events.pointermove)fn({pointerId:111,clientX:end.x,clientY:end.y});await advance(.1);
@@ -129,6 +139,7 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
    await $('preview-water').onclick();await advance(8);
    assert.equal(body.dataset.chapter,'water-find');assert.equal(writes.get('Robot').position.x,0);
    assert.equal(writes.get('Interior Home').visible,false);assert.equal(writes.get('Leg 1 Shin').rotation.x,0,'Reset must straighten the knees');
+   assert.equal(rollMaterial.opacityNode.value,1,'Restarting must restore the roll so it can be found again');
    console.log('PASS: full home sequence, gradual reveal, moving objects, knee rig, cancelled drags, quiet ending and reset');return;
  }
  if(previewMode){

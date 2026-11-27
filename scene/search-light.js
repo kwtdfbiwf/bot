@@ -8,7 +8,7 @@ const findClay={
  'Blue Cap Enamel':['#789bb5',.76],'Box Folded Tape':['#d3a095',.74]
 };
 async function prepareSearchLight(root,meshes,options={}){
- const state={active:null,pointer:null,viewport:null,camera:null,warmth:null,ready:false};searchLights.set(root.id,state);
+ const state={active:null,pointer:null,viewport:null,camera:null,warmth:null,opacity:null,ready:false};searchLights.set(root.id,state);
  try{
    if(!spline.createCustomMaterial||!spline.setMaterial)throw new Error('Surface shaders unavailable');
    // Shared by this find's pieces; changing these values never sends mesh edits.
@@ -19,6 +19,7 @@ async function prepareSearchLight(root,meshes,options={}){
        const {tsl}=three;
        if(!state.active){
          state.active=tsl.uniform(0);state.warmth=tsl.uniform(0);
+         if(options.fade)state.opacity=tsl.uniform(1);
          state.pointer=tsl.uniform(new three.Vector2(0,0));
          state.viewport=tsl.uniform(new three.Vector2(innerWidth,innerHeight));
          state.camera=tsl.uniform(new three.Vector3(storyCamera.x,storyCamera.y,storyCamera.z));
@@ -47,7 +48,8 @@ async function prepareSearchLight(root,meshes,options={}){
        const albedo=surface?.texture?tsl.texture(surface.texture,tsl.uv()).rgb:tsl.vec3(...rgb);
        m.colorNode=albedo.mul(diffuse).mul(illumination);
        if(options.warm?.includes(mesh.name))m.colorNode=tsl.mix(m.colorNode,tsl.vec3(1.5,.88,.32).mul(diffuse).mul(illumination),state.warmth);
-       m.side=three.DoubleSide;m.transparent=false;
+       m.side=three.DoubleSide;m.transparent=!!options.fade;
+       if(options.fade)m.opacityNode=state.opacity;
        return m;
      });
      await spline.setMaterial(mesh.id,material);
