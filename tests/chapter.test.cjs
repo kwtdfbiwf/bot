@@ -67,10 +67,22 @@ async function until(predicate,seconds=40){for(let i=0;i<seconds*10;i++){if(pred
    const rugStart=project(0,32,75);
    $('home-interact').onpointerdown({pointerId:101,button:0,currentTarget:$('home-interact'),clientX:rugStart.x,clientY:rugStart.y});
    for(const fn of events.pointermove)fn({pointerId:101,clientX:rugStart.x,clientY:rugStart.y+25});
+   await advance(.1);
+   assert(writes.get('Home Rolled Rug').scale.y<1&&writes.get('Home Rolled Rug').scale.y>0,'The roll must shrink as the carpet opens');
+   assert(writes.get('Home Rolled Rug').position.y<32,'The shrinking roll must remain on the floor');
    for(const fn of events.pointercancel)fn({pointerId:101});
    assert.equal(body.dataset.chapter,'home-rug-unroll','Cancelling a partial roll must not complete it');
-   if(dragMode)await homeDragTo(111,rugStart,project(0,32,555));else for(let i=0;i<6&&body.dataset.chapter==='home-rug-unroll';i++)$('home-interact').onclick({detail:0});
-   await until(()=>!$('home-choices').hidden);$(dragMode?'home-a':'home-b').onclick();
+   if(dragMode){
+     $('home-interact').onpointerdown({pointerId:111,button:0,currentTarget:$('home-interact'),clientX:rugStart.x,clientY:rugStart.y});
+     const end=project(0,32,555);for(const fn of events.pointermove)fn({pointerId:111,clientX:end.x,clientY:end.y});await advance(.1);
+     assert.equal(writes.get('Home Rolled Rug').visible,false,'The extra roll must disappear at full extension before releasing the pointer');
+     for(const fn of events.pointerup)fn({pointerId:111});
+   }else for(let i=0;i<6&&body.dataset.chapter==='home-rug-unroll';i++)$('home-interact').onclick({detail:0});
+   await until(()=>!$('home-choices').hidden);
+   assert.equal(writes.get('Home Rolled Rug').visible,false);
+   assert.equal(writes.get('Home Rug Roll Cloth').visible,false,'No rolled cloth should remain after unrolling');
+   assert.equal(writes.get('Interior Fringed Rug').scale.z,1,'The finished carpet must remain fully open');
+   $(dragMode?'home-a':'home-b').onclick();
    await until(()=>body.dataset.chapter==='home-cable-find');$('home-find').onclick();
    await until(()=>body.dataset.chapter==='home-lamp-find');$('home-find').onclick();
    await until(()=>body.dataset.chapter==='home-lamp-hold',30);

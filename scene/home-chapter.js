@@ -159,6 +159,7 @@ async function resetHomeStory(){
  homeWrite('Home Daybed Cover',{position:{x:0,y:0,z:0},scale:{x:1,y:1,z:1}});
  homeWrite('Home Folded Blanket',{position:{x:-210,y:17,z:-431},rotation:{x:0,y:0,z:0},scale:{x:1,y:1,z:1}});
  homeWrite('Interior Fringed Rug',{position:{x:0,y:0,z:0},scale:{x:1,y:1,z:1},rotation:{y:0}});
+ homeWrite('Home Rolled Rug',{visible:false,position:{x:0,y:32,z:75},rotation:{x:0,y:0,z:0},scale:{x:1,y:1,z:1}});
  homeWrite('Interior Slippers',{position:{x:0,y:0,z:0}});
  homeWrite('Home Garland Pull',{scale:{x:1,y:1,z:1}});
 }
@@ -426,7 +427,9 @@ function homeTick(dt){
  update(keepsakeBox.id,{position:boxAt});update(blueCap.id,{position:capAt});
  if(chapter==='home-rug-unroll'){
    const g=Math.max(.006,homeProgress),a=homeRugAngle*Math.PI/180;homeWrite('Interior Fringed Rug',{scale:{x:1,y:1,z:g},position:{x:-315*g*Math.sin(a),y:0,z:75+240*g-315*g*Math.cos(a)},rotation:{y:homeRugAngle}});
-   homePoint={x:240*homeProgress*Math.sin(a),y:32,z:75+240*homeProgress*(1+Math.cos(a))};homeWrite('Home Rolled Rug',{position:homePoint,rotation:{x:homeProgress*540,y:homeRugAngle}});
+   const radius=Math.sqrt(1-clamp(homeProgress))*.96+.04;
+   homePoint={x:240*homeProgress*Math.sin(a),y:1+31*radius,z:75+240*homeProgress*(1+Math.cos(a))};
+   homeWrite('Home Rolled Rug',{visible:homeProgress<.98,position:homePoint,rotation:{x:homeProgress*540,y:homeRugAngle},scale:{x:1,y:radius,z:radius}});
  }else if(homeStage>=1){const a=homeRugAngle*Math.PI/180;homeWrite('Interior Fringed Rug',{scale:{x:1,y:1,z:1},position:{x:-315*Math.sin(a),y:0,z:315-315*Math.cos(a)},rotation:{y:homeRugAngle}});}
  if(chapter==='home-cover'){
    const g=homeProgress,s=1-.55*g;homeWrite('Home Daybed Cover',{scale:{x:s,y:1-.5*g,z:1-.7*g},position:{x:-445*(1-s)-180*g,y:65*g,z:155*.7*g+230*g}});
