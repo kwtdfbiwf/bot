@@ -50,7 +50,7 @@ $('shelf-find').onclick=()=>{
  $('shelf-find').hidden=true;$('spark').hidden=true;objective('');
  update(shelfDustRoot.id,{visible:true});
  homeAfter(.95,()=>{if(chapter==='shelf-arrive')for(const i of [6,7]){shelfDust[i].clean=.3;update(shelfDust[i].object.id,{material:{layers:[{type:'texture',alpha:70}]}});}});
- speak('Someone left a book.',()=>speak('And quite a lot of this.'));
+ speak('Someone left a book.',()=>speak('and quite a lot of dust too...'));
  after(2,()=>{if(chapter==='shelf-arrive'){enter('shelf-cleaning');$('shelf-clean').hidden=false;$('shelf-clean').setAttribute('aria-label','Clean the dusty shelf');objective('Clean the shelf');}});
 };
 function distanceToStroke(p,a,b){

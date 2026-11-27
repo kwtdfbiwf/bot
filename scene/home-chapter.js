@@ -190,14 +190,14 @@ function homeTask(label,point){homePoint=point;$('home-interact').hidden=false;$
 async function beginHomeStory(){
  const token=homeEpoch;await homeBoot;if(token!==homeEpoch)return;
  await activateHome();homeStep('home-box');homePack('thread',true);
- homeSay(['Could this go here?'],()=>homeTask('Put the box on the shelf',boxAt));
+ homeSay(['i wanna put the box in the shelf'],()=>homeTask('Put the box on the shelf',boxAt));
 }
 async function boxOnShelf(){
  homeDrag=null;homeBoxPlaced=true;homeStep('home-box-settle');homeSound('click');objective('');
  const from={...boxAt},started=chapterTime;
  homeBoxPlaced={from,started};
  homeAfter(1.2,()=>{homeBoxPlaced=true;homeSay(['There.','I like knowing where it is.'],()=>{
-   homeStep('home-thread');homeSay(['Oh. Sorry.'],()=>findHomeThing('roll',{x:0,y:32,z:75},'home-rug-find',null,'Find what caught his foot'));
+   homeStep('home-thread');homeSay(['something is caught on my foot'],()=>findHomeThing('roll',{x:0,y:32,z:75},'home-rug-find',null,'Find what caught his foot'));
  });});
 }
 function rollFound(){
@@ -216,7 +216,7 @@ function settleRug(angle){
  homeRugTarget=angle;homeStep('home-rug-settle');objective('');
  homeAfter(1,()=>homeSay('That’s nicer.',()=>{
    homeStep('home-cable-intro');homeMothFlight=chapterTime;
-   homeSay(['It keeps coming with you.','Where does that go?'],()=>findHomeThing('cable',{x:65,y:4,z:55},'home-cable-find',null,'Follow the cable'));
+   homeSay(['what is this line?'],()=>findHomeThing('cable',{x:65,y:4,z:55},'home-cable-find',null,'Follow the cable'));
  }));
 }
 function cableFound(){findHomeThing('lamp',{x:-77,y:285,z:-560},'home-lamp-find',null,'Follow the cable');}
